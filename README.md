@@ -2,6 +2,33 @@
 
 专门适配 **StepsToGreat** 的 Windows 本地 Markdown 阅读、编辑与答题工作台。当前版本为 **0.3.3**。
 
+## 界面预览
+
+教学内容、作答区和 DSH 协作对话放在同一个学习页面，顶部只展示当前需要的文档。
+
+![STG Desk 学习页面：教学文档、作答工作区与 DSH 协作面板](docs/screenshots/workspace.png)
+
+<details>
+<summary>查看独立文档窗口与 DSH 小窗</summary>
+
+教学文档与学生文档可分别打开独立窗口；学生窗口中可以直接答题、查看作答记录和编辑完整文档。
+
+<table>
+  <tr><th>教学窗口</th><th>学生窗口</th></tr>
+  <tr>
+    <td><img src="docs/screenshots/teaching-window.png" alt="独立教学窗口：阅读与编辑教学文档" width="480"></td>
+    <td><img src="docs/screenshots/student-window.png" alt="独立学生窗口：本轮作答、作答记录与完整文档" width="480"></td>
+  </tr>
+</table>
+
+DSH 对话也能切换到圆角独立小窗。下面展示连接前的界面；连接已打开的 DSH 后，可继续其原生会话。
+
+<img src="docs/screenshots/dsh-floating.png" alt="DSH 独立协作小窗，尚未连接" width="420">
+
+</details>
+
+截图使用随项目提供的演示课程与测试草稿，不包含真实学习记录或模型回复。
+
 ## 下载和打开软件
 
 从 [GitHub Releases](https://github.com/wildcat430524/STG-Desk/releases/latest) 下载 `STG-Desk-0.3.3-Windows.exe`，双击运行。源码构建输出在 `release/`，目录版需保留整个 `win-unpacked` 目录。
