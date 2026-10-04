@@ -1,5 +1,7 @@
 # STG Desk
 
+**简体中文** | [English](README.en.md)
+
 **把教学阅读、学生作答和 DSH 对话放进同一个学习工作台。**
 
 STG Desk 是面向 **StepsToGreat** 学习目录的 Windows 桌面应用。直接打开本地 Markdown 文档，从学习档案找到当前课程，阅读教学内容、填写答案、查看评估，再通过 DSH 的同一原生会话继续学习。
