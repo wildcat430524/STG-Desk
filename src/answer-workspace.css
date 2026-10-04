@@ -28,15 +28,10 @@
 .answers-panel .markdown-body img{max-width:100%;height:auto}.answers-panel .markdown-body table{display:block;max-width:100%;overflow:auto}.answers-panel .markdown-body pre{max-width:100%;overflow:auto}.answers-panel .markdown-body h1{font-size:20px}.answers-panel .markdown-body h2{font-size:16px}.answers-panel .markdown-body h3{font-size:14px}
 @media(max-width:1250px){.dsh-open .answers-panel{width:310px}.answer-heading{padding:18px 16px 14px}.answer-tabs{margin-left:12px;margin-right:12px}#answer-content,#answer-records,#answer-document{padding-left:12px;padding-right:12px}.answers-panel .question-card{padding:16px}.answers-panel .question-card textarea{min-height:160px}}
 @media(prefers-reduced-motion:no-preference){.answer-tabs button,.answers-panel .question-card textarea{transition:background-color 150ms,border-color 150ms,box-shadow 150ms}}
-.document-only .workspace-header,.document-only .document-access,.document-only .breadcrumb,.document-only #dsh-host{display:none!important}
+.document-only .workspace-header,.document-only .document-access,.document-only .breadcrumb,.document-only #choose-course,.document-only #dsh-host{display:none!important}
 .document-only .application-body{padding:12px;min-height:0}.document-only .main{width:100%}
 .document-only .topbar{padding:10px 20px;min-height:42px}.document-only .local-label{display:none}
-.answer-document-window .document-toolbar,.answer-document-window .view-toolbar,.answer-document-window #format-toolbar,.answer-document-window #content-area{display:none!important}
-.answer-document-window .doc-body{display:flex;min-height:0}.answer-document-window .answers-panel{width:100%!important;max-width:none;min-width:0;border-left:0;background:#f8f9fb}
-.answer-document-window .answer-heading{padding:22px 28px 16px}.answer-document-window .answer-heading h2{font-size:23px}
-.answer-document-window .answer-tabs{margin:0 26px 18px;max-width:420px}
-.answer-document-window #answer-content,.answer-document-window #answer-records,.answer-document-window #answer-document{padding:0 26px 24px}
-.answer-document-window #answer-content .question-card{max-width:850px;margin:0 auto 18px}.answer-document-window #answer-footer{padding:16px 26px}
-.answer-document-window #answer-footer .primary{max-width:850px;margin:auto}.answer-document-window #answer-footer p,.answer-document-window .answer-footer-status{max-width:850px;margin-left:auto;margin-right:auto}
-.answer-document-window #answer-source{min-height:400px;height:calc(100% - 48px)}
+.answer-document-active #answers-panel{display:none!important}
+.answer-document-active #content-area{width:100%;min-width:0}
+.answer-document-active .view-toolbar{justify-content:flex-end}
 .guide-document-window #answers-panel{display:none!important}.guide-document-window #content-area{width:100%}

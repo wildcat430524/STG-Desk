@@ -4,7 +4,7 @@ const path=require('node:path');
 const os=require('node:os');
 module.exports=async function smoke(window,app){
   const root=await fs.mkdtemp(path.join(os.tmpdir(),'stg-desktop-'));
-  const output=path.join(__dirname,'../tests/artifacts');await fs.mkdir(output,{recursive:true});
+  const output=process.env.STG_SMOKE_OUTPUT||path.join(__dirname,'../tests/artifacts');await fs.mkdir(output,{recursive:true});
   const evidence=[];const errors=[];
   window.webContents.on('console-message',event=>{if(event.level==='error'||event.level===3)errors.push(event.message);});
   const js=code=>window.webContents.executeJavaScript(code,true);
@@ -19,7 +19,8 @@ module.exports=async function smoke(window,app){
   };
   try{
     await fs.cp(path.join(__dirname,'../demo/StepsToGreat'),root,{recursive:true});
-    await fs.writeFile(path.join(root,'可视化测试.md'),'# 可视化测试\n\n初始段落。\n');
+    const visualFixture='# 可视化测试\n\n初始段落。\n\n<!-- s2g-goal-view:start -->\n\n公式 $x^2$ 与 **加粗**。\n\n- [ ] 原始清单\n\n| 列 | 值 |\n| --- | --- |\n| 原文 | 1 |\n\n```python\nprint(21)\n```\n';
+    await fs.writeFile(path.join(root,'可视化测试.md'),visualFixture);
     await fs.appendFile(path.join(root,'我的学习/学科/Python/01-认识变量/01_教学引导.md'),'\n[可视化测试](../../../../可视化测试.md)\n');
     await wait("!!document.querySelector('#welcome-import')");
     assert.equal(require('electron').Menu.getApplicationMenu(),null);
@@ -48,6 +49,18 @@ module.exports=async function smoke(window,app){
     assert.equal(await js("!!document.querySelector('.sidebar,.scope-tabs,#search')"),false);
     assert.equal(await js("getComputedStyle(document.querySelector('.document-access')).display"),'flex');
     assert.ok(await js("document.querySelector('#tree').textContent.includes('学生回答')"));
+    assert.equal(await js("document.querySelectorAll('#tree [data-file]').length"),2);
+    assert.equal(await js("document.querySelectorAll('#tree [data-popout]').length"),0);
+    assert.equal(await js("document.querySelectorAll('#tree [data-progress]').length"),2);
+    await js("document.querySelector('[data-progress=chapter]').click()");await wait("!document.querySelector('#progress-page').classList.contains('hidden')");
+    assert.ok(await js("document.querySelector('#chapter-progress').textContent.includes('第一轮')"));
+    assert.equal(await js("document.querySelector('#document').classList.contains('hidden')"),true);
+    await js("document.querySelector('[data-progress=overall]').click()");await wait("document.querySelector('#progress-title').textContent==='总体进度'");
+    assert.ok(await js("document.querySelector('#overall-progress').textContent.includes('0 / 1')"));
+    await screenshot('overall-progress.png');
+    await js("document.querySelector('#tree [data-file]').click()");await wait("!document.querySelector('#document').classList.contains('hidden')");
+    assert.ok(await js("!document.querySelector('#tree').textContent.includes('学习档案')"));
+    evidence.push('Four navigation pages: teaching, answer, current chapter progress, overall progress; popout is only inside documents');
     assert.ok(await js("!document.querySelector('#dsh-host').classList.contains('hidden')"));
     await js("document.querySelector('#dsh-input').value='保留会话草稿';document.querySelector('#dsh-input').dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#dsh-detach').click()");
     await wait("document.querySelector('#dsh-host').classList.contains('hidden')");
@@ -85,8 +98,13 @@ module.exports=async function smoke(window,app){
     const content=await fs.readFile(answer,'utf8');assert.ok(content.includes('price 是变量名'));assert.ok(content.includes('（整课所有轮次通过后由导师填写）'));assert.ok((await fs.readdir(path.join(root,'.stg-desk/backups'))).length>=1);
     evidence.push('UI answer submission persisted original text with backup and retained final placeholders');
     await js("document.querySelector('[data-file=\"我的学习/学科/Python/01-认识变量/01_学生回答.md\"]').click()");await wait("document.querySelector('#preview').textContent.includes('price 是变量名')");
+    assert.equal(await js("getComputedStyle(document.querySelector('#answers-panel')).display"),'none');
+    assert.equal(await js("getComputedStyle(document.querySelector('.mode-tabs')).display"),'none');
+    assert.equal(await js("getComputedStyle(document.querySelector('#preview')).display"),'none');
+    assert.ok(await js("!!document.querySelector('.content-area.edit .cm-live-block')"));
+    evidence.push('Answer document opens directly in the single editor with no mode tabs, source pane or exercise workspace');
     await screenshot('answer-saved.png');
-    await js("document.querySelector('[data-mode=split]').click()");await screenshot('editor.png');
+    await js("document.querySelector('[data-mode=edit]').click()");await screenshot('editor.png');
     const before=await fs.readFile(answer,'utf8');
     await js("document.querySelector('.cm-content').focus()");
     window.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});window.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});
@@ -103,23 +121,61 @@ module.exports=async function smoke(window,app){
     evidence.push('Side-by-side conflict comparison and explicit merged save preserved both edits');
     await js("document.querySelector('#history').click()");await wait("document.querySelectorAll('[data-backup]').length>0");await js("document.querySelector('[data-backup]').click()");await wait("document.querySelector('#modal-actions button').textContent==='恢复这个版本'");await screenshot('history.png');await js("document.querySelector('#modal-actions button').click()");await wait("document.querySelector('#modal').classList.contains('hidden')");
     assert.ok((await fs.readFile(answer,'utf8')).includes('外部导师追加'));assert.ok(!(await fs.readFile(answer,'utf8')).includes('本地冲突草稿'));evidence.push('Backup preview and restoration through the desktop UI passed');
-    await js("document.querySelector('[data-file=\"可视化测试.md\"]').click()");await wait("document.querySelector('#preview').textContent.includes('初始段落')");await js("document.querySelector('[data-mode=visual]').click()");await wait("!!document.querySelector('.tiptap')");
-    await js("document.querySelector('.tiptap').focus()");window.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});window.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});await window.webContents.insertText('可视化新增内容');await wait("document.querySelector('#save-status').textContent.includes('待保存')");await js("document.querySelector('#save').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");assert.ok((await fs.readFile(path.join(root,'可视化测试.md'),'utf8')).includes('可视化新增内容'));await screenshot('visual-editor.png');evidence.push('Actual visual editor typing serialized to Markdown and saved through version-checked IPC');
-    await js("document.querySelector('[data-mode=edit]').click();document.querySelector('[data-format=bold]').click()");await wait("document.querySelector('#save-status').textContent.includes('待保存')");await js("document.querySelector('[data-format=undo]').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");evidence.push('Source formatting toolbar and CodeMirror undo passed');
+    await js("document.querySelector('#choose-course').click()");await wait("!document.querySelector('#modal').classList.contains('hidden')");await js("document.querySelector('[data-file=\"可视化测试.md\"]').click()");await wait("document.querySelector('#preview').textContent.includes('初始段落')");await js("document.querySelector('[data-mode=edit]').click()");await wait("!!document.querySelector('.cm-live-block')");assert.equal(await fs.readFile(path.join(root,'可视化测试.md'),'utf8'),visualFixture);assert.equal(await js("document.querySelector('#save-status').textContent"),'已保存');
+    await js("document.querySelector('.cm-content').focus()");window.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});window.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});await window.webContents.insertText('可视化新增内容');await wait("document.querySelector('#save-status').textContent.includes('待保存')");await js("document.querySelector('#save').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");const visualSaved=await fs.readFile(path.join(root,'可视化测试.md'),'utf8');assert.ok(visualSaved.includes('可视化新增内容'));assert.ok(visualSaved.startsWith(visualFixture.trimEnd()));await screenshot('visual-editor.png');evidence.push('Single-column live Markdown typing saved through version-checked IPC');
+    await js("[...document.querySelectorAll('.cm-live-block')].find(b=>b.textContent.includes('公式')).dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}))");assert.ok(await js("[...document.querySelectorAll('.cm-line')].some(e=>e.textContent.includes('公式 $x^2$'))"));assert.equal(await js("document.querySelector('#save-status').textContent"),'已保存');evidence.push('Clicking a rendered paragraph activates its original Markdown without changing saved content');
+    await js("document.querySelector('[data-mode=edit]').click();document.querySelector('[data-format=bold]').click()");await wait("document.querySelector('#save-status').textContent.includes('待保存')");await js("document.querySelector('[data-format=undo]').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");evidence.push('Markdown formatting toolbar and CodeMirror undo passed');
+    await js("document.querySelector('.cm-content').focus()");window.webContents.sendInputEvent({type:'keyDown',keyCode:'A',modifiers:['control']});window.webContents.sendInputEvent({type:'keyUp',keyCode:'A',modifiers:['control']});window.webContents.sendInputEvent({type:'keyDown',keyCode:'Backspace'});window.webContents.sendInputEvent({type:'keyUp',keyCode:'Backspace'});await wait("document.querySelector('#save-status').textContent.includes('待保存')");await js("document.querySelector('#save').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");assert.equal(await fs.readFile(path.join(root,'可视化测试.md'),'utf8'),'');evidence.push('Deleting all content saves an empty document without resurrecting the old text');
     await js("document.querySelector('#continue-learning').click()");await wait("document.querySelectorAll('[data-answer-index]').length===2");await js("document.querySelector('[data-mode=read]').click()");await wait("document.querySelector('#toast').classList.contains('hidden')");await screenshot('refined-lesson.png');
     assert.equal(await js('typeof require'),'undefined');assert.equal(await js('typeof process'),'undefined');
     evidence.push('Renderer has no Node require/process access');
     const guidePath='我的学习/学科/Python/01-认识变量/01_教学引导.md',answerPath='我的学习/学科/Python/01-认识变量/01_学生回答.md';
-    await js(`window.stg.documentWindowOpen(${JSON.stringify(guidePath)})`);
-    await js("document.querySelector('#answer-popout').click()");
+    const findDocument=relative=>require('electron').BrowserWindow.getAllWindows().find(w=>w!==window&&new URL(w.webContents.getURL()||'file:///').searchParams.get('document')===relative);
+    await js("document.querySelector('#document-popout').click()");await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(answerPath)}`);
+    assert.equal(await js(`document.querySelector('#tree [data-file="${guidePath}"]').disabled`),true);
+    await js(`document.querySelector('#tree [data-file="${guidePath}"]').click()`);assert.equal(await js("document.querySelector('#status-left').textContent"),answerPath);
+    await js("document.querySelector('[data-progress=overall]').click()");await wait("document.querySelector('#progress-title').textContent==='总体进度'&&!document.querySelector('#progress-page').classList.contains('hidden')");
+    await screenshot('detached-progress.png');
+    findDocument(guidePath).close();await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(guidePath)}&&!document.querySelector('#document').classList.contains('hidden')`);
+    assert.equal(await js(`document.querySelector('#tree [data-file="${guidePath}"]').disabled`),false);
+    await js(`document.querySelector('#tree [data-file="${answerPath}"]').click()`);await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(answerPath)}`);
+    await js("document.querySelector('#document-popout').click()");await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(guidePath)}`);
+    assert.equal(await js(`document.querySelector('#tree [data-file="${answerPath}"]').disabled`),true);
+    assert.equal(await js("getComputedStyle(document.querySelector('#answers-panel')).display"),'none');
+    const detachedAnswer=findDocument(answerPath);
+    for(let i=0;i<100;i++){if(await detachedAnswer.webContents.executeJavaScript("!!document.querySelector('.cm-content')&&document.documentElement.dataset.busy==='false'",true))break;await new Promise(r=>setTimeout(r,80));}
+    detachedAnswer.show();detachedAnswer.focus();await new Promise(r=>setTimeout(r,150));
+    detachedAnswer.show();detachedAnswer.focus();detachedAnswer.webContents.focus();
+    await detachedAnswer.webContents.executeJavaScript("document.querySelector('.cm-content').focus()",true);
+    detachedAnswer.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});detachedAnswer.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});
+    await detachedAnswer.webContents.insertText('\n独立窗口草稿交接验证');
+    for(let i=0;i<100;i++){if(await detachedAnswer.webContents.executeJavaScript("document.querySelector('#save-status').textContent.includes('待保存')",true))break;await new Promise(r=>setTimeout(r,80));}
+    if(!await detachedAnswer.webContents.executeJavaScript("document.querySelector('#save-status').textContent.includes('待保存')",true)){await fs.writeFile(path.join(output,'child-input-failure.png'),(await detachedAnswer.webContents.capturePage()).toPNG());console.log(await detachedAnswer.webContents.executeJavaScript("JSON.stringify({active:document.activeElement?.className,editable:document.querySelector('.cm-content')?.contentEditable,text:document.querySelector('.cm-content')?.textContent,mode:document.querySelector('#content-area')?.className,toast:document.querySelector('#toast')?.textContent})",true));}
+    assert.ok(await detachedAnswer.webContents.executeJavaScript("document.querySelector('#save-status').textContent.includes('待保存')",true));
+    for(let i=0;i<100;i++){if(await detachedAnswer.webContents.executeJavaScript("document.querySelector('#save-status').textContent.includes('待保存')",true))break;await new Promise(r=>setTimeout(r,80));}
+    if(!await detachedAnswer.webContents.executeJavaScript("document.querySelector('#save-status').textContent.includes('待保存')",true)){await fs.writeFile(path.join(output,'child-input-failure.png'),(await detachedAnswer.webContents.capturePage()).toPNG());console.log(await detachedAnswer.webContents.executeJavaScript("JSON.stringify({active:document.activeElement?.className,editable:document.querySelector('.cm-content')?.contentEditable,text:document.querySelector('.cm-content')?.textContent,mode:document.querySelector('#content-area')?.className,toast:document.querySelector('#toast')?.textContent})",true));}
+    assert.ok(await detachedAnswer.webContents.executeJavaScript("document.querySelector('#save-status').textContent.includes('待保存')",true));
+    detachedAnswer.close();await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(answerPath)}`);
+    assert.ok((await js(`window.stg.draftGet(${JSON.stringify(answerPath)})`)).content.includes('独立窗口草稿交接验证'));
+    assert.ok(await js("document.querySelector('#save-status').textContent.includes('待保存')"));
+    await js("document.querySelector('.cm-content').focus()");window.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});window.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});
+    await wait("document.querySelector('.cm-content').textContent.includes('独立窗口草稿交接验证')");
+    assert.ok(!(await fs.readFile(answer,'utf8')).includes('独立窗口草稿交接验证'));
+    evidence.push('Closing a detached document hands its unsaved draft back to the main editor without writing the formal document');
+    assert.equal(await js(`document.querySelector('#tree [data-file="${answerPath}"]').disabled`),false);
+    evidence.push('Popping either document switches the main app to its counterpart, disables the detached tab, keeps progress pages accessible, and closing restores the document');
+    await js("document.querySelector('#document-popout').click()");await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(guidePath)}`);
+    await js("document.querySelector('#document-popout').click()");await wait("!document.querySelector('#progress-page').classList.contains('hidden')");
     let student,teacher;
     for(let i=0;i<100;i++){const all=require('electron').BrowserWindow.getAllWindows();student=all.find(w=>w!==window&&new URL(w.webContents.getURL()||'file:///').searchParams.get('document')===answerPath);teacher=all.find(w=>w!==window&&new URL(w.webContents.getURL()||'file:///').searchParams.get('document')===guidePath);if(student&&teacher)break;await new Promise(r=>setTimeout(r,80));}
     assert.ok(student&&teacher,'Both documents open in their own native windows');
     const childJS=code=>student.webContents.executeJavaScript(code,true);
-    for(let i=0;i<100;i++){if(await childJS("document.body.classList.contains('answer-document-window')&&document.querySelectorAll('[data-answer-index]').length===2&&document.documentElement.dataset.busy==='false'"))break;await new Promise(r=>setTimeout(r,80));}
+    for(let i=0;i<100;i++){if(await childJS("document.body.classList.contains('answer-document-window')&&document.querySelector('.content-area.edit')&&document.documentElement.dataset.busy==='false'"))break;await new Promise(r=>setTimeout(r,80));}
     assert.equal(await childJS("getComputedStyle(document.querySelector('.workspace-header')).display"),'none');
-    assert.equal(await childJS("getComputedStyle(document.querySelector('#content-area')).display"),'none');
-    assert.equal(await childJS("getComputedStyle(document.querySelector('#answers-panel')).display"),'flex');
+    assert.equal(await childJS("getComputedStyle(document.querySelector('#content-area')).display"),'flex');
+    assert.equal(await childJS("getComputedStyle(document.querySelector('#answers-panel')).display"),'none');
+    assert.equal(await childJS("getComputedStyle(document.querySelector('.mode-tabs')).display"),'none');
+    assert.equal(await childJS("getComputedStyle(document.querySelector('#preview')).display"),'none');
     assert.equal(await childJS('typeof require'),'undefined');
     assert.equal(await childJS("document.querySelector('#status-left').textContent"),answerPath);
     await childJS(`window.stg.documentWindowOpen(${JSON.stringify(answerPath)})`);assert.equal(require('electron').BrowserWindow.getAllWindows().filter(w=>new URL(w.webContents.getURL()||'file:///').searchParams.get('document')===answerPath).length,1);
@@ -127,8 +183,12 @@ module.exports=async function smoke(window,app){
     await js(`document.querySelector('#recent').innerHTML='<button id="recent-open">切换测试工作区</button>';document.querySelector('#recent-open').dataset.root=${JSON.stringify(otherRoot)};document.querySelector('#recent-open').click()`);await wait(`document.querySelector('#status-left').textContent.includes('教学引导.md')`);
     assert.equal((await childJS('window.stg.documentWindowInfo()')).root,await fs.realpath(root));
     window.destroy();
-    await childJS("const input=document.querySelector('[data-answer-index=\"0\"]');input.value='主窗口关闭后仍能独立答题';input.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#submit').click()");
-    for(let i=0;i<100;i++){if(await childJS("document.querySelector('#toast').textContent.includes('作答已追加保存到学生文档')"))break;await new Promise(r=>setTimeout(r,80));}
+    student.show();student.focus();student.webContents.focus();
+    await childJS("document.querySelector('.cm-content').focus()");
+    student.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});student.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});
+    await student.webContents.insertText('\n主窗口关闭后仍能独立答题');
+    await childJS("document.querySelector('#save').click()");
+    for(let i=0;i<100;i++){if(await childJS("document.querySelector('#save-status').textContent==='已保存'"))break;await new Promise(r=>setTimeout(r,80));}
     assert.ok((await fs.readFile(answer,'utf8')).includes('主窗口关闭后仍能独立答题'));
     assert.equal(await childJS("document.querySelector('#status-left').textContent"),answerPath);
     assert.ok(!(await fs.readFile(path.join(otherRoot,answerPath),'utf8')).includes('主窗口关闭后仍能独立答题'));
@@ -138,7 +198,7 @@ module.exports=async function smoke(window,app){
     await fs.writeFile(path.join(output,'desktop-smoke.json'),JSON.stringify({passed:true,evidence,rendererErrors:errors},null,2));
     console.log(JSON.stringify({passed:true,evidence,artifacts:output},null,2));
     app.exit(0);
-  }catch(error){await screenshot('failure.png').catch(()=>{});await fs.writeFile(path.join(output,'desktop-smoke.json'),JSON.stringify({passed:false,evidence,error:error.stack,rendererErrors:errors},null,2));console.error(error);app.exit(1);}
+  }catch(error){await screenshot('failure.png').catch(()=>{});await fs.writeFile(path.join(output,'desktop-smoke.json'),JSON.stringify({passed:false,evidence,error:error.stack,toast:await js("document.querySelector('#toast')?.textContent"),rendererErrors:errors},null,2));console.error(error);app.exit(1);}
   finally{await fs.rm(root,{recursive:true,force:true}).catch(()=>{});}
 };
 

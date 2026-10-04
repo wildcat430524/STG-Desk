@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('stg',{
   learning:call('learning'),describe:call('describe'),search:call('search'),
   documents:call('documents'),documentContext:call('document-context'),
   answerRecords:call('answer-records'),documentWindowOpen:call('document-window-open'),documentWindowInfo:call('document-window-info'),
+  documentWindowList:call('document-window-list'),
+  onDocumentWindowsChange:fn=>ipcRenderer.on('document-windows-changed',(_e,state)=>fn(state)),
   dshPrepareReview:call('dsh-review-prompt'),
   dshSession:call('dsh-session'),dshOpenDesktop:call('dsh-open-desktop'),
   dshMinimize:call('dsh-minimize'),

@@ -10,9 +10,10 @@ let window,watcher,dirty=false,closing=false;
 let drafts,closeRequested=false;
 let dsh;
 let documentWindows;
+let documentWindowNotifications=Promise.resolve();
 const dev=process.env.STG_DEV_URL;
 const smokeTest=process.argv.includes('--smoke-test');
-if(smokeTest) app.setPath('userData',path.join(app.getPath('temp'),'stg-desktop-smoke-profile'));
+if(smokeTest) app.setPath('userData',path.join(app.getPath('temp'),'stg-desktop-smoke-profile-'+process.pid));
 if(smokeTest) app.disableHardwareAcceleration();
 if(smokeTest) app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 protocol.registerSchemesAsPrivileged([{scheme:'stg-asset',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
@@ -44,7 +45,18 @@ function handle(name,fn) {
 }
 app.whenReady().then(async()=>{
   drafts=new DraftStore(path.join(app.getPath('userData'),'drafts'));
-  documentWindows=require('./document-windows.cjs').createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest});
+  documentWindows=require('./document-windows.cjs').createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest,onStateChange:state=>{
+    documentWindowNotifications=documentWindowNotifications.catch(()=>{}).then(async()=>{
+      try{if(state.type==='closed'){
+        const namespace=require('node:crypto').createHash('sha256').update(state.root+'\0'+state.path).digest('hex');
+        const local=new DraftStore(path.join(app.getPath('userData'),'document-drafts',namespace));
+        const record=await local.get(state.root,state.path);
+        if(record)await drafts.put(state.root,state.path,record);else await drafts.remove(state.root,state.path);
+        await local.remove(state.root,state.path);
+      }}catch(error){if(window&&!window.isDestroyed())window.webContents.send('workspace-warning','独立窗口的草稿仍保留在本地，交接失败：'+error.message);}
+      if(window&&!window.isDestroyed())window.webContents.send('document-windows-changed',state);
+    });
+  }});
   dsh=require('./dsh-controller.cjs')({app,ipcMain,BrowserWindow,workspace,getWindow:()=>window,dev,smokeTest});
   workspace.retention=(await settings()).backupRetention||20;
   protocol.handle('stg-asset',async request=>{
@@ -76,6 +88,7 @@ app.whenReady().then(async()=>{
   handle('answer-records',content=>require('../lib/answer-records.cjs').analyzeAnswerRecords(content));
   handle('document-window-open',p=>documentWindows.open(p));
   handle('document-window-info',()=>null);
+  handle('document-window-list',()=>documentWindows.list());
   handle('submit',(p,a,v)=>workspace.submit(p,a,v));
   handle('learning',()=>require('../lib/learning.cjs').getLearningState(workspace));
   handle('documents',options=>require('../lib/documents.cjs').relevantDocuments(workspace,options));
