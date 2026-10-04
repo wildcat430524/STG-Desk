@@ -1,0 +1,77 @@
+{
+  "name": "stg-desk",
+  "version": "0.3.2",
+  "private": true,
+  "description": "StepsToGreat 本地学习文档工作台",
+  "author": "STG Desk contributors",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "start": "npm run build && electron .",
+    "build": "vite build",
+    "test": "node --test tests/*.test.cjs",
+    "test:desktop": "npm run build && electron . --smoke-test",
+    "pack": "node tools/collect-licenses.cjs && npm run build && electron-builder --win dir --config.electronDist=node_modules/electron/dist",
+    "dist": "node tools/collect-licenses.cjs && npm run build && electron-builder --win portable --config.electronDist=node_modules/electron/dist"
+  },
+  "dependencies": {
+    "@codemirror/lang-markdown": "^6.3.4",
+    "@tiptap/core": "^3.31.4",
+    "@tiptap/extension-image": "^3.31.4",
+    "@tiptap/extension-table": "^3.31.4",
+    "@tiptap/extension-task-item": "^3.31.4",
+    "@tiptap/extension-task-list": "^3.31.4",
+    "@tiptap/markdown": "^3.31.4",
+    "@tiptap/starter-kit": "^3.31.4",
+    "chokidar": "^4.0.3",
+    "codemirror": "^6.0.2",
+    "dompurify": "^3.2.7",
+    "highlight.js": "^11.12.0",
+    "js-yaml": "4.3.2",
+    "katex": "^0.16.22",
+    "markdown-it": "^14.1.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "markdown-it-texmath": "^1.0.0",
+    "ws": "8.18.3"
+  },
+  "devDependencies": {
+    "electron": "^41.0.0",
+    "electron-builder": "^26.0.12",
+    "vite": "^7.3.0"
+  },
+  "build": {
+    "appId": "org.stepstogreat.desk",
+    "compression": "normal",
+    "productName": "STG Desk",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/*.cjs",
+      "lib/**/*",
+      "package.json",
+      "THIRD-PARTY-NOTICES.md",
+      "licenses/**/*",
+      "LICENSE"
+    ],
+    "extraResources": [
+      {
+        "from": "demo",
+        "to": "demo"
+      }
+    ],
+    "win": {
+      "target": "portable",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "STG-Desk-${version}-Windows.exe"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wildcat430524/STG-Desk.git"
+  },
+  "license": "MIT"
+}

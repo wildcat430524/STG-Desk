@@ -1,0 +1,22 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const os=require('node:os');
+const path=require('node:path');
+const {Workspace}=require('../lib/workspace.cjs');
+const {relevantDocuments}=require('../lib/documents.cjs');
+test('document navigation contains the active lesson and explicit local references, excludes unrelated files',async t=>{
+  const root=await fs.mkdtemp(path.join(os.tmpdir(),'stg-documents-'));
+  t.after(()=>fs.rm(root,{recursive:true,force:true}));
+  await fs.cp(path.join(__dirname,'../demo/StepsToGreat'),root,{recursive:true});
+  const guide='我的学习/学科/Python/01-认识变量/01_教学引导.md';
+  await fs.writeFile(path.join(root,'无关文件.md'),'不要出现在导航');
+  await fs.writeFile(path.join(root,'引用资料.md'),'被当前课引用');
+  await fs.appendFile(path.join(root,guide),'\n[当前资料](../../../../引用资料.md)\n[越界](../../../../../outside.md)');
+  const ws=new Workspace();await ws.open(root);
+  const result=await relevantDocuments(ws);
+  assert(result.documents.some(d=>d.path===guide));
+  assert(result.documents.some(d=>d.kind==='answer'&&d.access==='读写'));
+  assert(result.documents.some(d=>d.path==='引用资料.md'));
+  assert(!result.documents.some(d=>d.path==='无关文件.md'||d.path.includes('outside')));
+});

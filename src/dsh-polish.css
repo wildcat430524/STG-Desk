@@ -1,0 +1,75 @@
+/* A quiet floating conversation, with the same controls in the dock. */
+.dsh-host{border-color:#e3e7ed;border-radius:24px;box-shadow:0 3px 8px #27334304,0 14px 32px #27334306}
+.dsh-host button,.dsh-host select{font-weight:500}
+.dsh-heading strong{font-weight:550;color:#525965;letter-spacing:.05px}
+.dsh-heading small,.dsh-message>small,.dsh-context{font-weight:500;color:#858e9b}
+.dsh-header{gap:10px;border-bottom-color:#f0f1f4}
+.dsh-window-actions button,.dsh-leading-actions button{display:grid;place-items:center;border:0;background:transparent;color:#59616b;border-radius:10px;padding:0;width:31px;height:32px;transition:background-color 160ms,color 160ms,transform 160ms}
+.dsh-window-actions button:hover,.dsh-leading-actions button:hover{background:#f1f3f6;color:#343b46;transform:translateY(-1px)}
+.dsh-window-actions button:active,.dsh-leading-actions button:active{transform:scale(.94)}
+.dsh-window-actions button.active,.dsh-leading-actions button.active{background:#edf1f7;color:#3f526c;box-shadow:inset 0 0 0 1px #e1e7ef}
+.dsh-host[data-connected="true"] #dsh-status::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#8a9aaf;margin-right:5px;vertical-align:2px}
+.dsh-conversation{padding:24px 22px 18px;scrollbar-color:#d9dfe7 transparent;scrollbar-width:thin}
+.dsh-context{background:#f7f8fa;border-color:#edf0f4;border-radius:12px;padding:7px 11px;font-size:10px}
+.dsh-message{gap:8px;margin-bottom:28px}
+.dsh-message.user .dsh-message-text{background:#f3f5f8;border-color:#ebeff5;color:#515c6c;border-radius:18px 18px 6px 18px;box-shadow:0 2px 4px #27334302}
+.dsh-message .markdown-body{color:#505966;line-height:1.85;font-weight:400}
+.dsh-message .markdown-body strong{font-weight:600;color:#434d5c}
+.dsh-message .markdown-body pre{background:#f8f9fb;border-color:#edf0f5;border-radius:14px}
+.dsh-composer{padding:8px 16px 16px;background:linear-gradient(180deg,#ffffff00,#fff 22px);border:0}
+.dsh-input-box{border:1px solid #dfe6ef;border-radius:23px;background:#fff;padding:14px 12px 10px;box-shadow:0 5px 18px #708bb312;transition:border-color 180ms,box-shadow 180ms}
+.dsh-input-box:focus-within{background:#fff;border-color:#aac6f1;box-shadow:0 0 0 3px #a8c9ff0d,0 7px 23px #719bd520}
+.dsh-input-box textarea{min-height:61px;padding:4px 6px 10px;font-size:14px;color:#4d5765;line-height:1.75;font-weight:400}
+.dsh-input-box textarea::placeholder{color:#a0a5af;font-weight:500}
+.dsh-input-tools{gap:6px;min-height:35px}
+.dsh-input-tools #dsh-quote{display:grid;place-items:center;width:31px;height:32px;flex-shrink:0;font-size:23px;color:#58616d;border-radius:10px;transition:background-color 160ms,transform 160ms}
+.dsh-input-tools #dsh-quote:hover{background:#f2f4f7;transform:translateY(-1px)}
+.dsh-model-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:27px;height:18px;border-left:1px solid #e3e7ec;padding-left:7px;color:#727b89;pointer-events:none}
+.dsh-input-tools select{width:0;max-width:none;flex:1;color:#707887;font-weight:500;font-size:11px;padding-left:0;height:32px;cursor:pointer}
+.dsh-input-tools #dsh-send{width:35px;height:35px;border-radius:50%;padding:0;display:grid;place-items:center;flex-shrink:0;color:#fff;background:#414955;box-shadow:0 2px 5px #303c5412;transition:background-color 160ms,transform 160ms,box-shadow 160ms}
+.dsh-input-tools #dsh-send:not(:disabled):hover{background:#303b4b;transform:translateY(-1px);box-shadow:0 4px 9px #303c5420}
+.dsh-input-tools #dsh-send:not(:disabled):active{transform:scale(.93)}
+.dsh-input-tools #dsh-send:disabled{background:#f0f2f6;color:#a5adb9;box-shadow:none;transform:none}
+.dsh-more-menu{top:57px;padding:8px;border-radius:17px;border-color:#e8edf3;box-shadow:0 12px 36px #25334714,0 2px 8px #25334706}
+.dsh-more-menu button{font-size:12px;color:#626c7b;transition:background-color 150ms,color 150ms}
+.dsh-more-menu button:hover{color:#3d495b;background:#f2f4f8}
+.dsh-more-menu select{margin:3px 0 6px;border-radius:11px;border-color:#e7ecf3;font-size:12px;font-weight:500}
+.dsh-connect-bar{border-color:#e9edf3;background:#f7f9fb;color:#7a8493;font-weight:500;border-radius:18px}
+.dsh-empty h3{font-weight:550;color:#657082}
+.dsh-empty p{color:#8d96a4;font-weight:500}
+/* The outer transparent gutter holds the soft shadow and keeps corners rounded. */
+html.dsh-window,body.dsh-only,body.dsh-only #app{background:transparent!important}
+.dsh-only #app{height:100vh;overflow:hidden}
+.dsh-only .application-body{height:100%;padding:12px 14px 20px;gap:0;overflow:visible}
+.dsh-only .dsh-host{border:1px solid #ffffffd9!important;border-radius:28px;box-shadow:0 9px 18px #25334720,0 2px 6px #2533470b;background:#fff}
+.dsh-only .dsh-header{display:grid;grid-template-columns:100px minmax(0,1fr) 100px;gap:6px;padding:0 15px;height:58px;min-height:58px;border-bottom:1px solid #eff1f5;background:#fff;-webkit-app-region:drag}
+.dsh-leading-actions{display:flex;align-items:center;gap:2px;justify-content:flex-start}
+.dsh-leading-actions button,.dsh-only .dsh-window-actions button{width:31px;height:32px;-webkit-app-region:no-drag}
+.dsh-only .dsh-window-actions{justify-content:flex-end;gap:4px}
+.dsh-only .dsh-heading{text-align:center;align-items:center;gap:3px;overflow:hidden}
+.dsh-only .dsh-heading strong{font-size:13px;font-weight:550;width:100%;color:#464f5d}
+.dsh-only .dsh-heading small{font-size:9px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dsh-only .dsh-conversation{padding:23px 24px 15px}
+.dsh-only .dsh-composer{padding:9px 18px 18px}
+.dsh-only .dsh-input-box{border-radius:25px;border-color:#c8d9f4;padding:15px 14px 10px;box-shadow:0 6px 24px #87abe322}
+.dsh-only .dsh-input-box:focus-within{border-color:#a5c4fa;box-shadow:0 0 0 3px #a8c9ff0c,0 7px 25px #719bd525}
+.dsh-only .dsh-input-box textarea{min-height:66px;font-size:14px;padding-left:4px;padding-right:4px}
+.dsh-only .dsh-input-tools select{font-size:12px}
+.dsh-only .dsh-input-tools #dsh-send{width:37px;height:37px}
+.dsh-only .dsh-context{font-size:10px}
+@keyframes dsh-panel-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes dsh-menu-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:no-preference){
+  .dsh-host:not(.hidden){animation:dsh-panel-in 220ms cubic-bezier(.2,.75,.3,1)}
+  .dsh-more-menu:not(.hidden){animation:dsh-menu-in 160ms ease-out}
+}
+@media(prefers-reduced-motion:reduce){
+  .dsh-host,.dsh-host button,.dsh-host select,.dsh-input-box,.dsh-more-menu{animation:none!important;transition:none!important}
+  .dsh-host button:hover,.dsh-host button:active{transform:none!important}
+}
+@media(max-width:420px){
+  .dsh-only .application-body{padding:10px 10px 17px}
+  .dsh-only .dsh-header{grid-template-columns:94px minmax(0,1fr) 82px;padding:0 12px;gap:4px}
+  .dsh-only .dsh-composer{padding:8px 12px 14px}
+  .dsh-only .dsh-conversation{padding:20px 18px 14px}
+}

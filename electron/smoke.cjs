@@ -1,0 +1,110 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const path=require('node:path');
+const os=require('node:os');
+module.exports=async function smoke(window,app){
+  const root=await fs.mkdtemp(path.join(os.tmpdir(),'stg-desktop-'));
+  const output=path.join(__dirname,'../tests/artifacts');await fs.mkdir(output,{recursive:true});
+  const evidence=[];const errors=[];
+  window.webContents.on('console-message',event=>{if(event.level==='error'||event.level===3)errors.push(event.message);});
+  const js=code=>window.webContents.executeJavaScript(code,true);
+  const wait=async condition=>{for(let i=0;i<150;i++){if(await js(`document.documentElement.dataset.busy!=='true'&&(${condition})`))return;await new Promise(r=>setTimeout(r,80));}throw new Error('UI wait failed: '+condition);};
+  const screenshot=async name=>{
+    window.show();window.focus();
+    for(let attempt=0;attempt<5;attempt++) {
+      await new Promise(r=>setTimeout(r,600));
+      try {await fs.writeFile(path.join(output,name),(await window.webContents.capturePage(undefined,{stayAwake:true})).toPNG());return;}
+      catch(error){if(attempt===4)throw error;}
+    }
+  };
+  try{
+    await fs.cp(path.join(__dirname,'../demo/StepsToGreat'),root,{recursive:true});
+    await fs.writeFile(path.join(root,'可视化测试.md'),'# 可视化测试\n\n初始段落。\n');
+    await fs.appendFile(path.join(root,'我的学习/学科/Python/01-认识变量/01_教学引导.md'),'\n[可视化测试](../../../../可视化测试.md)\n');
+    await wait("!!document.querySelector('#welcome-import')");
+    assert.equal(require('electron').Menu.getApplicationMenu(),null);
+    assert.equal(await js("getComputedStyle(document.querySelector('.native-titlebar')).backgroundColor===getComputedStyle(document.querySelector('.workspace-header')).backgroundColor"),true);
+    evidence.push('Native menus removed and title bar shares the workspace background');
+    await screenshot('theme-mono-welcome.png');
+    await screenshot('welcome.png');
+    await js(`document.querySelector('#recent').innerHTML='<button id="recent-open">打开测试文件夹</button>';document.querySelector('#recent-open').dataset.root=${JSON.stringify(root)};document.querySelector('#recent-open').click();`);
+    await wait("!!document.querySelector('.file.selected')");
+    evidence.push('Native IPC folder import and recursive file tree passed');
+    await js(`document.querySelector('[data-file="我的学习/学科/Python/01-认识变量/01_教学引导.md"]').click()`);
+    await wait("document.querySelectorAll('[data-answer-index]').length===2");
+    evidence.push('Guide-to-answer linking and two-question current round passed');
+    await js("document.querySelector('#preferences').click()");await wait("!!document.querySelector('#font-size')");
+    await js("document.querySelector('#font-size').value='17';document.querySelector('#font-size').dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#modal-actions button').click()");await wait("document.querySelector('#modal').classList.contains('hidden')");assert.equal(await js("document.documentElement.style.getPropertyValue('--reading-font')"),'17px');
+    await js("document.querySelector('#outline-toggle').click()");assert.ok(await js("document.querySelectorAll('#outline button').length>0"));await js("document.querySelector('#outline-toggle').click()");
+    assert.equal(await js("!!document.querySelector('.sidebar,.scope-tabs,#search')"),false);
+    assert.equal(await js("getComputedStyle(document.querySelector('.document-access')).display"),'flex');
+    assert.ok(await js("document.querySelector('#tree').textContent.includes('学生回答')"));
+    assert.ok(await js("!document.querySelector('#dsh-host').classList.contains('hidden')"));
+    await js("document.querySelector('#dsh-input').value='保留会话草稿';document.querySelector('#dsh-input').dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#dsh-detach').click()");
+    await wait("document.querySelector('#dsh-host').classList.contains('hidden')");
+    assert.equal((await js('window.stg.dshState()')).draft,'保留会话草稿');
+    const floating=require('electron').BrowserWindow.getAllWindows().find(w=>w!==window);
+    assert.ok(floating,'DSH opens a separate native window');
+    assert.equal(await floating.webContents.executeJavaScript("document.body.classList.contains('dsh-only')"),true);
+    assert.equal(await floating.webContents.executeJavaScript("document.querySelector('#dsh-input').value"),'保留会话草稿');
+    assert.equal(await floating.webContents.executeJavaScript('typeof require'),'undefined');
+    assert.equal(await floating.webContents.executeJavaScript("getComputedStyle(document.querySelector('.workspace-header')).display"),'none');
+    await floating.webContents.executeJavaScript('window.stg.dshPin(true)');assert.equal(floating.isAlwaysOnTop(),true);
+    await floating.webContents.executeJavaScript("document.querySelector('#dsh-minimize').click()");
+    for(let i=0;i<30&&!floating.isMinimized();i++)await new Promise(r=>setTimeout(r,80));
+    assert.equal(floating.isMinimized(),true);
+    await js('window.stg.dshVisible(true)');assert.equal(floating.isMinimized(),false);
+    assert.equal(await floating.webContents.executeJavaScript("document.querySelector('#dsh-input').value"),'保留会话草稿');
+    await fs.writeFile(path.join(output,'dsh-native-floating.png'),(await floating.webContents.capturePage(undefined,{stayAwake:true})).toPNG());
+    floating.close();await wait("(window.stg.dshState()).then(s=>!s.visible)");
+    await js("window.stg.dshMode('docked')");await wait("!document.querySelector('#dsh-host').classList.contains('hidden')");
+    assert.equal(await js("document.querySelector('#dsh-input').value"),'保留会话草稿');
+    assert.equal(await js("!!document.querySelector('#dsh-host aside,#dsh-host nav')"),false);
+    evidence.push('Top document navigation excludes old file sidebars; native DSH dock/float preserves draft');
+    await screenshot('theme-mono-lesson.png');
+    await screenshot('lesson.png');
+    await js(`const inputs=document.querySelectorAll('[data-answer-index]');inputs[0].value='price 是变量名，25 是变量值。';inputs[0].dispatchEvent(new Event('input',{bubbles:true}));inputs[1].value='age = 21\\nprint(age)';inputs[1].dispatchEvent(new Event('input',{bubbles:true}));`);
+    await wait("document.querySelector('#draft-status').textContent==='草稿已自动保存'");
+    window.webContents.reload();await wait("!!document.querySelector('#welcome-import')");
+    await js(`document.querySelector('#recent-open').click()`);await wait("document.querySelectorAll('[data-answer-index]').length===2");
+    assert.equal(await js("document.querySelector('[data-answer-index=\"0\"]').value"),'price 是变量名，25 是变量值。');
+    assert.ok(!(await fs.readFile(path.join(root,'我的学习/学科/Python/01-认识变量/01_学生回答.md'),'utf8')).includes('price 是变量名'));
+    evidence.push('Unsubmitted answer draft recovered after renderer restart without modifying the original document');
+    await js("document.querySelector('#submit').click()");
+    await wait("document.querySelector('#toast').textContent.includes('作答已追加保存')");
+    const answer=path.join(root,'我的学习/学科/Python/01-认识变量/01_学生回答.md');
+    const content=await fs.readFile(answer,'utf8');assert.ok(content.includes('price 是变量名'));assert.ok(content.includes('（整课所有轮次通过后由导师填写）'));assert.equal((await fs.readdir(path.join(root,'.stg-desk/backups'))).length,1);
+    evidence.push('UI answer submission persisted original text with backup and retained final placeholders');
+    await js("document.querySelector('#open-answer').click()");await wait("document.querySelector('#preview').textContent.includes('price 是变量名')");
+    await screenshot('answer-saved.png');
+    await js("document.querySelector('[data-mode=split]').click()");await screenshot('editor.png');
+    const before=await fs.readFile(answer,'utf8');
+    await js("document.querySelector('.cm-content').focus()");
+    window.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});window.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});
+    await window.webContents.insertText('\n桌面编辑保存验证');
+    await wait("document.querySelector('#save-status').textContent.includes('待保存')");
+    window.webContents.sendInputEvent({type:'keyDown',keyCode:'S',modifiers:['control']});window.webContents.sendInputEvent({type:'keyUp',keyCode:'S',modifiers:['control']});await wait("document.querySelector('#save-status').textContent==='已保存'");
+    assert.ok((await fs.readFile(answer,'utf8')).includes('桌面编辑保存验证'));assert.ok(before.includes('price 是变量名'));
+    evidence.push('Actual CodeMirror keyboard edit and native UI document save passed');
+    await fs.appendFile(answer,'\n外部导师追加');await wait("!document.querySelector('#change-banner').classList.contains('hidden')");
+    evidence.push('External document change watcher notified visible UI');
+    await js("document.querySelector('.cm-content').focus()");await window.webContents.insertText('\n本地冲突草稿');await wait("document.querySelector('#save-status').textContent.includes('待保存')");
+    await js("document.querySelector('#save').click()");await wait("!!document.querySelector('#merge-content')");
+    await js("document.querySelector('#merge-content').value+='\\n外部导师追加';document.querySelector('#modal-actions button:last-child').click()");await wait("document.querySelector('#modal').classList.contains('hidden')");assert.ok((await fs.readFile(answer,'utf8')).includes('本地冲突草稿'));assert.ok((await fs.readFile(answer,'utf8')).includes('外部导师追加'));
+    evidence.push('Side-by-side conflict comparison and explicit merged save preserved both edits');
+    await js("document.querySelector('#history').click()");await wait("document.querySelectorAll('[data-backup]').length>0");await js("document.querySelector('[data-backup]').click()");await wait("document.querySelector('#modal-actions button').textContent==='恢复这个版本'");await screenshot('history.png');await js("document.querySelector('#modal-actions button').click()");await wait("document.querySelector('#modal').classList.contains('hidden')");
+    assert.ok((await fs.readFile(answer,'utf8')).includes('外部导师追加'));assert.ok(!(await fs.readFile(answer,'utf8')).includes('本地冲突草稿'));evidence.push('Backup preview and restoration through the desktop UI passed');
+    await js("document.querySelector('[data-file=\"可视化测试.md\"]').click()");await wait("document.querySelector('#preview').textContent.includes('初始段落')");await js("document.querySelector('[data-mode=visual]').click()");await wait("!!document.querySelector('.tiptap')");
+    await js("document.querySelector('.tiptap').focus()");window.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});window.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});await window.webContents.insertText('可视化新增内容');await wait("document.querySelector('#save-status').textContent.includes('待保存')");await js("document.querySelector('#save').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");assert.ok((await fs.readFile(path.join(root,'可视化测试.md'),'utf8')).includes('可视化新增内容'));await screenshot('visual-editor.png');evidence.push('Actual visual editor typing serialized to Markdown and saved through version-checked IPC');
+    await js("document.querySelector('[data-mode=edit]').click();document.querySelector('[data-format=bold]').click()");await wait("document.querySelector('#save-status').textContent.includes('待保存')");await js("document.querySelector('[data-format=undo]').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");evidence.push('Source formatting toolbar and CodeMirror undo passed');
+    await js("document.querySelector('#continue-learning').click()");await wait("document.querySelectorAll('[data-answer-index]').length===2");await js("document.querySelector('[data-mode=read]').click()");await wait("document.querySelector('#toast').classList.contains('hidden')");await screenshot('refined-lesson.png');
+    assert.equal(await js('typeof require'),'undefined');assert.equal(await js('typeof process'),'undefined');
+    evidence.push('Renderer has no Node require/process access');
+    assert.deepEqual(errors,[]);
+    await fs.writeFile(path.join(output,'desktop-smoke.json'),JSON.stringify({passed:true,evidence,rendererErrors:errors},null,2));
+    console.log(JSON.stringify({passed:true,evidence,artifacts:output},null,2));
+    app.exit(0);
+  }catch(error){await screenshot('failure.png').catch(()=>{});await fs.writeFile(path.join(output,'desktop-smoke.json'),JSON.stringify({passed:false,evidence,error:error.stack,rendererErrors:errors},null,2));console.error(error);app.exit(1);}
+  finally{await fs.rm(root,{recursive:true,force:true}).catch(()=>{});}
+};
+

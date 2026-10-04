@@ -1,0 +1,3384 @@
+[
+  {
+    "name": "@codemirror/autocomplete",
+    "version": "6.20.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/commands",
+    "version": "6.11.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/lang-css",
+    "version": "6.3.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/lang-html",
+    "version": "6.4.12",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/lang-javascript",
+    "version": "6.2.5",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/lang-markdown",
+    "version": "6.5.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/language",
+    "version": "6.12.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/lint",
+    "version": "6.9.7",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/search",
+    "version": "6.7.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/state",
+    "version": "6.7.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@codemirror/view",
+    "version": "6.43.13",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron/asar",
+    "version": "3.4.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "balanced-match",
+    "version": "1.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "brace-expansion",
+    "version": "1.1.21",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "minimatch",
+    "version": "3.1.5",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron/fuses",
+    "version": "1.8.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs-extra",
+    "version": "9.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron/get",
+    "version": "5.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron/notarize",
+    "version": "2.5.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs-extra",
+    "version": "9.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron/osx-sign",
+    "version": "1.3.3",
+    "license": "BSD-2-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "isbinaryfile",
+    "version": "4.0.10",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron/rebuild",
+    "version": "4.2.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron/universal",
+    "version": "2.0.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "balanced-match",
+    "version": "1.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "brace-expansion",
+    "version": "2.1.7",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs-extra",
+    "version": "11.4.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "minimatch",
+    "version": "9.0.9",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron/windows-sign",
+    "version": "1.2.2",
+    "license": "BSD-2-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs-extra",
+    "version": "11.4.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron-internal/extract-zip",
+    "version": "1.0.5",
+    "license": "BSD-2-Clause",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@esbuild/win32-x64",
+    "version": "0.28.2",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@isaacs/fs-minipass",
+    "version": "4.0.1",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@lezer/common",
+    "version": "1.5.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@lezer/css",
+    "version": "1.3.8",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@lezer/highlight",
+    "version": "1.2.5",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@lezer/html",
+    "version": "1.3.13",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@lezer/javascript",
+    "version": "1.5.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@lezer/lr",
+    "version": "1.4.10",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@lezer/markdown",
+    "version": "1.7.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@malept/cross-spawn-promise",
+    "version": "2.0.0",
+    "license": "Apache-2.0",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@malept/flatpak-bundler",
+    "version": "0.4.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs-extra",
+    "version": "9.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@marijn/find-cluster-break",
+    "version": "1.0.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@noble/hashes",
+    "version": "2.4.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@peculiar/asn1-schema",
+    "version": "2.10.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@peculiar/json-schema",
+    "version": "1.1.12",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@peculiar/utils",
+    "version": "2.0.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@peculiar/webcrypto",
+    "version": "1.7.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@rollup/rollup-win32-x64-gnu",
+    "version": "4.64.0",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@rollup/rollup-win32-x64-msvc",
+    "version": "4.64.0",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@sindresorhus/is",
+    "version": "4.6.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@szmarczak/http-timer",
+    "version": "4.0.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/core",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-blockquote",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-bold",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-bullet-list",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-code",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-code-block",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-document",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-dropcursor",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-gapcursor",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-hard-break",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-heading",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-horizontal-rule",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-image",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-italic",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-link",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-list",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-list-item",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-list-keymap",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-ordered-list",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-paragraph",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-strike",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-table",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-task-item",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-task-list",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-text",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extension-underline",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/extensions",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/markdown",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/pm",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@tiptap/starter-kit",
+    "version": "3.31.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/cacheable-request",
+    "version": "6.0.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/debug",
+    "version": "4.1.13",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/estree",
+    "version": "1.0.9",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/fs-extra",
+    "version": "9.0.13",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/http-cache-semantics",
+    "version": "4.2.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/keyv",
+    "version": "3.1.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/ms",
+    "version": "2.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/node",
+    "version": "24.19.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/responselike",
+    "version": "1.0.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@types/trusted-types",
+    "version": "2.0.7",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@xmldom/xmldom",
+    "version": "0.8.15",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "abbrev",
+    "version": "4.0.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "agent-base",
+    "version": "7.1.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "ajv",
+    "version": "8.20.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "ansi-regex",
+    "version": "5.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "ansi-styles",
+    "version": "4.3.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "app-builder-lib",
+    "version": "26.15.3",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@electron/get",
+    "version": "3.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs-extra",
+    "version": "8.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "semver",
+    "version": "6.3.1",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "ci-info",
+    "version": "4.3.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "env-paths",
+    "version": "2.2.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "jsonfile",
+    "version": "4.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "semver",
+    "version": "7.7.4",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "universalify",
+    "version": "0.1.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "argparse",
+    "version": "2.0.1",
+    "license": "Python-2.0",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "asn1js",
+    "version": "3.0.10",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "async",
+    "version": "3.2.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "async-exit-hook",
+    "version": "2.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "asynckit",
+    "version": "0.4.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "at-least-node",
+    "version": "1.0.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "aws4",
+    "version": "1.13.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "balanced-match",
+    "version": "4.0.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "base64-js",
+    "version": "1.5.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "bluebird",
+    "version": "3.7.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "boolean",
+    "version": "3.2.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "brace-expansion",
+    "version": "5.0.12",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "buffer-from",
+    "version": "1.1.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "builder-util",
+    "version": "26.15.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "builder-util-runtime",
+    "version": "9.7.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "bytestreamjs",
+    "version": "2.0.1",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "cacheable-lookup",
+    "version": "5.0.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "cacheable-request",
+    "version": "7.0.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "call-bind-apply-helpers",
+    "version": "1.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "chalk",
+    "version": "4.1.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "chokidar",
+    "version": "4.0.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "chownr",
+    "version": "3.0.0",
+    "license": "BlueOak-1.0.0",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "chromium-pickle-js",
+    "version": "0.2.0",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "ci-info",
+    "version": "4.4.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "cliui",
+    "version": "8.0.1",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "clone-response",
+    "version": "1.0.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "codemirror",
+    "version": "6.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "color-convert",
+    "version": "2.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "color-name",
+    "version": "1.1.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "combined-stream",
+    "version": "1.0.8",
+    "license": "MIT",
+    "licenseFiles": [
+      "License"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "commander",
+    "version": "5.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "compare-version",
+    "version": "0.1.2",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "concat-map",
+    "version": "0.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "core-util-is",
+    "version": "1.0.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "crelt",
+    "version": "1.0.7",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "cross-dirname",
+    "version": "0.1.0",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "cross-spawn",
+    "version": "7.0.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "isexe",
+    "version": "2.0.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "which",
+    "version": "2.0.2",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "debug",
+    "version": "4.4.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "decompress-response",
+    "version": "6.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "mimic-response",
+    "version": "3.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "defer-to-connect",
+    "version": "2.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "define-data-property",
+    "version": "1.1.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "define-properties",
+    "version": "1.2.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "delayed-stream",
+    "version": "1.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "License"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "detect-node",
+    "version": "2.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "dir-compare",
+    "version": "4.2.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "balanced-match",
+    "version": "1.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "brace-expansion",
+    "version": "1.1.21",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "minimatch",
+    "version": "3.1.5",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "dmg-builder",
+    "version": "26.15.3",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "dompurify",
+    "version": "3.4.16",
+    "license": "(MPL-2.0 OR Apache-2.0)",
+    "licenseFiles": [
+      "LICENSE",
+      "LICENSE-MPL"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "dotenv",
+    "version": "16.6.1",
+    "license": "BSD-2-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "dotenv-expand",
+    "version": "11.0.7",
+    "license": "BSD-2-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "dunder-proto",
+    "version": "1.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "duplexer2",
+    "version": "0.1.4",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "ejs",
+    "version": "3.1.10",
+    "license": "Apache-2.0",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "electron",
+    "version": "41.10.7",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "electron-builder",
+    "version": "26.15.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "electron-builder-squirrel-windows",
+    "version": "26.15.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "electron-publish",
+    "version": "26.15.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "electron-winstaller",
+    "version": "5.4.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs-extra",
+    "version": "7.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "jsonfile",
+    "version": "4.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "universalify",
+    "version": "0.1.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "emoji-regex",
+    "version": "8.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE-MIT.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "end-of-stream",
+    "version": "1.4.5",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "entities",
+    "version": "4.5.0",
+    "license": "BSD-2-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "env-paths",
+    "version": "3.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "err-code",
+    "version": "2.0.3",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "es-define-property",
+    "version": "1.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "es-errors",
+    "version": "1.3.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "es-object-atoms",
+    "version": "1.1.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "es-set-tostringtag",
+    "version": "2.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "es6-error",
+    "version": "4.1.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "esbuild",
+    "version": "0.28.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "escalade",
+    "version": "3.2.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "escape-string-regexp",
+    "version": "4.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "exponential-backoff",
+    "version": "3.1.3",
+    "license": "Apache-2.0",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fast-deep-equal",
+    "version": "3.1.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fast-uri",
+    "version": "3.1.8",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fdir",
+    "version": "6.5.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "filelist",
+    "version": "1.0.6",
+    "license": "Apache-2.0",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "balanced-match",
+    "version": "1.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "brace-expansion",
+    "version": "2.1.7",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "minimatch",
+    "version": "5.1.9",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "form-data",
+    "version": "4.0.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "License"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs-extra",
+    "version": "10.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs.realpath",
+    "version": "1.0.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "function-bind",
+    "version": "1.1.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "get-caller-file",
+    "version": "2.0.5",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "get-intrinsic",
+    "version": "1.3.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "get-proto",
+    "version": "1.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "get-stream",
+    "version": "5.2.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "glob",
+    "version": "7.2.3",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "balanced-match",
+    "version": "1.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "brace-expansion",
+    "version": "1.1.21",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "minimatch",
+    "version": "3.1.5",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "global-agent",
+    "version": "3.0.0",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "globalthis",
+    "version": "1.0.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "gopd",
+    "version": "1.2.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "got",
+    "version": "11.8.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "graceful-fs",
+    "version": "4.2.11",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "has-flag",
+    "version": "4.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "has-property-descriptors",
+    "version": "1.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "has-symbols",
+    "version": "1.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "has-tostringtag",
+    "version": "1.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "hasown",
+    "version": "2.0.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "highlight.js",
+    "version": "11.12.0",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "hosted-git-info",
+    "version": "4.1.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "http-cache-semantics",
+    "version": "4.2.0",
+    "license": "BSD-2-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "http-proxy-agent",
+    "version": "7.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "http2-wrapper",
+    "version": "1.0.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "https-proxy-agent",
+    "version": "7.0.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "inflight",
+    "version": "1.0.6",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "inherits",
+    "version": "2.0.4",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "is-fullwidth-code-point",
+    "version": "3.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "isarray",
+    "version": "1.0.0",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "isbinaryfile",
+    "version": "5.0.7",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "isexe",
+    "version": "3.1.5",
+    "license": "BlueOak-1.0.0",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "jake",
+    "version": "10.9.4",
+    "license": "Apache-2.0",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "jiti",
+    "version": "2.7.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "js-yaml",
+    "version": "4.3.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "json-buffer",
+    "version": "3.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "json-schema-traverse",
+    "version": "1.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "json-stringify-safe",
+    "version": "5.0.1",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "json5",
+    "version": "2.2.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "jsonfile",
+    "version": "6.2.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "katex",
+    "version": "0.16.47",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "commander",
+    "version": "8.3.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "keyv",
+    "version": "4.5.4",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "lazy-val",
+    "version": "1.0.5",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "linkify-it",
+    "version": "5.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "linkifyjs",
+    "version": "4.3.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "lodash",
+    "version": "4.18.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "lowercase-keys",
+    "version": "2.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "lru-cache",
+    "version": "6.0.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "markdown-it",
+    "version": "14.3.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "markdown-it-task-lists",
+    "version": "2.1.1",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "markdown-it-texmath",
+    "version": "1.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "marked",
+    "version": "17.0.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "matcher",
+    "version": "3.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "math-intrinsics",
+    "version": "1.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "mdurl",
+    "version": "2.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "mime",
+    "version": "2.6.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "mime-db",
+    "version": "1.52.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "mime-types",
+    "version": "2.1.35",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "mimic-response",
+    "version": "1.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "minimatch",
+    "version": "10.2.6",
+    "license": "BlueOak-1.0.0",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "minimist",
+    "version": "1.2.8",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "minipass",
+    "version": "7.1.3",
+    "license": "BlueOak-1.0.0",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "minizlib",
+    "version": "3.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "mkdirp",
+    "version": "0.5.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "ms",
+    "version": "2.1.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "license.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "nanoid",
+    "version": "3.3.19",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "node-abi",
+    "version": "4.35.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "node-api-version",
+    "version": "0.2.1",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "node-gyp",
+    "version": "12.4.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "env-paths",
+    "version": "2.2.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "isexe",
+    "version": "4.0.0",
+    "license": "BlueOak-1.0.0",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "undici",
+    "version": "6.29.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "which",
+    "version": "6.0.1",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "node-int64",
+    "version": "0.4.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "nopt",
+    "version": "9.0.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "normalize-url",
+    "version": "6.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "object-keys",
+    "version": "1.1.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "once",
+    "version": "1.4.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "orderedmap",
+    "version": "2.1.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "p-cancelable",
+    "version": "2.1.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "p-limit",
+    "version": "3.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "path-is-absolute",
+    "version": "1.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "path-key",
+    "version": "3.1.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "pe-library",
+    "version": "0.4.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "picocolors",
+    "version": "1.1.1",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "picomatch",
+    "version": "4.0.7",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "pkijs",
+    "version": "3.4.1",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "@noble/hashes",
+    "version": "1.8.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "plist",
+    "version": "3.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "postcss",
+    "version": "8.5.28",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "postject",
+    "version": "1.0.0-alpha.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "commander",
+    "version": "9.5.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "proc-log",
+    "version": "6.1.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "process-nextick-args",
+    "version": "2.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "progress",
+    "version": "2.0.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "promise-retry",
+    "version": "2.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "proper-lockfile",
+    "version": "4.1.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-changeset",
+    "version": "2.4.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-commands",
+    "version": "1.7.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-dropcursor",
+    "version": "1.8.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-gapcursor",
+    "version": "1.4.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-history",
+    "version": "1.5.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-inputrules",
+    "version": "1.5.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-keymap",
+    "version": "1.2.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-model",
+    "version": "1.25.12",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-schema-list",
+    "version": "1.5.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-state",
+    "version": "1.4.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-tables",
+    "version": "1.8.5",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-transform",
+    "version": "1.12.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "prosemirror-view",
+    "version": "1.42.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "pump",
+    "version": "3.0.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "punycode.js",
+    "version": "2.3.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE-MIT.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "pvtsutils",
+    "version": "1.3.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "pvutils",
+    "version": "1.2.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "quick-lru",
+    "version": "5.1.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "read-binary-file-arch",
+    "version": "1.0.6",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "readable-stream",
+    "version": "2.3.8",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "readdirp",
+    "version": "4.1.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "require-directory",
+    "version": "2.1.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "require-from-string",
+    "version": "2.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "resedit",
+    "version": "1.7.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "resolve-alpn",
+    "version": "1.2.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "responselike",
+    "version": "2.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "retry",
+    "version": "0.12.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "License"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "rimraf",
+    "version": "2.6.3",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "roarr",
+    "version": "2.15.4",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "rollup",
+    "version": "4.64.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "rope-sequence",
+    "version": "1.3.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "safe-buffer",
+    "version": "5.1.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "sanitize-filename",
+    "version": "1.6.4",
+    "license": "WTFPL OR ISC",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "sax",
+    "version": "1.6.1",
+    "license": "BlueOak-1.0.0",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "semver",
+    "version": "7.8.5",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "semver-compare",
+    "version": "1.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "serialize-error",
+    "version": "7.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "shebang-command",
+    "version": "2.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "shebang-regex",
+    "version": "3.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "signal-exit",
+    "version": "3.0.7",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "simple-update-notifier",
+    "version": "2.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "source-map",
+    "version": "0.6.1",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "source-map-js",
+    "version": "1.2.2",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "source-map-support",
+    "version": "0.5.21",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "sprintf-js",
+    "version": "1.1.3",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "stat-mode",
+    "version": "1.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "string-width",
+    "version": "4.2.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "string_decoder",
+    "version": "1.1.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "strip-ansi",
+    "version": "6.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "style-mod",
+    "version": "4.1.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "sumchecker",
+    "version": "3.0.1",
+    "license": "Apache-2.0",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "supports-color",
+    "version": "7.2.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "tar",
+    "version": "7.5.22",
+    "license": "BlueOak-1.0.0",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "yallist",
+    "version": "5.0.0",
+    "license": "BlueOak-1.0.0",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "temp",
+    "version": "0.9.4",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "temp-file",
+    "version": "3.4.0",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "tiny-async-pool",
+    "version": "1.3.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE-MIT"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "semver",
+    "version": "5.7.2",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "tinyglobby",
+    "version": "0.2.17",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "tmp",
+    "version": "0.2.7",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "tmp-promise",
+    "version": "3.0.3",
+    "license": "MIT",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "truncate-utf8-bytes",
+    "version": "1.0.2",
+    "license": "WTFPL",
+    "licenseFiles": [],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "tslib",
+    "version": "2.8.1",
+    "license": "0BSD",
+    "licenseFiles": [
+      "LICENSE.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "type-fest",
+    "version": "0.13.1",
+    "license": "(MIT OR CC0-1.0)",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "uc.micro",
+    "version": "2.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "undici",
+    "version": "7.30.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "undici-types",
+    "version": "7.24.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "universalify",
+    "version": "2.0.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "unzipper",
+    "version": "0.12.5",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "fs-extra",
+    "version": "11.3.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "utf8-byte-length",
+    "version": "1.0.5",
+    "license": "(WTFPL OR MIT)",
+    "licenseFiles": [
+      "LICENSE.MIT.txt",
+      "LICENSE.WTFPL.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "util-deprecate",
+    "version": "1.0.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "vite",
+    "version": "7.3.6",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE.md"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "w3c-keyname",
+    "version": "2.2.8",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "webcrypto-core",
+    "version": "1.9.2",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "which",
+    "version": "5.0.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "wrap-ansi",
+    "version": "7.0.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "wrappy",
+    "version": "1.0.2",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "ws",
+    "version": "8.18.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "xmlbuilder",
+    "version": "15.1.1",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "y18n",
+    "version": "5.0.8",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "yallist",
+    "version": "4.0.0",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "yargs",
+    "version": "17.7.3",
+    "license": "MIT",
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "yargs-parser",
+    "version": "21.1.1",
+    "license": "ISC",
+    "licenseFiles": [
+      "LICENSE.txt"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  },
+  {
+    "name": "yocto-queue",
+    "version": "0.1.0",
+    "license": "MIT",
+    "licenseFiles": [
+      "license"
+    ],
+    "developmentOrRuntime": "All installed packages; includes build-time tools for completeness."
+  }
+]

@@ -1,0 +1,17 @@
+node_modules/
+dist/
+release/
+.stg-desk/
+vendor/
+*.log
+.publish/
+.icon-work/
+promo/
+research/
+tests/artifacts/
+tools/*
+!tools/collect-licenses.cjs
+OPEN_SOURCE_REVIEW.md
+build/icon-source.png
+build/icon-preview.png
+build/icon-sizes.png

@@ -1,0 +1,9 @@
+# STG Desk icon
+
+Design: ivory folded book pages rising into three steps on a charcoal rounded square. The mark connects reading with the StepsToGreat idea of steady progress; the grayscale palette matches the workbench.
+
+Generated using the built-in image generation tool. `icon-source.png` is the original 1254 × 1254 image. `icon.png` is the optimized 512 × 512 runtime image with transparent alpha. `icon.ico` contains 16, 24, 32, 48, 64, 128 and 256 pixel sizes generated from the original. Preview files are for visual inspection only.
+
+## Generation prompt
+
+Use case: logo-brand. Asset type: production Windows desktop app icon for STG Desk, a calm monochrome local Markdown reading, writing and guided learning workbench named StepsToGreat. Create one exquisitely designed finished icon, no presentation board. Core symbol: a bold ivory continuous folded-paper ribbon that cleverly merges an open book and three ascending steps, culminating in a small upwards fold. Distinctive silhouette, clever negative space, asymmetrical yet balanced editorial Swiss design. The symbol is large and central on a charcoal rounded square tile, subtle satin depth, carefully controlled edge light, minimal sculptural relief, almost flat with just enough dimensionality to feel crafted. Grayscale only, charcoal black and warm white, no colored gradients. Rounded square tile occupies 92% of square canvas, surrounding area truly transparent. Symbol occupies about 65% of tile, thick confident forms readable at 24 px; three clear rhythmic levels, no thin decoration. Straight-on orthographic view. No letters, no words, no tiny line details, no sparkles, no glow, no mockup, no surrounding objects, no shadows outside the tile. Crisp precision and sophisticated understated desktop software identity. Output single square 1024px icon with real transparent corners.

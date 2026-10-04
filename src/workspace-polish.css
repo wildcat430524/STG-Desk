@@ -1,0 +1,283 @@
+/* STG Desk — workbench polish layer (main page only).
+   Owner: independent polish implementation. Scope: every rule stays inside the
+   non-DSH workspace, and no selector matches #dsh-host or any .dsh-* element —
+   the floating DSH window is styled by Codex. Codex imports this module last so
+   it overrides the earlier surface layers.
+
+   Contract kept by this file:
+   - neutral white/grey only, no decorative colour blocks;
+   - muted/secondary text sits at font-weight 500 with slightly better contrast,
+     while article body copy, editor text and code keep normal weight;
+   - 140-220ms micro-motion: a 1px hover/press shift on buttons, and gentle
+     fade-in for menus, transient layers and option switching. Never
+     `transition:all`. No animation fill mode, so no transform or opacity is
+     left applied once motion finishes;
+   - the article itself never re-enters on the streaming re-render path;
+   - top heights are untouched and no sidebar/column is added;
+   - all motion is disabled under prefers-reduced-motion:reduce, including the
+     hover/press offsets, so nothing is pinned mid-transform.
+   `.hidden` is `display:none!important` upstream, so display-hidden layers never
+   run the animations declared here. */
+
+/* ---------------------------------------------------------------------------
+   1. Tokens. Only custom properties plus `color`/`background` on :root, so all
+   layout and sizing keep coming from the previous layers.
+   --------------------------------------------------------------------------- */
+:root {
+  --wp-dur-fast: 140ms;
+  --wp-dur: 180ms;
+  --wp-dur-slow: 220ms;
+  --wp-ease: cubic-bezier(.22, .61, .36, 1);
+  --wp-ease-out: cubic-bezier(.16, 1, .3, 1);
+  --wp-muted: #767d87;
+  --wp-faint: #878d96;
+  --wp-hair: #e6e8eb;
+  --wp-radius-card: 18px;
+  --wp-radius-ctl: 12px;
+  --wp-radius-pill: 14px;
+  --wp-lift-soft: 0 1px 3px #22282f04, 0 8px 22px #22282f05;
+}
+
+/* ---------------------------------------------------------------------------
+   2. Reading typography. Secondary/grey copy gains weight and contrast; article
+   body copy, the editor and code deliberately keep their normal weight. Grey
+   text stays at font-weight 500 — contrast does the work, not extra heaviness.
+   --------------------------------------------------------------------------- */
+
+/* Top workspace header. */
+body:not(.dsh-only) .workspace-header .brand small { color: #7d838c; font-weight: 500; }
+body:not(.dsh-only) .workspace-header .workspace-card #workspace-meta,
+body:not(.dsh-only) .workspace-header .workspace-card #current-learning { color: var(--wp-muted); font-weight: 500; }
+body:not(.dsh-only) .workspace-header .workspace-card .continue-learning { color: #5c636c; font-weight: 500; }
+
+/* Current-document strip. */
+body:not(.dsh-only) .document-access .document-access-label { color: #7c828b; font-weight: 500; }
+body:not(.dsh-only) .document-access .document-tabs .file { color: #6f7680; font-weight: 500; }
+body:not(.dsh-only) .document-access .document-tabs .file small { color: var(--wp-faint); font-weight: 500; }
+body:not(.dsh-only) .document-access .documents-empty,
+body:not(.dsh-only) .document-access > .text-link { font-weight: 500; }
+
+/* Breadcrumb, status bar, local badge. */
+body:not(.dsh-only) .main .breadcrumb { color: #7f858f; font-weight: 500; }
+body:not(.dsh-only) .main .statusbar { color: #838992; font-weight: 500; }
+body:not(.dsh-only) .main .local-label,
+body:not(.dsh-only) .main .header-button { color: #7c828b; font-weight: 500; }
+
+/* Document toolbar: eyebrow labels, save state, view controls. */
+body:not(.dsh-only) .main .document-toolbar .eyebrow,
+body:not(.dsh-only) .main .answer-heading .eyebrow { color: #868c95; font-weight: 500; }
+body:not(.dsh-only) .main #save-status,
+body:not(.dsh-only) .main #draft-status,
+body:not(.dsh-only) .main .doc-actions > span { color: #7b818a; font-weight: 500; }
+body:not(.dsh-only) .main .view-toolbar > div:last-child button { color: #757c86; font-weight: 500; }
+body:not(.dsh-only) .main .mode-tabs button { color: var(--wp-muted); font-weight: 500; }
+body:not(.dsh-only) .main .view-toolbar button { font-weight: 500; }
+
+/* Welcome surface — the first page a new user sees. */
+body:not(.dsh-only) .main .welcome-tag { color: #7d838c; font-weight: 500; }
+body:not(.dsh-only) .main .welcome > p,
+body:not(.dsh-only) .main .drop-card p,
+body:not(.dsh-only) .main .drop-card small,
+body:not(.dsh-only) .main .recent,
+body:not(.dsh-only) .main .recent button,
+body:not(.dsh-only) .main .feature-grid p { font-weight: 500; }
+body:not(.dsh-only) .main .welcome > p,
+body:not(.dsh-only) .main .drop-card p { color: var(--wp-muted); }
+body:not(.dsh-only) .main .drop-card small { color: var(--wp-faint); }
+body:not(.dsh-only) .main .recent,
+body:not(.dsh-only) .main .recent button { color: #7f858f; }
+body:not(.dsh-only) .main .feature-grid p { color: #7a8089; }
+body:not(.dsh-only) .main .feature-grid > div > span { color: #8b9199; font-weight: 500; }
+body:not(.dsh-only) .main .feature-grid strong { color: #565c65; }
+
+/* Answer workspace: numbering, labels, helper copy. */
+body:not(.dsh-only) .main .answer-heading p { color: #7f858f; font-weight: 500; }
+body:not(.dsh-only) .main .question-number { color: #6f7680; font-weight: 500; }
+body:not(.dsh-only) .main .question-number span { color: #8d939c; }
+body:not(.dsh-only) .main .question-card .question-prompt { color: #646b75; }
+body:not(.dsh-only) .main .question-card label { color: #7d838c; font-weight: 500; }
+body:not(.dsh-only) .main .question-card textarea::placeholder { color: #9aa1aa; }
+body:not(.dsh-only) .main .answer-empty { color: var(--wp-faint); }
+body:not(.dsh-only) .main #answer-footer p { color: #838992; font-weight: 500; }
+
+/* Editor gutters: the line numbers were the lightest text on the page at 2.17:1.
+   #878e98 brings them to ~3.19:1 — still quieter than the code itself, and just
+   below the active-line gutter (3.42:1) so the current line still reads as the
+   emphasis. Upstream sets this with !important, so matching importance is needed. */
+body:not(.dsh-only) .main .cm-gutters { color: #878e98 !important; }
+
+/* Transient banners. */
+body:not(.dsh-only) .main .change-banner,
+body:not(.dsh-only) .main .draft-banner { color: #737a84; font-weight: 500; }
+
+/* Modal copy (rendered outside #app, still workbench-owned). */
+body:not(.dsh-only) .modal-card .eyebrow { color: #868c95; font-weight: 500; }
+body:not(.dsh-only) .modal-card .modal-note,
+body:not(.dsh-only) .modal-card .history-list small,
+body:not(.dsh-only) .modal-card .preferences-form output { color: var(--wp-muted); font-weight: 500; }
+
+/* ---------------------------------------------------------------------------
+   3. Surface consistency: one hairline, one shadow scale, one step of radius
+   between controls and cards. Heights and padding are untouched.
+   --------------------------------------------------------------------------- */
+body:not(.dsh-only) .application-body > .main { border-color: var(--wp-hair); }
+
+body:not(.dsh-only) .main .feature-grid > div {
+  border-color: var(--wp-hair);
+  border-radius: var(--wp-radius-card);
+  box-shadow: var(--wp-lift-soft);
+}
+body:not(.dsh-only) .main .question-card {
+  border-color: #e8eaee;
+  border-radius: var(--wp-radius-card);
+  box-shadow: 0 2px 6px #2b313a03;
+}
+body:not(.dsh-only) .main .outline {
+  border-radius: 16px;
+  box-shadow: 0 2px 6px #22282f05, 0 14px 38px #22282f0a;
+}
+
+/* Controls share one radius step across the workbench. */
+body:not(.dsh-only) .main .doc-actions button,
+body:not(.dsh-only) .main .view-toolbar > div:last-child button,
+body:not(.dsh-only) .main .format-toolbar button,
+body:not(.dsh-only) .main .outline button,
+body:not(.dsh-only) .document-access > .text-link,
+body:not(.dsh-only) .modal-card button { border-radius: 10px; }
+
+/* Segmented controls keep identical geometry, so switching groups or tabs never
+   shifts the visual rhythm. */
+body:not(.dsh-only) .main .mode-tabs {
+  border-radius: var(--wp-radius-pill);
+  border-color: #e8eaee;
+  background: #f3f4f6;
+  gap: 2px;
+}
+body:not(.dsh-only) .main .mode-tabs button { border-radius: 10px; }
+/* Upstream forces the active tab to flat #eee with !important; matching
+   importance is the only way to win that declaration. */
+body:not(.dsh-only) .main .mode-tabs button.active {
+  background: #fff !important;
+  color: #414954 !important;
+  box-shadow: 0 1px 2px #2b313a0a, 0 3px 10px #2b313a08;
+}
+
+body:not(.dsh-only) .document-access .document-tabs .file { border-radius: var(--wp-radius-ctl); }
+body:not(.dsh-only) .main .question-card textarea { border-radius: 13px; }
+body:not(.dsh-only) .modal-card { border-radius: 22px; }
+
+/* ---------------------------------------------------------------------------
+   4. Micro-motion, 140-220ms. Only the properties that actually change are
+   listed — never `transition:all`.
+
+   Buttons are grouped with `:is()` so that each motion rule and its
+   reduced-motion counterpart share exactly the same specificity. That matters:
+   the `:hover`/`:active` rules outrank a plain base rule, so a base-only
+   `transform:none` under reduced motion would still lose to them. The DSH panel
+   buttons live outside `.main`, `.document-access` and `.modal-card`, so they
+   are never matched.
+
+   No transform is declared at rest: `transition` interpolates from `none` to a
+   transform list, so the 1px offsets only ever exist while hovered or pressed.
+   That keeps buttons from becoming containing blocks for any fixed/absolute
+   descendant and leaves no transform applied long-term. */
+body:not(.dsh-only) .workspace-header :is(button, .continue-learning),
+body:not(.dsh-only) :is(.document-access, .main, .modal-card) button {
+  transition:
+    transform var(--wp-dur-fast) var(--wp-ease-out),
+    background-color var(--wp-dur) var(--wp-ease),
+    border-color var(--wp-dur) var(--wp-ease),
+    box-shadow var(--wp-dur) var(--wp-ease),
+    color var(--wp-dur-fast) var(--wp-ease);
+}
+
+body:not(.dsh-only) .workspace-header :is(button, .continue-learning):hover,
+body:not(.dsh-only) :is(.document-access, .main, .modal-card) button:hover {
+  transform: translateY(-1px);
+}
+
+body:not(.dsh-only) .workspace-header :is(button, .continue-learning):active,
+body:not(.dsh-only) :is(.document-access, .main, .modal-card) button:active {
+  transform: translateY(1px);
+}
+
+/* Option switching and selection changes: colour and edge only, no movement. */
+body:not(.dsh-only) .main .mode-tabs button,
+body:not(.dsh-only) .document-access .document-tabs .file,
+body:not(.dsh-only) .main .question-card textarea {
+  transition:
+    background-color var(--wp-dur) var(--wp-ease),
+    border-color var(--wp-dur) var(--wp-ease),
+    box-shadow var(--wp-dur) var(--wp-ease),
+    color var(--wp-dur-fast) var(--wp-ease);
+}
+
+/* Gentle fade-in for transient layers: outline menu, banners, toast, modal. */
+@keyframes wp-fade-drop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes wp-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Opacity-only variant: #toast already carries `transform:translateX(-50%)` for
+   centring, so animating transform there would visibly jump it sideways. */
+@keyframes wp-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+body:not(.dsh-only) .main .outline,
+body:not(.dsh-only) .main .change-banner,
+body:not(.dsh-only) .main .draft-banner { animation: wp-fade-drop var(--wp-dur) var(--wp-ease-out); }
+
+body:not(.dsh-only) .toast { animation: wp-fade var(--wp-dur) var(--wp-ease-out); }
+
+body:not(.dsh-only) .modal-card { animation: wp-fade-up var(--wp-dur-slow) var(--wp-ease-out); }
+
+/* Focus rings stay crisp and immediate. Scoped to workbench containers so the
+   DSH panel keeps its own focus treatment. The workbench's inputs and selects
+   live inside the modal or the answer panel — .main holds no input/select/
+   summary, so those are not listed. */
+body:not(.dsh-only) .workspace-header button:focus-visible,
+body:not(.dsh-only) .document-access button:focus-visible,
+body:not(.dsh-only) .main button:focus-visible,
+body:not(.dsh-only) .main textarea:focus-visible,
+body:not(.dsh-only) .modal-card button:focus-visible,
+body:not(.dsh-only) .modal-card input:focus-visible,
+body:not(.dsh-only) .modal-card textarea:focus-visible { outline-color: #8d939c; }
+
+/* ---------------------------------------------------------------------------
+   5. Reduced motion. Every transition and animation declared above is switched
+   off, and the hover/press offsets are reset with selectors of identical
+   specificity so no transform survives. #toast is excluded from the transform
+   reset because its translateX(-50%) is centring layout, not motion.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  body:not(.dsh-only) .workspace-header :is(button, .continue-learning),
+  body:not(.dsh-only) :is(.document-access, .main, .modal-card) button,
+  body:not(.dsh-only) .workspace-header :is(button, .continue-learning):hover,
+  body:not(.dsh-only) :is(.document-access, .main, .modal-card) button:hover,
+  body:not(.dsh-only) .workspace-header :is(button, .continue-learning):active,
+  body:not(.dsh-only) :is(.document-access, .main, .modal-card) button:active,
+  body:not(.dsh-only) .main .mode-tabs button,
+  body:not(.dsh-only) .document-access .document-tabs .file,
+  body:not(.dsh-only) .main .question-card textarea,
+  body:not(.dsh-only) .main .outline,
+  body:not(.dsh-only) .main .change-banner,
+  body:not(.dsh-only) .main .draft-banner,
+  body:not(.dsh-only) .modal-card {
+    animation: none;
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
+
+  body:not(.dsh-only) .toast {
+    animation: none;
+    opacity: 1;
+  }
+}
