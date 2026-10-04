@@ -1,0 +1,49 @@
+name: Publish verified Windows release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag
+        required: true
+        type: string
+      build_run:
+        description: Successful build run for the release commit
+        required: true
+        type: string
+permissions:
+  actions: read
+  contents: write
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - name: Verify build matches release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          BUILD_RUN: ${{ inputs.build_run }}
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^v\d+\.\d+\.\d+$' -or $env:BUILD_RUN -notmatch '^\d+$') { throw 'Invalid release input' }
+          $run = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:BUILD_RUN" | ConvertFrom-Json
+          $ref = gh api "repos/$env:GITHUB_REPOSITORY/git/ref/tags/$env:RELEASE_TAG" | ConvertFrom-Json
+          if ($run.conclusion -ne 'success' -or $run.head_sha -ne $ref.object.sha) { throw 'Build does not match the successful release commit' }
+      - uses: actions/download-artifact@v4
+        with:
+          name: STG-Desk-Windows
+          path: release
+          run-id: ${{ inputs.build_run }}
+          github-token: ${{ github.token }}
+      - name: Upload executable and checksum
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          $version = $env:RELEASE_TAG.Substring(1)
+          $file = Get-Item -LiteralPath "release/STG-Desk-$version-Windows.exe"
+          $hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($file.Name)" | Set-Content -Encoding ascii release/SHA256SUMS.txt
+          gh release upload $env:RELEASE_TAG $file.FullName release/SHA256SUMS.txt --repo $env:GITHUB_REPOSITORY --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }
+          Write-Output "Published $($file.Name): $hash"
