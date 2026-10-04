@@ -9,6 +9,7 @@ const workspace=new Workspace();
 let window,watcher,dirty=false,closing=false;
 let drafts,closeRequested=false;
 let dsh;
+let documentWindows;
 const dev=process.env.STG_DEV_URL;
 const smokeTest=process.argv.includes('--smoke-test');
 if(smokeTest) app.setPath('userData',path.join(app.getPath('temp'),'stg-desktop-smoke-profile'));
@@ -25,9 +26,9 @@ async function open(root) {
   let timer;
   watcher.on('all',(_event,file)=>{
     if(!/\.(md|markdown|txt)$/i.test(file)) return;
-    clearTimeout(timer); timer=setTimeout(()=>window?.webContents.send('workspace-changed'),300);
+    clearTimeout(timer); timer=setTimeout(()=>{if(window&&!window.isDestroyed())window.webContents.send('workspace-changed');},300);
   });
-  watcher.on('error',error=>window?.webContents.send('workspace-warning',error.message));
+  watcher.on('error',error=>{if(window&&!window.isDestroyed())window.webContents.send('workspace-warning',error.message);});
   await fs.writeFile(settingsPath(),JSON.stringify({...await settings(),lastRoot:info.root},null,2));
   await dsh?.onWorkspaceOpened(info.root);
   return info;
@@ -35,21 +36,25 @@ async function open(root) {
 function decorateTree(info){const {describeFile}=require('../lib/learning.cjs');const walk=nodes=>{for(const n of nodes){if(n.children)walk(n.children);else n.description=describeFile(n.path);}};walk(info.children);return info;}
 function handle(name,fn) {
   ipcMain.handle(name,async(event,...args)=>{
+    if(event.senderFrame!==event.sender.mainFrame)throw new Error('非法请求。');
+    if(documentWindows?.handles(event)){if(name==='answer-records')return fn(...args);return documentWindows.invoke(event,name,args);}
     if(event.sender!==window?.webContents || event.senderFrame!==window.webContents.mainFrame) throw new Error('非法请求。');
     return fn(...args);
   });
 }
 app.whenReady().then(async()=>{
   drafts=new DraftStore(path.join(app.getPath('userData'),'drafts'));
+  documentWindows=require('./document-windows.cjs').createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest});
   dsh=require('./dsh-controller.cjs')({app,ipcMain,BrowserWindow,workspace,getWindow:()=>window,dev,smokeTest});
   workspace.retention=(await settings()).backupRetention||20;
   protocol.handle('stg-asset',async request=>{
     try {
       const url=new URL(request.url);
-      if(url.hostname!=='workspace') return new Response('Forbidden',{status:403});
+      const assetWorkspace=url.hostname==='workspace'?workspace:documentWindows.assetWorkspace(url.hostname);
+      if(!assetWorkspace)return new Response('Forbidden',{status:403});
       const relative=decodeURIComponent(url.pathname.slice(1));
       if(!/\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i.test(relative)) return new Response('Unsupported',{status:403});
-      const file=await workspace.resolve(relative);
+      const file=await assetWorkspace.resolve(relative);
       // SVG is served only into image tags; scripts cannot access the app bridge.
       return net.fetch(pathToFileURL(file).toString());
     } catch {return new Response('Not found',{status:404});}
@@ -68,6 +73,9 @@ app.whenReady().then(async()=>{
   handle('read',p=>workspace.read(p));
   handle('save',(p,c,v)=>workspace.save(p,c,v));
   handle('companion',p=>workspace.companion(p));
+  handle('answer-records',content=>require('../lib/answer-records.cjs').analyzeAnswerRecords(content));
+  handle('document-window-open',p=>documentWindows.open(p));
+  handle('document-window-info',()=>null);
   handle('submit',(p,a,v)=>workspace.submit(p,a,v));
   handle('learning',()=>require('../lib/learning.cjs').getLearningState(workspace));
   handle('documents',options=>require('../lib/documents.cjs').relevantDocuments(workspace,options));
@@ -126,4 +134,4 @@ app.whenReady().then(async()=>{
   if(smokeTest) await require('./smoke.cjs')(window,app);
 });
 app.on('window-all-closed',()=>app.quit());
-app.on('before-quit',()=>watcher?.close());
+app.on('before-quit',()=>{watcher?.close();documentWindows?.dispose();});

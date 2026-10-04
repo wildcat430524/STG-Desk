@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('stg',{
   external:call('external'),reveal:call('reveal'),exportDraft:call('export-draft'),
   learning:call('learning'),describe:call('describe'),search:call('search'),
   documents:call('documents'),documentContext:call('document-context'),
+  answerRecords:call('answer-records'),documentWindowOpen:call('document-window-open'),documentWindowInfo:call('document-window-info'),
   dshPrepareReview:call('dsh-review-prompt'),
   dshSession:call('dsh-session'),dshOpenDesktop:call('dsh-open-desktop'),
   dshMinimize:call('dsh-minimize'),

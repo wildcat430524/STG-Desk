@@ -29,7 +29,7 @@ renderer.renderer.rules.image=(tokens,idx,options,env,self)=>{
   const t=tokens[idx];const src=t.attrGet('src')||'';
   if(src.startsWith('data:image/')) return originalImage(tokens,idx,options,env,self);
   if(/^[a-z]+:/i.test(src)||src.startsWith('//')) {t.attrSet('src','');t.attrSet('alt','[远程图片未加载] '+(t.content||''));}
-  else { const p=resolveLink(env.path||'',src); t.attrSet('src',p?`stg-asset://workspace/${p.split('/').map(encodeURIComponent).join('/')}`:''); }
+  else { const p=resolveLink(env.path||'',src); t.attrSet('src',p?`stg-asset://${new URLSearchParams(location.search).get('asset')||'workspace'}/${p.split('/').map(encodeURIComponent).join('/')}`:''); }
   return originalImage(tokens,idx,options,env,self);
 };
 function resolveLink(from,target){
@@ -63,7 +63,7 @@ document.querySelector('#app').innerHTML=`
     <div class="view-toolbar"><div class="mode-tabs"><button data-mode="read" class="active">阅读</button><button data-mode="split">编辑与预览</button><button data-mode="edit">源文档</button></div><div><button id="reload">重新加载</button><button id="reveal">在文件夹中显示 ↗</button></div></div>
     <div id="change-banner" class="change-banner hidden">文件夹中的文档有更新。<button id="load-changes">重新加载当前文档</button></div>
     <div class="doc-body"><div id="content-area" class="content-area read"><div id="editor"></div><article id="preview" class="markdown-body"></article></div>
-      <aside id="answers-panel" class="answers-panel"><div class="answer-heading"><span class="eyebrow">练习工作区</span><h2>写下你的答案</h2><p id="answer-description">选择一份教学引导或学生回答。</p></div><div id="answer-content"></div><div id="answer-footer"></div></aside>
+      <aside id="answers-panel" class="answers-panel" aria-label="学生作答工作区"><div class="answer-heading"><span class="eyebrow">YOUR WORKSPACE</span><h2>作答工作区</h2><p id="answer-description">选择一份教学引导，开始作答。</p><div id="answer-document-name" class="answer-document-name"></div></div><div class="answer-tabs" role="group" aria-label="作答工作区内容"><button data-answer-tab="current" aria-pressed="true">本轮作答</button><button data-answer-tab="records" aria-pressed="false">作答记录</button><button data-answer-tab="document" aria-pressed="false">完整文档</button></div><div id="answer-content"></div><section id="answer-records" class="hidden" aria-label="历史作答与导师反馈"></section><section id="answer-document" class="hidden"><div class="answer-document-tools"><span id="answer-source-status">已保存版本</span><button id="answer-history">历史版本</button><button id="answer-edit-source">编辑</button></div><article id="answer-document-preview" class="markdown-body"></article><textarea id="answer-source" class="hidden" aria-label="完整回答文档 Markdown" spellcheck="false"></textarea></section><div id="answer-footer"></div></aside>
     </div>
   </section>
   <footer class="statusbar"><span id="status-left">所有文档保存在你的电脑上</span><span id="status-right">UTF-8 · Markdown</span></footer>
@@ -85,7 +85,10 @@ import './learning-shell.css';
 import './refined-surfaces.css';
 import './dsh-polish.css';
 import './workspace-polish.css';
+import './answer-workspace.css';
 const dshOnly=new URLSearchParams(location.search).has('dsh');
+const documentOnly=new URLSearchParams(location.search).has('document');
+if(documentOnly)document.body.classList.add('document-only');
 if(dshOnly){document.body.classList.add('dsh-only');document.documentElement.classList.add('dsh-window');}
-else mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon});
-mountDsh({api,renderMD,escape,icon,dshOnly});
+else mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,documentOnly});
+if(!documentOnly)mountDsh({api,renderMD,escape,icon,dshOnly});

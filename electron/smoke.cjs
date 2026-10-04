@@ -33,6 +33,15 @@ module.exports=async function smoke(window,app){
     await js(`document.querySelector('[data-file="我的学习/学科/Python/01-认识变量/01_教学引导.md"]').click()`);
     await wait("document.querySelectorAll('[data-answer-index]').length===2");
     evidence.push('Guide-to-answer linking and two-question current round passed');
+    await js("document.querySelector('[data-answer-tab=records]').click()");
+    assert.ok(await js("document.querySelector('#answer-records').textContent.includes('最终复评结果')"));
+    assert.ok(await js("document.querySelector('#answer-records').textContent.includes('正确答案与解析')"));
+    await js("document.querySelector('[data-answer-tab=document]').click();document.querySelector('#answer-edit-source').click()");
+    await js("document.querySelector('#answer-source').value+='\\n面板完整文档编辑验证';document.querySelector('#answer-source').dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#answer-save-source').click()");
+    await wait("document.querySelector('#toast').textContent.includes('回答文档已保存')");
+    assert.ok((await fs.readFile(path.join(root,'我的学习/学科/Python/01-认识变量/01_学生回答.md'),'utf8')).includes('面板完整文档编辑验证'));
+    await js("document.querySelector('[data-answer-tab=current]').click()");
+    evidence.push('Answer workspace exposes complete saved records, tutor sections and in-panel version-checked Markdown editing');
     await js("document.querySelector('#preferences').click()");await wait("!!document.querySelector('#font-size')");
     await js("document.querySelector('#font-size').value='17';document.querySelector('#font-size').dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#modal-actions button').click()");await wait("document.querySelector('#modal').classList.contains('hidden')");assert.equal(await js("document.documentElement.style.getPropertyValue('--reading-font')"),'17px');
     await js("document.querySelector('#outline-toggle').click()");assert.ok(await js("document.querySelectorAll('#outline button').length>0"));await js("document.querySelector('#outline-toggle').click()");
@@ -73,9 +82,9 @@ module.exports=async function smoke(window,app){
     await js("document.querySelector('#submit').click()");
     await wait("document.querySelector('#toast').textContent.includes('作答已追加保存')");
     const answer=path.join(root,'我的学习/学科/Python/01-认识变量/01_学生回答.md');
-    const content=await fs.readFile(answer,'utf8');assert.ok(content.includes('price 是变量名'));assert.ok(content.includes('（整课所有轮次通过后由导师填写）'));assert.equal((await fs.readdir(path.join(root,'.stg-desk/backups'))).length,1);
+    const content=await fs.readFile(answer,'utf8');assert.ok(content.includes('price 是变量名'));assert.ok(content.includes('（整课所有轮次通过后由导师填写）'));assert.ok((await fs.readdir(path.join(root,'.stg-desk/backups'))).length>=1);
     evidence.push('UI answer submission persisted original text with backup and retained final placeholders');
-    await js("document.querySelector('#open-answer').click()");await wait("document.querySelector('#preview').textContent.includes('price 是变量名')");
+    await js("document.querySelector('[data-file=\"我的学习/学科/Python/01-认识变量/01_学生回答.md\"]').click()");await wait("document.querySelector('#preview').textContent.includes('price 是变量名')");
     await screenshot('answer-saved.png');
     await js("document.querySelector('[data-mode=split]').click()");await screenshot('editor.png');
     const before=await fs.readFile(answer,'utf8');
@@ -100,6 +109,31 @@ module.exports=async function smoke(window,app){
     await js("document.querySelector('#continue-learning').click()");await wait("document.querySelectorAll('[data-answer-index]').length===2");await js("document.querySelector('[data-mode=read]').click()");await wait("document.querySelector('#toast').classList.contains('hidden')");await screenshot('refined-lesson.png');
     assert.equal(await js('typeof require'),'undefined');assert.equal(await js('typeof process'),'undefined');
     evidence.push('Renderer has no Node require/process access');
+    const guidePath='我的学习/学科/Python/01-认识变量/01_教学引导.md',answerPath='我的学习/学科/Python/01-认识变量/01_学生回答.md';
+    await js(`window.stg.documentWindowOpen(${JSON.stringify(guidePath)})`);
+    await js("document.querySelector('#answer-popout').click()");
+    let student,teacher;
+    for(let i=0;i<100;i++){const all=require('electron').BrowserWindow.getAllWindows();student=all.find(w=>w!==window&&new URL(w.webContents.getURL()||'file:///').searchParams.get('document')===answerPath);teacher=all.find(w=>w!==window&&new URL(w.webContents.getURL()||'file:///').searchParams.get('document')===guidePath);if(student&&teacher)break;await new Promise(r=>setTimeout(r,80));}
+    assert.ok(student&&teacher,'Both documents open in their own native windows');
+    const childJS=code=>student.webContents.executeJavaScript(code,true);
+    for(let i=0;i<100;i++){if(await childJS("document.body.classList.contains('answer-document-window')&&document.querySelectorAll('[data-answer-index]').length===2&&document.documentElement.dataset.busy==='false'"))break;await new Promise(r=>setTimeout(r,80));}
+    assert.equal(await childJS("getComputedStyle(document.querySelector('.workspace-header')).display"),'none');
+    assert.equal(await childJS("getComputedStyle(document.querySelector('#content-area')).display"),'none');
+    assert.equal(await childJS("getComputedStyle(document.querySelector('#answers-panel')).display"),'flex');
+    assert.equal(await childJS('typeof require'),'undefined');
+    assert.equal(await childJS("document.querySelector('#status-left').textContent"),answerPath);
+    await childJS(`window.stg.documentWindowOpen(${JSON.stringify(answerPath)})`);assert.equal(require('electron').BrowserWindow.getAllWindows().filter(w=>new URL(w.webContents.getURL()||'file:///').searchParams.get('document')===answerPath).length,1);
+    const otherRoot=await fs.mkdtemp(path.join(os.tmpdir(),'stg-window-other-'));await fs.cp(path.join(__dirname,'../demo/StepsToGreat'),otherRoot,{recursive:true});
+    await js(`document.querySelector('#recent').innerHTML='<button id="recent-open">切换测试工作区</button>';document.querySelector('#recent-open').dataset.root=${JSON.stringify(otherRoot)};document.querySelector('#recent-open').click()`);await wait(`document.querySelector('#status-left').textContent.includes('教学引导.md')`);
+    assert.equal((await childJS('window.stg.documentWindowInfo()')).root,await fs.realpath(root));
+    window.destroy();
+    await childJS("const input=document.querySelector('[data-answer-index=\"0\"]');input.value='主窗口关闭后仍能独立答题';input.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#submit').click()");
+    for(let i=0;i<100;i++){if(await childJS("document.querySelector('#toast').textContent.includes('作答已追加保存到学生文档')"))break;await new Promise(r=>setTimeout(r,80));}
+    assert.ok((await fs.readFile(answer,'utf8')).includes('主窗口关闭后仍能独立答题'));
+    assert.equal(await childJS("document.querySelector('#status-left').textContent"),answerPath);
+    assert.ok(!(await fs.readFile(path.join(otherRoot,answerPath),'utf8')).includes('主窗口关闭后仍能独立答题'));
+    await new Promise(r=>setTimeout(r,300));await fs.writeFile(path.join(output,'student-window.png'),(await student.webContents.capturePage(undefined,{stayAwake:true})).toPNG());await fs.writeFile(path.join(output,'teaching-window.png'),(await teacher.webContents.capturePage(undefined,{stayAwake:true})).toPNG());
+    evidence.push('Two independent document windows reuse identity, remain sandboxed, keep their original workspace after main switches and save answers after main closes');
     assert.deepEqual(errors,[]);
     await fs.writeFile(path.join(output,'desktop-smoke.json'),JSON.stringify({passed:true,evidence,rendererErrors:errors},null,2));
     console.log(JSON.stringify({passed:true,evidence,artifacts:output},null,2));
