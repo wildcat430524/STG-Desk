@@ -110,8 +110,8 @@ Teaching and student documents use the same prefix and sit in the same directory
 | Module | What you can do |
 | --- | --- |
 | Learning navigation | Import or drag in a folder; restore the last workspace; find the current lesson from the profile; choose a published lesson |
-| Document reading | Adjust font size, line spacing and width; view the outline, tables, code, formulas and images inside the workspace |
-| Document editing | Single-column live Markdown editing, formatting toolbar, saves straight to the original text |
+| Document reading | Adjust font size, line spacing and width; view tables, code, formulas and workspace images; enter focus mode from the bottom controls |
+| Document editing | Single-column visual editing: click text and type; untouched blocks retain their original Markdown |
 | Student answers | Enter answers per question, insert code blocks, keep drafts automatically, append and save this round's original answers |
 | Answer records | View past rounds' original answers, tutor evaluations and final re-evaluations, keeping unrecognized document sections |
 | Full student document | Read, edit, save, handle conflicts and restore history directly in the answer workspace |
@@ -128,13 +128,13 @@ Follow "read the lesson → write answers → review the evaluation → continue
 <details>
 <summary><strong>1. Read the teaching</strong></summary>
 
-The teaching document keeps two modes, "read" and "edit". Editing uses single-column live layout: the current paragraph accepts Markdown input directly while the other paragraphs show rendered output, with no side-by-side source pane. Font size, line spacing and width can be adjusted in reading settings.
+Teaching and answer documents both use one visual editing surface. Click headings, paragraphs, task items or table cells to edit directly while keeping their formatting. Paths, document information and actions sit at the bottom, leaving the centered document clear above. Font size, line spacing and width can be adjusted in the bottom reading settings.
 
-The top "Night" switch changes the entire workspace, including navigation, reading, editing, answers, DSH and dialogs; detached windows share the theme. Reading also offers light and paper daytime colors and a focus mode. The reading bar shows your position, current section and estimated reading time; the outline highlights the current section. Code blocks have a copy button, and wide tables scroll horizontally. Task lists show completion counts and a progress bar; click the task count to jump to the next incomplete item. Checking an item updates the automatically preserved draft; click "Save" to write it to the document. In narrow windows, use the answer toggle to expand the answer workspace.
+The bottom "Night" switch changes the entire workspace, including navigation, documents, answers, DSH and dialogs; detached windows share the theme. The bottom "Focus" button hides the surrounding workspace. Its exit button remains available, and Escape also exits focus mode. Checking a task item updates the automatically preserved draft; click "Save" to write it to the document.
 
-Editing works on raw Markdown and does not convert the whole document; comments, formulas, tables and task lists are all preserved. The toolbar can insert headings, lists, quotes, code blocks and tables.
+Saving preserves the original Markdown, comments and separators of untouched blocks, and serializes only edited blocks. Chinese input composition, native keyboard undo and redo, automatic drafts and version conflict protection remain available. Inline formulas can be edited by double-clicking; metadata and unsupported constructs retain their original source.
 
-![Single-column Markdown editing and the formatting toolbar](docs/screenshots/visual-editor.png)
+![Direct visual document editing with bottom controls](docs/screenshots/visual-editor.png)
 
 </details>
 

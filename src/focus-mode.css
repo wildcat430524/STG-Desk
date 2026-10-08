@@ -1,0 +1,9 @@
+.document-focused .workspace-header,.document-focused .document-access,.document-focused #answers-panel,.document-focused #dsh-host{display:none!important}
+.document-focused .application-body{padding-top:12px}
+.document-focused .main{max-width:1260px;margin:0 auto;width:100%}
+.document-focused .visual-host{padding-block:clamp(32px,6vh,60px)}
+.document-focus[aria-pressed=true]{background:#e8edf3;border-color:#cdd7e3;color:#34455b}
+html[data-app-theme=dark] .document-focus[aria-pressed=true]{background:#344457;color:#eef2f8;border-color:#4b627e}
+#document{container-type:inline-size;container-name:document-pane}
+@container document-pane (max-width:740px){.doc-body>#answers-panel{display:none}}
+.toast{bottom:calc(var(--document-footer-height,40px) + 44px);pointer-events:none}

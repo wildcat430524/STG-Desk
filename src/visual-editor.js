@@ -33,13 +33,9 @@ export function createVisualEditor(element,content,onChange,options={}){
       const dom=document.createElement('div');dom.className='visual-preserved markdown-body';dom.contentEditable='false';dom.dataset.preservedBlock='';
       const preview=document.createElement('div');preview.className='visual-preserved-preview';
       preview.innerHTML=DOMPurify.sanitize(node.attrs.preview,{ADD_TAGS:['annotation','semantics'],ADD_ATTR:['encoding'],ALLOW_UNKNOWN_PROTOCOLS:true});
-      const tools=document.createElement('div');tools.className='visual-preserved-tools';
-      const label=document.createElement('span');label.textContent=node.attrs.label;
-      const button=document.createElement('button');button.type='button';button.textContent='编辑源码';
-      button.addEventListener('click',()=>options.onSource?.(node.attrs.source));
-      tools.append(label,button);dom.append(preview,tools);
+      dom.append(preview);
       if(!preview.textContent.trim()&&!preview.querySelector('img,svg'))dom.classList.add('visual-preserved-marker');
-      return {dom,stopEvent:event=>event.target.closest('button')!==null,ignoreMutation:()=>true};
+      return {dom,ignoreMutation:()=>true};
     };}
   });
   const MathInline=Node.create({

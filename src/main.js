@@ -2,9 +2,6 @@ import './style.css';
 import './monochrome.css';
 import './mono-detail.css';
 import 'katex/dist/katex.min.css';
-import {EditorView, basicSetup} from 'codemirror';
-import {EditorState} from '@codemirror/state';
-import {markdown} from '@codemirror/lang-markdown';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import katex from 'katex';
@@ -59,10 +56,10 @@ document.querySelector('#app').innerHTML=`
     <div class="recent" id="recent"></div>
   </section>
   <section id="document" class="document hidden">
-    <div class="document-toolbar"><div><span class="eyebrow" id="document-kind">MARKDOWN</span><h1 id="document-title"></h1></div><div class="doc-actions"><span id="save-status">已保存</span><button id="export" title="将当前文档草稿另存到新文件">另存草稿</button><button id="save" class="primary">保存 <kbd>Ctrl S</kbd></button></div></div>
-    <div class="view-toolbar"><div class="mode-tabs"><button data-mode="read" class="active">阅读</button><button data-mode="edit">编辑</button></div><div><button id="reload">重新加载</button><button id="reveal">在文件夹中显示 ↗</button></div></div>
+    <div class="document-toolbar"><div><span class="eyebrow" id="document-kind">MARKDOWN</span><h1 id="document-title"></h1></div><div class="doc-actions"><button id="document-focus" class="document-focus" aria-pressed="false">专注</button><span id="save-status">已保存</span><button id="export" title="将当前文档草稿另存到新文件">另存草稿</button><button id="save" class="primary">保存 <kbd>Ctrl S</kbd></button></div></div>
     <div id="change-banner" class="change-banner hidden">文件夹中的文档有更新。<button id="load-changes">重新加载当前文档</button></div>
-    <div class="doc-body"><div id="content-area" class="content-area read"><div id="editor"></div><article id="preview" class="markdown-body"></article></div>
+    <div id="draft-banner" class="draft-banner hidden"></div>
+    <div class="doc-body"><div id="content-area" class="content-area edit"><div id="editor"></div></div>
       <aside id="answers-panel" class="answers-panel" aria-label="学生作答工作区"><div class="answer-heading"><span class="eyebrow">YOUR WORKSPACE</span><h2>作答工作区</h2><p id="answer-description">选择一份教学引导，开始作答。</p><div id="answer-document-name" class="answer-document-name"></div></div><div class="answer-tabs" role="group" aria-label="作答工作区内容"><button data-answer-tab="current" aria-pressed="true">本轮作答</button><button data-answer-tab="records" aria-pressed="false">作答记录</button><button data-answer-tab="document" aria-pressed="false">完整文档</button></div><div id="answer-content"></div><section id="answer-records" class="hidden" aria-label="历史作答与导师反馈"></section><section id="answer-document" class="hidden"><div class="answer-document-tools"><span id="answer-source-status">已保存版本</span><button id="answer-history">历史版本</button><button id="answer-edit-source">编辑</button></div><article id="answer-document-preview" class="markdown-body"></article><textarea id="answer-source" class="hidden" aria-label="完整回答文档 Markdown" spellcheck="false"></textarea></section><div id="answer-footer"></div></aside>
     </div>
   </section>
@@ -83,13 +80,15 @@ document.documentElement.dataset.theme='mono';
 import {mountWorkbench} from './workbench';
 import {mountDsh} from './dsh-panel';
 import {mountApplicationTheme} from './app-theme';
+import {mountDocumentFooter} from './document-footer';
 import './learning-shell.css';
 import './refined-surfaces.css';
 import './dsh-polish.css';
 import './workspace-polish.css';
 import './answer-workspace.css';
-import './reader.css';
 import './app-theme.css';
+import './focus-mode.css';
+import './document-footer.css';
 const dshOnly=new URLSearchParams(location.search).has('dsh');
 const documentOnly=new URLSearchParams(location.search).has('document');
 if(documentOnly)document.body.classList.add('document-only');
@@ -97,3 +96,4 @@ if(dshOnly){document.body.classList.add('dsh-only');document.documentElement.cla
 else mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,documentOnly});
 if(!documentOnly)mountDsh({api,renderMD,escape,icon,dshOnly});
 mountApplicationTheme({dshOnly});
+if(!dshOnly)mountDocumentFooter();
