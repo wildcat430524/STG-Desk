@@ -1,9 +1,9 @@
 import {EditorView,basicSetup} from 'codemirror';
-import {EditorState,Compartment} from '@codemirror/state';
+import {EditorState} from '@codemirror/state';
 import {markdown} from '@codemirror/lang-markdown';
 import {undo,redo} from '@codemirror/commands';
 import DOMPurify from 'dompurify';
-import {liveMarkdown} from './live-editor';
+import {createVisualEditor} from './visual-editor';
 import {mountReader} from './reader';
 import {renderProgressSummary} from './progress-view';
 import './progress-view.css';
@@ -12,13 +12,14 @@ import './workbench.css';
 export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,documentOnly=false}) {
   const $=s=>document.querySelector(s);
   const state={workspace:null,doc:null,answer:null,answerCache:null,answerTab:'current',answerEditing:false,answerSource:'',answerBaseContent:'',answerBaseVersion:null,answerRecords:null,documentWindow:null,mode:'read',dirty:false,answers:{},orphans:[],loading:false,busy:false,documents:[],learning:null,preferences:{fontSize:16,lineHeight:1.9,readingWidth:820,backupRetention:20}};
-  let editor,renderTimer,draftTimer,loadEpoch=0,preferredMode='read',page='document',progress={},detachedWindows=[],windowEvents=[],handlingWindowEvents=false,returningPaths=new Set();
-  const liveMode=new Compartment();
+  let editor,visual,sourceContent=null,renderTimer,draftTimer,loadEpoch=0,preferredMode='read',page='document',progress={},detachedWindows=[],windowEvents=[],handlingWindowEvents=false,returningPaths=new Set();
   $('#workspace-meta').insertAdjacentHTML('afterend','<button id="continue-learning" class="continue-learning hidden">继续学习 <span>→</span></button><small id="current-learning"></small>');
   $('.header-actions').insertAdjacentHTML('afterbegin','<button id="preferences" class="header-button">阅读设置</button>');
   $('.view-toolbar>div:last-child').insertAdjacentHTML('afterbegin','<button id="outline-toggle">目录</button><button id="history">历史备份</button>');
   $('.view-toolbar').insertAdjacentHTML('afterend',`<div id="format-toolbar" class="format-toolbar hidden"><button data-format="h1">H1</button><button data-format="h2">H2</button><button data-format="bold"><b>B</b></button><button data-format="italic"><i>I</i></button><span></span><button data-format="list">列表</button><button data-format="task">清单</button><button data-format="quote">引用</button><button data-format="code">代码</button><button data-format="table">表格</button><button data-format="link">链接</button><span></span><button data-format="undo">↶ 撤销</button><button data-format="redo">↷ 重做</button></div><div id="draft-banner" class="draft-banner hidden"></div><nav id="outline" class="outline hidden"></nav>`);
   $('.doc-actions').insertAdjacentHTML('afterbegin','<span id="draft-status"></span>');
+  $('#format-toolbar').insertAdjacentHTML('beforeend','<span></span><button id="editor-source-toggle" title="切换所见即所得与 Markdown 源码">源码</button>');
+  $('#format-toolbar').addEventListener('mousedown',e=>{if(e.target.closest('[data-format]'))e.preventDefault();});
   $('.doc-actions').insertAdjacentHTML('beforeend','<button id="document-popout" class="hidden" title="移到独立窗口，主应用切换到另一份文档">开窗口 ↗</button>');
   $('#app').insertAdjacentHTML('afterend','<div id="modal" class="modal-overlay hidden" role="dialog" aria-modal="true"><section class="modal-card"><header><div><span id="modal-eyebrow" class="eyebrow"></span><h2 id="modal-title"></h2></div><button id="modal-close" aria-label="关闭">×</button></header><div id="modal-body"></div><footer id="modal-actions"></footer></section></div>');
   const smallIcons={preferences:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="white"/><circle cx="15" cy="17" r="2" fill="white"/>',history:'<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/>','outline-toggle':'<path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1"/>',save:'<path d="M5 3h12l4 4v14H3V3Z"/><path d="M7 3v6h10V3M7 21v-8h10v8"/>',reload:'<path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7"/>'};
@@ -28,14 +29,15 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
   const folderIcon=icon('<path d="M3 7V5h7l2 2h9v13H3Z"/>',15);
   const formatIcons={list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/>',task:'<rect x="3" y="5" width="6" height="6" rx="1"/><path d="m4 8 2 2 4-5M13 8h8M13 17h8M3 17h6"/>',quote:'<path d="M4 6h6v8H4Zm10 0h6v8h-6ZM10 14c0 3-2 4-4 4m14-4c0 3-2 4-4 4"/>',code:'<path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-15-2 18"/>',table:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 10v10"/>',link:'<path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/>',undo:'<path d="M4 10h10a6 6 0 0 1 0 12M4 10l5-5M4 10l5 5"/>',redo:'<path d="M20 10H10a6 6 0 0 0 0 12M20 10l-5-5M20 10l-5 5"/>'};
   for(const [name,path] of Object.entries(formatIcons)){const b=document.querySelector(`[data-format="${name}"]`);b.textContent=b.textContent.replace(/[↶↷]/g,'').trim();b.insertAdjacentHTML('afterbegin',icon(path,13));}
-  const reader=mountReader({preview:$('#preview'),outline:$('#outline'),getSource:text,notify:message,toggleTask:(offset,checked)=>{editor.dispatch({changes:{from:offset,to:offset+1,insert:checked?'x':' '}});clearTimeout(renderTimer);renderPreview();}});
+  const reader=mountReader({preview:$('#preview'),outline:$('#outline'),getSource:text,notify:message,toggleTask:(offset,checked)=>{const content=text();replaceSource(content.slice(0,offset)+(checked?'x':' ')+content.slice(offset+1));scheduleDraft();}});
 
   function message(text,error=false){const box=$('#toast');box.textContent=text;box.className=`toast ${error?'error':''}`;clearTimeout(message.timer);message.timer=setTimeout(()=>box.classList.add('hidden'),5000);}
   async function guarded(task){if(state.busy)return;state.busy=true;document.documentElement.dataset.busy='true';try{await task();}catch(e){message(cleanError(e),true);}finally{state.busy=false;document.documentElement.dataset.busy='false';drainWindowEvents();}}
   function cleanError(e){return String(e.message||e).replace(/^Error invoking remote method '[^']+': (?:Error: )?/,'');}
   function questionKey(q){return JSON.stringify([q.round,q.number,q.title,q.prompt]);}
   function hasAnswers(){return Object.values(state.answers).some(v=>v.length);}
-  function text(){return editor?.state.doc.toString()??state.doc?.content??'';}
+  function text(){return sourceContent??state.doc?.content??'';}
+  function sourceLineOffset(line){let offset=0;for(let n=1;n<line;n++){const next=text().indexOf('\n',offset);if(next<0)return text().length;offset=next+1;}return offset;}
   function answerSourceDirty(){return !!state.answer&&state.answerSource!==state.answer.content;}
   function dirtyState(){state.dirty=!!state.doc&&text()!==state.doc.content;api?.dirty(state.dirty||hasAnswers()||answerSourceDirty());$('#save-status').textContent=state.dirty?'待保存到文档':'已保存';$('#save-status').classList.toggle('unsaved',state.dirty);}
   function scheduleDraft(){clearTimeout(draftTimer);$('#draft-status').textContent='保存草稿…';draftTimer=setTimeout(()=>flushDraft().catch(e=>{message(cleanError(e),true);$('#draft-status').textContent='草稿保存失败';}),250);}
@@ -112,7 +114,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     if(first&&!isDetached(first))await selectFile(first,{approved:true});else if(first){const other=state.documents.find(d=>['guide','answer'].includes(d.kind)&&!isDetached(d.path));if(other)await selectFile(other.path,{approved:true});else await showProgress('chapter');}else{$('#document').classList.add('hidden');$('#welcome').classList.remove('hidden');message('文件夹已导入，但未找到文档。');}
     if(info.warnings?.length)message(info.warnings[0]);
   }
-  function replaceSource(content){if(text()!==content){state.loading=true;editor.dispatch({changes:{from:0,to:editor.state.doc.length,insert:content}});state.loading=false;}dirtyState();renderPreview();}
+  function replaceSource(content){if(text()!==content){sourceContent=content;state.loading=true;editor.dispatch({changes:{from:0,to:editor.state.doc.length,insert:content}});state.loading=false;visual?.destroy();visual=null;if(state.mode==='edit')mountVisual();}dirtyState();renderPreview();}
   async function selectFile(path,{approved=false,line=null}={}){
     if(isDetached(path)){message('这份文档已在独立窗口中，关闭窗口后会返回这里。');return;}
     if(state.documentWindow&&path!==state.documentWindow.path){if(/(教学引导|学生回答)\.md$/i.test(path))await api.documentWindowOpen(path);else await api.reveal(path);return;}
@@ -129,9 +131,9 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     state.answerBaseVersion=state.answerCache?.baseVersion??answer?.version??null;
     state.answerEditing=false;state.answerRecords=answer?await api.answerRecords(answer.content):null;
     if(epoch!==loadEpoch)return;
-    state.loading=true;editor?.destroy();$('#editor').innerHTML='';
-    editor=new EditorView({state:EditorState.create({doc:content,selection:{anchor:Math.max(0,content.indexOf("\n\n")+1)},extensions:[basicSetup,markdown(),EditorView.lineWrapping,liveMode.of([]),EditorView.updateListener.of(update=>{
-      if(update.docChanged&&!state.loading){dirtyState();clearTimeout(renderTimer);renderTimer=setTimeout(renderPreview,120);scheduleDraft();}
+    state.loading=true;sourceContent=content;visual?.destroy();visual=null;editor?.destroy();$('#editor').innerHTML='';
+    editor=new EditorView({state:EditorState.create({doc:content,selection:{anchor:Math.max(0,content.indexOf("\n\n")+1)},extensions:[basicSetup,markdown(),EditorState.lineSeparator.of(content.includes('\r\n')?'\r\n':'\n'),EditorView.lineWrapping,EditorView.updateListener.of(update=>{
+      if(update.docChanged&&!state.loading){sourceContent=update.state.sliceDoc();dirtyState();clearTimeout(renderTimer);renderTimer=setTimeout(renderPreview,120);scheduleDraft();}
     })]}),parent:$('#editor')});state.loading=false;
     $('#welcome').classList.add('hidden');$('#document').classList.remove('hidden');
     $('#document-title').textContent=description.lesson?`${description.lesson} · ${description.label}`:path.split('/').at(-1).replace(/\.(md|markdown|txt)$/i,'');
@@ -147,7 +149,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     $('#document-popout').classList.toggle('hidden',!/(教学引导|学生回答)\.md$/i.test(path)||!!state.documentWindow);
     $('#draft-status').textContent=recovered||hasAnswers()?'草稿已恢复':'';
     $('#status-left').textContent=path;
-    if(line){const pos=editor.state.doc.line(Math.min(line,editor.state.doc.lines)).from;editor.dispatch({selection:{anchor:pos},effects:EditorView.scrollIntoView(pos,{y:'start'})});const item=$('#preview').querySelector(`[data-source-line="${line}"]`);item?.scrollIntoView();}
+    if(line){const pos=editor.state.doc.line(Math.min(line,editor.state.doc.lines)).from;if(state.mode==='edit')visual?.jumpToSource(sourceLineOffset(line));else editor.dispatch({selection:{anchor:pos},effects:EditorView.scrollIntoView(pos,{y:'start'})});const item=$('#preview').querySelector(`[data-source-line="${line}"]`);item?.scrollIntoView();}
   }
   function renderPreview(){
     if(!state.doc||!editor)return;const content=text();const env={path:state.doc.path};const tokens=renderer.parse(content,env);const headings=[];
@@ -159,14 +161,35 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     reader.render({tokens,content,headings,key:`${state.workspace?.root||''}/${state.doc.path}`});
     $('#status-right').textContent=`${content.length.toLocaleString()} 字符 · UTF-8 · Markdown`;
   }
+  function updateFormatState(){
+    if(!visual||state.mode!=='edit')return;
+    const marks={h1:['heading',{level:1}],h2:['heading',{level:2}],bold:['bold'],italic:['italic'],list:['bulletList'],task:['taskList'],quote:['blockquote'],code:['codeBlock']};
+    for(const [name,args] of Object.entries(marks))document.querySelector(`[data-format="${name}"]`).setAttribute('aria-pressed',String(visual.isActive(...args)));
+  }
+  function mountVisual(){
+    if(!editor||!state.doc)return;
+    if(visual&&visual.getSource()===text())return;
+    visual?.destroy();$('#editor .visual-host')?.remove();
+    const host=document.createElement('div');host.className='visual-host';$('#editor').append(host);
+    visual=createVisualEditor(host,text(),content=>{
+      sourceContent=content;state.loading=true;editor.dispatch({changes:{from:0,to:editor.state.doc.length,insert:content}});state.loading=false;
+      dirtyState();clearTimeout(renderTimer);renderTimer=setTimeout(renderPreview,120);scheduleDraft();updateFormatState();
+    },{renderer,renderMD,path:state.doc.path,onSelection:updateFormatState,onSource:source=>{
+      const raw=text().indexOf(source);setMode('source');const from=raw>=0?editor.state.doc.line(text().slice(0,raw).split('\n').length).from:-1;if(from>=0)editor.dispatch({selection:{anchor:from},effects:EditorView.scrollIntoView(from,{y:'center'})});editor.focus();
+    },onMath:({source,apply})=>modal('编辑公式',`<div class="preferences-form"><label>LaTeX 公式<input id="formula-source" value="${escape(source.replace(/^\$\$?|\$\$?$/g,''))}"></label></div>`,[{label:'应用',primary:true,action:async()=>{const value=$('#formula-source').value.trim();if(!value)throw Error('请输入公式。');apply('$'+value+'$');closeModal();visual.commands.focus();}}])});
+  }
   function setMode(mode){
-    mode=document.body.classList.contains('answer-document-active')?'edit':mode==='read'?'read':'edit';
-    state.mode=mode;$('#content-area').className=`content-area ${mode}`;
+    mode=mode==='source'?'source':document.body.classList.contains('answer-document-active')?'edit':mode==='read'?'read':'edit';
+    state.mode=mode;$('#content-area').className=`content-area ${mode==='read'?'read':'edit'}${mode==='source'?' source':''}`;
     reader.mode(mode);
     $('#format-toolbar').classList.toggle('hidden',mode==='read');
     $('.mode-tabs').classList.toggle('hidden',document.body.classList.contains('answer-document-active'));
-    editor?.dispatch({effects:liveMode.reconfigure(mode==='edit'?liveMarkdown({renderer,renderMD,path:state.doc.path}):[])});
-    document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));editor?.requestMeasure();
+    if(mode==='edit')mountVisual();
+    editor?.dom.classList.toggle('hidden',mode!=='source');
+    $('#editor .visual-host')?.classList.toggle('hidden',mode!=='edit');
+    $('#editor-source-toggle').textContent=mode==='source'?'返回编辑':'源码';
+    $('#editor-source-toggle').setAttribute('aria-pressed',String(mode==='source'));
+    document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===(mode==='source'?'edit':mode)));editor?.requestMeasure();updateFormatState();
   }
   function renderAnswers(){
     const answer=state.answer,current=answer?.questions?.current||[];$('#answer-footer').innerHTML='';
@@ -266,13 +289,19 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
   function format(action){
     if(!editor)return;
     if(state.mode==='read')setMode('edit');
+    if(state.mode==='edit'&&visual){
+      if(action==='link'){linkDialog();return;}
+      const chain=visual.chain().focus();
+      const commands={h1:()=>chain.toggleHeading({level:1}),h2:()=>chain.toggleHeading({level:2}),bold:()=>chain.toggleBold(),italic:()=>chain.toggleItalic(),list:()=>chain.toggleBulletList(),task:()=>chain.toggleTaskList(),quote:()=>chain.toggleBlockquote(),code:()=>chain.toggleCodeBlock({language:'text'}),table:()=>chain.insertTable({rows:3,cols:2,withHeaderRow:true}),undo:()=>chain.undo(),redo:()=>chain.redo()};
+      commands[action]?.().run();updateFormatState();return;
+    }
     if(action==='undo'||action==='redo'){editor.focus();(action==='undo'?undo:redo)(editor);return;}
     if(action==='link'){linkDialog();return;}
     const {from,to}=editor.state.selection.main,selected=editor.state.sliceDoc(from,to);
     const formats={h1:`# ${selected||'标题'}`,h2:`## ${selected||'小标题'}`,bold:`**${selected||'加粗文字'}**`,italic:`*${selected||'斜体文字'}*`,list:(selected||'列表项').split('\n').map(s=>'- '+s).join('\n'),task:(selected||'清单项').split('\n').map(s=>'- [ ] '+s).join('\n'),quote:(selected||'引用内容').split('\n').map(s=>'> '+s).join('\n'),code:`\n\`\`\`text\n${selected}\n\`\`\`\n`,table:'\n| 列一 | 列二 |\n| --- | --- |\n| 内容 | 内容 |\n'};
     if(formats[action]!==undefined){const insert=formats[action];editor.dispatch({changes:{from,to,insert},selection:{anchor:from+insert.length}});editor.focus();}
   }
-  function linkDialog(){const s=editor.state.selection.main;const label=editor.state.sliceDoc(s.from,s.to);modal('插入链接',`<div class="preferences-form"><label>链接文字<input id="link-label" value="${escape(label)}"></label><label>链接地址<input id="link-url" placeholder="https://… 或 ./文档.md"></label></div>`,[{label:'插入',primary:true,action:async()=>{const title=$('#link-label').value||'链接',url=$('#link-url').value.trim();if(!url||/^(javascript|data|file):/i.test(url))throw new Error('请填写有效的文档路径或 HTTPS 链接。');{const insert=`[${title.replace(/[\[\]]/g,'')}](${url.replace(/[()\s]/g,c=>encodeURIComponent(c))})`;editor.dispatch({changes:{from:s.from,to:s.to,insert}});}closeModal();}}]);}
+  function linkDialog(){const rich=state.mode==='edit'&&visual,s=rich?visual.state.selection:editor.state.selection.main;const label=rich?visual.state.doc.textBetween(s.from,s.to):editor.state.sliceDoc(s.from,s.to);modal('插入链接',`<div class="preferences-form"><label>链接文字<input id="link-label" value="${escape(label)}"></label><label>链接地址<input id="link-url" placeholder="https://… 或 ./文档.md"></label></div>`,[{label:'插入',primary:true,action:async()=>{const title=$('#link-label').value||'链接',url=$('#link-url').value.trim();if(!url||/^(javascript|data|file):/i.test(url))throw new Error('请填写有效的文档路径或 HTTPS 链接。');if(rich)visual.chain().focus().setTextSelection({from:s.from,to:s.to}).insertContent({type:'text',text:title,marks:[{type:'link',attrs:{href:url}}]}).run();else{const insert=`[${title.replace(/[\[\]]/g,'')}](${url.replace(/[()\s]/g,c=>encodeURIComponent(c))})`;editor.dispatch({changes:{from:s.from,to:s.to,insert}});}closeModal();}}]);}
   function chooseCourse(){
     const guides=allFiles().filter(f=>f.readable&&!/^(?:tests|模板|示例|docs|research|tools|_\w+)(?:\/|$)/.test(f.path)&&(f.description||describe(f.path)).kind==='guide');
     const related=state.documents.filter(d=>!['guide','answer'].includes(d.kind));
@@ -286,7 +315,8 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     if(b.dataset.file){guarded(()=>selectFile(b.dataset.file,{line:b.dataset.resultLine?Number(b.dataset.resultLine):null}));return;}
     if(b.dataset.mode){preferredMode=b.dataset.mode;setMode(preferredMode);return;}
     if(b.dataset.format){format(b.dataset.format);return;}
-    if(b.dataset.section){if(state.mode==='read')$('#preview').querySelector('#'+b.dataset.section)?.scrollIntoView({behavior:'smooth'});const pos=editor.state.doc.line(Number(b.dataset.line)).from;editor.dispatch({selection:{anchor:pos},effects:EditorView.scrollIntoView(pos,{y:'start'})});$('#outline').classList.add('hidden');return;}
+    if(b.id==='editor-source-toggle'){setMode(state.mode==='source'?'edit':'source');if(state.mode==='source')editor.focus();return;}
+    if(b.dataset.section){if(state.mode==='read')$('#preview').querySelector('#'+b.dataset.section)?.scrollIntoView({behavior:'smooth'});const pos=editor.state.doc.line(Number(b.dataset.line)).from;if(state.mode==='edit')visual?.jumpToSource(sourceLineOffset(Number(b.dataset.line)));else editor.dispatch({selection:{anchor:pos},effects:EditorView.scrollIntoView(pos,{y:'start'})});$('#outline').classList.add('hidden');return;}
     if(b.dataset.discardAnswer){delete state.answers[b.dataset.discardAnswer];renderAnswers();scheduleDraft();return;}
     if(b.dataset.answerTab){state.answerTab=b.dataset.answerTab;renderAnswerWorkspace();return;}
     if(b.dataset.answerCode!==undefined){const input=document.querySelector(`[data-answer-index="${b.dataset.answerCode}"]`);const from=input.selectionStart,to=input.selectionEnd;input.setRangeText('\n```\n'+input.value.slice(from,to)+'\n```\n',from,to,'end');input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();return;}

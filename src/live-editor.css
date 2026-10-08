@@ -1,25 +1,15 @@
-.content-area.edit>#editor{border-right:0;overflow:hidden}
-.cm-live-editor .cm-gutters{display:none!important}
-.cm-live-editor .cm-scroller{font-family:"Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",sans-serif!important;font-size:var(--reading-font);line-height:var(--reading-line);overflow:auto}
-.cm-live-editor .cm-content{width:100%;max-width:calc(var(--reading-width) + 64px);margin:0 auto;padding:32px!important;caret-color:#343e4c;overflow-wrap:anywhere}
-.cm-live-editor .cm-line{padding:0;white-space:pre-wrap}
-.cm-live-editor .cm-activeLine{background:transparent}
-.cm-live-editor .cm-live-active{color:#383838}
-.cm-live-editor .cm-live-heading-1{font-size:1.85em;font-weight:600;line-height:1.5}
-.cm-live-editor .cm-live-heading-2{font-size:1.35em;font-weight:600;line-height:1.6}
-.cm-live-editor .cm-live-heading-3{font-size:1.12em;font-weight:600}
-.cm-live-editor .cm-live-heading-4,.cm-live-editor .cm-live-heading-5,.cm-live-editor .cm-live-heading-6{font-weight:600}
-.cm-live-editor .cm-live-code{font:13px/1.8 Consolas,monospace;background:#f6f7f9;padding:0 16px}
-.cm-live-editor .cm-live-quote{border-left:3px solid #dce1e8;padding-left:18px;color:#687484}
-.cm-live-editor .cm-live-block{font:inherit;color:#383838;white-space:normal;cursor:text;display:flow-root;overflow-wrap:anywhere;min-height:4px}
-.cm-live-editor .cm-live-block>*:first-child{margin-top:0}
-.cm-live-editor .cm-live-block>*:last-child{margin-bottom:0}
-.cm-live-editor .cm-live-block h1{font-size:1.85em}
-.cm-live-editor .cm-live-block h2{font-size:1.35em}
-.cm-live-editor .cm-live-block h3{font-size:1.12em}
-.cm-live-editor .cm-live-block table{max-width:100%;display:block;overflow:auto}
-.cm-live-editor .cm-live-block img{max-width:100%;height:auto}
-.cm-live-editor .cm-live-block pre{max-width:100%;overflow:auto}
-.cm-live-editor .cm-live-block input{pointer-events:none}
-.cm-live-editor .cm-selectionBackground{background:#dce5ef!important}
-@media(max-width:1100px){.cm-live-editor .cm-content{padding:24px!important}}
+.content-area.edit>#editor:has(.visual-host:not(.hidden)){overflow:auto}
+.visual-host{width:100%;min-height:100%;padding:32px;overflow-wrap:anywhere;max-width:calc(var(--reading-width) + 64px);margin:0 auto}
+.visual-host .visual-document{padding:0;outline:none;font-family:"Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",sans-serif;font-size:var(--reading-font);line-height:var(--reading-line);color:#383838;caret-color:#343e4c;min-height:320px}
+.visual-document>*:first-child{margin-top:0}
+.visual-document h1{font-size:1.85em;line-height:1.5}.visual-document h2{font-size:1.35em}.visual-document h3{font-size:1.12em}
+.visual-document p{margin:0 0 1em}.visual-document pre{overflow:auto;max-width:100%;tab-size:4}.visual-document table{width:100%;table-layout:fixed}.visual-document td,.visual-document th{min-width:60px;position:relative}.visual-document .tableWrapper{overflow:auto}.visual-document img{max-width:100%;height:auto}
+.visual-document ul[data-type=taskList]{list-style:none;padding-left:0}.visual-document li[data-type=taskItem]{display:flex;gap:10px;align-items:baseline}.visual-document li[data-type=taskItem]>label{flex:none;user-select:none}.visual-document li[data-type=taskItem]>div{flex:1;min-width:0}.visual-document li[data-type=taskItem] input{accent-color:#586d86;width:15px;height:15px}.visual-document li[data-type=taskItem] p{margin:0}
+.visual-document .ProseMirror-selectednode{outline:2px solid #a8bad0}.visual-document .selectedCell:after{content:"";position:absolute;inset:0;background:#adc8e733;pointer-events:none}
+.format-toolbar [aria-pressed=true]{background:#e8edf3;border-color:#cdd7e3;color:#34455b}.format-toolbar #editor-source-toggle{margin-left:auto}
+.visual-preserved{margin:1em 0;position:relative}.visual-preserved-preview>*:first-child{margin-top:0}.visual-preserved-preview>*:last-child{margin-bottom:0}.visual-preserved-tools{display:flex;justify-content:flex-end;align-items:center;gap:12px;font-size:10px;color:#8793a2;opacity:0;transition:opacity .15s}.visual-preserved:hover .visual-preserved-tools,.visual-preserved.ProseMirror-selectednode .visual-preserved-tools{opacity:1}.visual-preserved-tools button{font:inherit;padding:3px 7px;border:1px solid #e2e7ee;border-radius:5px;background:transparent;color:inherit}.visual-preserved-marker{margin:4px 0;min-height:12px;border-bottom:1px dashed #e2e7ee}.visual-preserved-marker .visual-preserved-tools{opacity:.55}.visual-math{display:inline-block;cursor:pointer}.visual-math.ProseMirror-selectednode{background:#e7eef8}
+html[data-app-theme=dark] .visual-document{color:#c9d2df;caret-color:#c9d2df}html[data-app-theme=dark] .visual-document :is(h1,h2,h3,h4,strong){color:#eef2f8}html[data-app-theme=dark] .visual-document :is(pre,code,th){background:#29323e;color:#c9d2df}html[data-app-theme=dark] .visual-document :is(td,th,blockquote){border-color:#384250}html[data-app-theme=dark] .visual-preserved-marker{border-color:#384250}html[data-app-theme=dark] .visual-preserved-tools button{border-color:#384250}html[data-app-theme=dark] .visual-document a{color:#a9c5e5}html[data-app-theme=dark] .format-toolbar [aria-pressed=true]{background:#344457;color:#eef2f8;border-color:#4b627e}
+@media(max-width:1100px){.visual-host{padding:24px}}
+.visual-document ul[data-type=taskList]>li{display:flex;align-items:baseline;gap:10px;margin:6px 0}.visual-document ul[data-type=taskList]>li>label{flex:none;user-select:none}.visual-document ul[data-type=taskList]>li>div{flex:1;min-width:0}.visual-document ul[data-type=taskList]>li>div>p{margin:0}.visual-document ul[data-type=taskList]>li input{width:15px;height:15px;accent-color:#586d86}
+.visual-host .visual-document table{display:table;width:100%;margin:0}.visual-document .tableWrapper{margin:20px 0}.visual-document td p,.visual-document th p{margin:0}
+.visual-preserved-marker{height:6px;min-height:6px;border:0;margin:0}.visual-preserved-marker .visual-preserved-tools{opacity:0;position:absolute;right:0;bottom:0;z-index:1}.visual-preserved-marker:hover .visual-preserved-tools,.visual-preserved-marker.ProseMirror-selectednode .visual-preserved-tools{opacity:1}

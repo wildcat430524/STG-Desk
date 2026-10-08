@@ -63,7 +63,7 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     await js("document.querySelector('.reader-focus').click()");assert.equal(await js("getComputedStyle(document.querySelector('.workspace-header')).display"),'none');await capture('focus.png');
     await js("document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));document.querySelector('[data-mode=edit]').click()");
     assert.equal(await js("getComputedStyle(document.querySelector('.reader-tools')).display"),'none');
-    assert.equal(await js("getComputedStyle(document.querySelector('.cm-content')).color"),'rgb(201, 210, 223)');await capture('night-editor.png');
+    assert.equal(await js("getComputedStyle(document.querySelector('.visual-document')).color"),'rgb(201, 210, 223)');await capture('night-editor.png');
     await js("document.querySelector('#app-theme-toggle').click();document.querySelector('[data-reader-theme=light]').click()");
     await js("document.querySelector('[data-mode=read]').click();document.querySelector('#outline-toggle').click()");assert.ok(await js("!!document.querySelector('#outline [aria-current=location]')"));
     // Windows suspends the hidden compositor after a native resize.
