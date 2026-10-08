@@ -5,7 +5,7 @@ const {relevantDocuments}=require('../lib/documents.cjs');
 module.exports=function attachDsh({app,ipcMain,BrowserWindow,workspace,getWindow,dev,smokeTest,serviceFactory}){
   let floating,service,currentPath=null,connecting=null;
   const conversations=new Map();
-  const state={visible:true,mode:'docked',pinned:false,root:null,title:'DSH 导师',status:'导入学习文件夹后连接',draft:'',model:null,models:[],messages:[],busy:false,connected:false,sessions:[],contextLabel:null,contextPath:null};
+  const state={visible:false,mode:'docked',pinned:false,root:null,title:'DSH 导师',status:'导入学习文件夹后连接',draft:'',model:null,models:[],messages:[],busy:false,connected:false,sessions:[],contextLabel:null,contextPath:null};
   const storage=path.join(app.getPath('userData'),'dsh-conversations.json');
   let persistence=Promise.resolve();
   const makeId=()=>require('node:crypto').randomUUID();

@@ -128,8 +128,6 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     if(state.documentWindow){$('.native-titlebar span').textContent=description.lesson||description.label;if(state.documentWindow.kind==='answer')$('.answer-heading h2').textContent=description.lesson||'学生作答';}
     $('#breadcrumb').innerHTML=`${escape(state.workspace.name)} <span>/</span> ${escape(path)}`;
     $('#change-banner').classList.toggle('hidden',state.doc.version===disk.version);
-    $('#draft-banner').classList.toggle('hidden',!(recovered||hasAnswers()));
-    $('#draft-banner').textContent=recovered||hasAnswers()?'已恢复本地草稿。正式文档保持原样，保存后才会写入。':'';
     dirtyState();await updateDocuments();await api.documentContext(path);updateDocumentText();renderAnswers();renderAnswerWorkspace();
     document.body.classList.toggle('answer-document-active',description.kind==='answer');
     mountVisual();
@@ -210,7 +208,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
   }
   async function saveDoc(){
     if(!state.doc||!state.dirty)return;await flushDraft();
-    try{const result=await api.save(state.doc.path,text(),state.doc.version);state.doc=result;if(state.answer?.path===result.path)await acceptAnswer(result);else{dirtyState();await flushDraft();}$('#draft-banner').classList.add('hidden');message('文档已保存，旧版本已备份。');}
+    try{const result=await api.save(state.doc.path,text(),state.doc.version);state.doc=result;if(state.answer?.path===result.path)await acceptAnswer(result);else{dirtyState();await flushDraft();}message('文档已保存，旧版本已备份。');}
     catch(e){if(/修改|已变化/.test(cleanError(e)))await showConflict();else throw e;}
   }
   async function submitAnswers(){
@@ -230,7 +228,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     modal('比较外部修改与我的草稿',`<p class="modal-note">外部修改已保留。选择并核对最终文本，才会写入原文档。</p><div class="compare-grid"><section><h3>磁盘上的版本</h3><pre>${escape(disk.content)}</pre></section><section><h3>我的草稿 / 合并结果</h3><textarea id="merge-content">${escape(local)}</textarea></section></div>`,[
       {label:'继续保留草稿',action:async()=>{closeModal();await flushDraft();}},
       {label:'用外部版本作为合并起点',action:async()=>{$('#merge-content').value=disk.content;}},
-      {label:'保存核对后的合并结果',primary:true,action:async()=>{const merged=$('#merge-content').value;const result=await api.save(state.doc.path,merged,disk.version);state.doc=result;replaceSource(result.content);if(state.answer?.path===result.path)await acceptAnswer(result);else renderAnswers();mountVisual();await flushDraft();closeModal();$('#change-banner').classList.add('hidden');$('#draft-banner').classList.add('hidden');message('合并结果已保存，覆盖前的磁盘版本已备份。');}}
+      {label:'保存核对后的合并结果',primary:true,action:async()=>{const merged=$('#merge-content').value;const result=await api.save(state.doc.path,merged,disk.version);state.doc=result;replaceSource(result.content);if(state.answer?.path===result.path)await acceptAnswer(result);else renderAnswers();mountVisual();await flushDraft();closeModal();$('#change-banner').classList.add('hidden');message('合并结果已保存，覆盖前的磁盘版本已备份。');}}
     ],'保存冲突 · 两份内容都在');
   }
   async function showAnswerConflict(){const disk=await api.read(state.answer.path);modal('回答文档有外部更新',`<p class="modal-note">你的答案草稿已保留。先重新载入题目，核对是否仍对应当前轮次，再提交。</p><pre class="backup-preview">${escape(disk.content)}</pre>`,[{label:'继续保留草稿',action:async()=>closeModal()},{label:'重新加载题目并保留草稿',primary:true,action:async()=>{closeModal();await selectFile(state.doc.path);}}],'答案保护');}
