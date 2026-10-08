@@ -18,6 +18,7 @@ export function mountDsh({api,renderMD,escape,icon,dshOnly=false}){
   const modelIcon=document.createElement('span');modelIcon.className='dsh-model-icon';modelIcon.setAttribute('aria-hidden','true');modelIcon.innerHTML=icon('<path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5H4l1.8-4.2A8.5 8.5 0 1 1 21 11.5Z"/>',16);$('dsh-model').before(modelIcon);
   const sessionSelect=document.createElement('select');sessionSelect.id='dsh-session';sessionSelect.setAttribute('aria-label','选择同步的 DSH 会话');sessionSelect.title='选择当前学习文件夹的 DSH 会话';
   $('dsh-more-menu').prepend(sessionSelect);
+  const workspaceLabel=document.createElement('div');workspaceLabel.id='dsh-workspace';workspaceLabel.className='dsh-context';host.querySelector('.dsh-header').after(workspaceLabel);
   const openDesktop=document.createElement('button');openDesktop.id='dsh-open-desktop';openDesktop.textContent='打开 DSH 桌面应用';$('dsh-more-menu').prepend(openDesktop);
   const connectBar=document.createElement('div');connectBar.className='dsh-connect-bar';connectBar.innerHTML='<span>打开 DSH，与桌面端共用会话</span><button id="dsh-launch-desktop">打开 DSH</button><button id="dsh-connect-now">连接</button>';host.querySelector('.dsh-composer').before(connectBar);
   const input=$('dsh-input'),select=$('dsh-model'),messages=$('dsh-messages'),conversation=$('dsh-conversation');
@@ -27,6 +28,7 @@ export function mountDsh({api,renderMD,escape,icon,dshOnly=false}){
   function controls(){const busy=current.busy||preparing,button=$('dsh-send');button.disabled=!busy&&(!input.value.trim()||!current.root||!current.connected);const key=String(!!busy);if(button.dataset.busy!==key){button.dataset.busy=key;button.innerHTML=busy?icon('<rect x="7" y="7" width="10" height="10" rx="2"/>',18):icon('<path d="M12 19V5m-6 6 6-6 6 6"/>',19);button.title=busy?'停止回复':'发送消息';button.setAttribute('aria-label',button.title);}host.dataset.busy=key;select.disabled=busy||!current.connected||!(current.models?.length);input.disabled=preparing;sessionSelect.disabled=busy||!current.connected;connectBar.classList.toggle('hidden',!!current.connected);}
   function show(state){
     current=state;
+    workspaceLabel.textContent=state.root?'工作区：'+state.root:'请先导入学习文件夹';workspaceLabel.title=state.root||'';
     host.dataset.connected=String(!!state.connected);
     const visible=dshOnly||state.visible&&state.mode!=='floating';host.classList.toggle('hidden',!visible);
     document.body.classList.toggle('dsh-open',visible&&!dshOnly);

@@ -6,3 +6,4 @@
 .dsh-connect-bar span{flex-basis:100%}
 .dsh-connect-bar button{padding:7px 13px;border-radius:10px;background:white;border:1px solid #e2e5ea;color:#454c58;cursor:pointer}
 .dsh-more-menu select{width:100%;max-width:280px;border:1px solid #e4e7ed;border-radius:10px;background:#f8f9fb;color:#424955;padding:9px;font:inherit}
+#dsh-workspace{display:block;flex-shrink:0;margin:10px 16px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

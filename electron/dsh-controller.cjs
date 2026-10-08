@@ -112,13 +112,13 @@ module.exports=function attachDsh({app,ipcMain,BrowserWindow,workspace,getWindow
     if(!state.connected&&!smokeTest)throw new Error('请先打开 DSH 桌面应用并连接。');
     if(model&&!state.models.some(m=>m.id===model))throw new Error('所选模型当前不可用，请重新连接。');
     if(model)state.model=model;
-    const ctx=await context();
+    const root=state.root;
     state.draft='';state.busy=true;state.status='DSH 正在思考 · 同步中';publish();
-    try{const result=await getService().send({cwd:state.root,text,model:model||state.model,context:ctx});state.sessionId=result.sessionId;state.replyId=result.requestId;publish();return result;}
+    try{const ctx=await context();const result=await getService().send({cwd:root,text,model:model||state.model,context:ctx});state.sessionId=result.sessionId;state.replyId=result.requestId;publish();return result;}
     catch(error){state.draft=text;report(error);throw error;}
   });
   return {
-    async onWorkspaceOpened(root){if(state.busy)throw new Error('请先停止 DSH 回复，再切换工作区。');await restore;await save();state.root=root;currentPath=null;const record=conversations.get(root)||{};state.draft=record.draft||'';state.messages=[];state.model=null;state.models=[];state.connected=false;state.sessions=[];state.title=record.title||'DSH 导师';state.busy=false;await updateContext();if(state.visible&&!smokeTest)connect();},
+    async onWorkspaceOpened(root){if(state.busy)throw new Error('请先停止 DSH 回复，再切换工作区。');await restore;await save();state.root=root;currentPath=null;const record=conversations.get(root)||{};state.draft=record.draft||'';state.messages=[];state.sessionId=null;state.replyId=null;state.model=null;state.models=[];state.connected=false;state.sessions=[];state.title='DSH 导师';state.busy=false;await updateContext();if(state.visible&&!smokeTest)connect();},
     async onDocumentSelected(p){await workspace.resolve(p);currentPath=p;await updateContext();},
     async dispose(){app.isQuitting=true;await save();await service?.dispose();floating?.destroy();},
     state,
