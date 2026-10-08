@@ -11,6 +11,7 @@ research/
 tests/artifacts/
 tools/*
 !tools/collect-licenses.cjs
+!tools/verify-reader-ui.cjs
 OPEN_SOURCE_REVIEW.md
 build/icon-source.png
 build/icon-preview.png

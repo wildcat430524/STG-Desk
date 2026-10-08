@@ -82,14 +82,18 @@ document.documentElement.dataset.theme='mono';
 
 import {mountWorkbench} from './workbench';
 import {mountDsh} from './dsh-panel';
+import {mountApplicationTheme} from './app-theme';
 import './learning-shell.css';
 import './refined-surfaces.css';
 import './dsh-polish.css';
 import './workspace-polish.css';
 import './answer-workspace.css';
+import './reader.css';
+import './app-theme.css';
 const dshOnly=new URLSearchParams(location.search).has('dsh');
 const documentOnly=new URLSearchParams(location.search).has('document');
 if(documentOnly)document.body.classList.add('document-only');
 if(dshOnly){document.body.classList.add('dsh-only');document.documentElement.classList.add('dsh-window');}
 else mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,documentOnly});
 if(!documentOnly)mountDsh({api,renderMD,escape,icon,dshOnly});
+mountApplicationTheme({dshOnly});

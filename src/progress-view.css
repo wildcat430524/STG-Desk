@@ -1,0 +1,128 @@
+/* Learning-progress summary card — visual layer for src/progress-view.js.
+   Owned file: every selector below is scoped to .progress-card and its own
+   elements, so the reading surface, the answer workspace and the DSH panel are
+   untouched. Palette stays in the existing light UI: a soft grey-blue base with
+   a teal accent for the recorded count. Tokens are local custom properties so
+   nothing leaks into :root. */
+
+.progress-card {
+  --progress-line: #e3e7ec;
+  --progress-surface: #f7f9fb;
+  --progress-ink: #3f4a59;
+  --progress-muted: #7d8899;
+  --progress-accent: #3f8b80;
+  --progress-accent-ink: #35697f;
+  --progress-track: #e6ebf1;
+  --progress-chip: #eaeff5;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  margin-bottom: 28px;
+  padding: 22px 24px;
+  border: 1px solid var(--progress-line);
+  border-radius: 18px;
+  background: var(--progress-surface);
+  box-shadow: 0 2px 6px #23303d05, inset 0 1px 0 #ffffffb8;
+  color: var(--progress-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-card__head { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+.progress-card__label { font-size: 12px; letter-spacing: .01em; color: var(--progress-muted); }
+
+/* The original status record is kept verbatim here; the meter never replaces it. */
+.progress-card__status {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.65;
+  color: var(--progress-ink);
+  overflow-wrap: anywhere;
+}
+
+.progress-card__note { margin: 0; font-size: 12px; line-height: 1.7; color: var(--progress-muted); }
+
+.progress-card__meter { min-width: 0; }
+
+.progress-card__track {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--progress-track);
+  box-shadow: inset 0 1px 2px #2a3a4a0f;
+  overflow: hidden;
+}
+
+.progress-card__bar {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5a7590, var(--progress-accent));
+  transition: width .32s ease;
+}
+
+.progress-card__meta { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 12px; min-width: 0; }
+
+.progress-card__figures { display: flex; align-items: baseline; gap: 7px; margin: 0; min-width: 0; }
+
+.progress-card__value {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  color: var(--progress-accent);
+}
+
+.progress-card__total { font-size: 13px; color: var(--progress-muted); overflow-wrap: anywhere; }
+
+.progress-card__percent {
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--progress-chip);
+  color: var(--progress-accent-ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.progress-card__pending {
+  padding: 4px 10px;
+  border: 1px solid var(--progress-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--progress-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* Unknown or non-countable records stay visibly quiet — no bar, no percentage.
+   The card must never imply a completion figure it was not given. */
+.progress-card[data-progress-state="unrecorded"] { background: #fafbfc; }
+.progress-card[data-progress-state="unrecorded"] .progress-card__status { font-weight: 400; color: #5c6878; }
+
+@media (max-width: 900px) {
+  .progress-card { padding: 19px 19px; border-radius: 16px; gap: 14px; }
+  .progress-card__value { font-size: 23px; }
+}
+
+@media (max-width: 560px) {
+  .progress-card { margin-bottom: 22px; padding: 17px 16px; }
+  .progress-card__status { font-size: 15px; }
+  .progress-card__meta { gap: 8px 10px; }
+}
+
+/* Motion: the only animation is the recorded width of the bar. It is declared
+   after the base rule so the reduced-motion reset wins at equal specificity. */
+@media (prefers-reduced-motion: reduce) {
+  .progress-card__bar { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .progress-card { border-color: CanvasText; }
+  .progress-card__track { border: 1px solid CanvasText; }
+  .progress-card__bar { background: Highlight; }
+  .progress-card__percent,
+  .progress-card__pending { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
+}

@@ -104,6 +104,8 @@ Teaching and student documents use the same prefix and sit in the same directory
 
 The teaching document keeps two modes, "read" and "edit". Editing uses single-column live layout: the current paragraph accepts Markdown input directly while the other paragraphs show rendered output, with no side-by-side source pane. Font size, line spacing and width can be adjusted in reading settings.
 
+The top "Night" switch changes the entire workspace, including navigation, reading, editing, answers, DSH and dialogs; detached windows share the theme. Reading also offers light and paper daytime colors and a focus mode. The reading bar shows your position, current section and estimated reading time; the outline highlights the current section. Code blocks have a copy button, and wide tables scroll horizontally. Task lists show completion counts and a progress bar; click the task count to jump to the next incomplete item. Checking an item updates the automatically preserved draft; click "Save" to write it to the document. In narrow windows, use the answer toggle to expand the answer workspace.
+
 Editing works on raw Markdown and does not convert the whole document; comments, formulas, tables and task lists are all preserved. The toolbar can insert headings, lists, quotes, code blocks and tables.
 
 ![Single-column Markdown editing and the formatting toolbar](docs/screenshots/visual-editor.png)

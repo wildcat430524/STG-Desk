@@ -4,6 +4,9 @@ import {markdown} from '@codemirror/lang-markdown';
 import {undo,redo} from '@codemirror/commands';
 import DOMPurify from 'dompurify';
 import {liveMarkdown} from './live-editor';
+import {mountReader} from './reader';
+import {renderProgressSummary} from './progress-view';
+import './progress-view.css';
 import './workbench.css';
 
 export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,documentOnly=false}) {
@@ -25,6 +28,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
   const folderIcon=icon('<path d="M3 7V5h7l2 2h9v13H3Z"/>',15);
   const formatIcons={list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/>',task:'<rect x="3" y="5" width="6" height="6" rx="1"/><path d="m4 8 2 2 4-5M13 8h8M13 17h8M3 17h6"/>',quote:'<path d="M4 6h6v8H4Zm10 0h6v8h-6ZM10 14c0 3-2 4-4 4m14-4c0 3-2 4-4 4"/>',code:'<path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-15-2 18"/>',table:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 10v10"/>',link:'<path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/>',undo:'<path d="M4 10h10a6 6 0 0 1 0 12M4 10l5-5M4 10l5 5"/>',redo:'<path d="M20 10H10a6 6 0 0 0 0 12M20 10l-5-5M20 10l-5 5"/>'};
   for(const [name,path] of Object.entries(formatIcons)){const b=document.querySelector(`[data-format="${name}"]`);b.textContent=b.textContent.replace(/[↶↷]/g,'').trim();b.insertAdjacentHTML('afterbegin',icon(path,13));}
+  const reader=mountReader({preview:$('#preview'),outline:$('#outline'),getSource:text,notify:message,toggleTask:(offset,checked)=>{editor.dispatch({changes:{from:offset,to:offset+1,insert:checked?'x':' '}});clearTimeout(renderTimer);renderPreview();}});
 
   function message(text,error=false){const box=$('#toast');box.textContent=text;box.className=`toast ${error?'error':''}`;clearTimeout(message.timer);message.timer=setTimeout(()=>box.classList.add('hidden'),5000);}
   async function guarded(task){if(state.busy)return;state.busy=true;document.documentElement.dataset.busy='true';try{await task();}catch(e){message(cleanError(e),true);}finally{state.busy=false;document.documentElement.dataset.busy='false';drainWindowEvents();}}
@@ -70,7 +74,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     if(source&&(!chapter||sameLesson)){try{const doc=await api.read(source);details=source===state.learning?.profilePath?progressSections(doc.content,chapter?/🚦|当前交接/:/📊|掌握|📚|课次.*索引/):doc.content;}catch{}}
     if(page!==kind)return;
     const lesson=active?.split('/').at(-2)||state.learning?.lesson||'尚未选择课程';
-    $('#progress-content').innerHTML=`<div class="progress-summary"><span>${escape(chapter?lesson:'已记录的学习进度')}</span><strong id="${chapter?'chapter':'overall'}-progress">${escape(progress[kind]||'尚未记录')}</strong></div>${details?`<article class="markdown-body">${renderMD(details,source)}</article>`:'<p class="progress-empty">暂无更多进度记录，导师更新文档后会自动刷新。</p>'}`;
+    $('#progress-content').innerHTML=renderProgressSummary({label:chapter?lesson:'已记录的学习进度',status:progress[kind],chapter,escape})+(details?`<article class="markdown-body">${renderMD(details,source)}</article>`:'<p class="progress-empty">暂无更多进度记录，导师更新文档后会自动刷新。</p>');
   }
   async function showProgress(kind){await mayLeave();page=kind;$('#welcome').classList.add('hidden');$('#document').classList.add('hidden');$('#progress-page').classList.remove('hidden');$('#outline').classList.add('hidden');drawTree();await renderProgress();}
   async function moveOutOfDocument(path){
@@ -151,11 +155,14 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     for(let i=0;i<tokens.length;i++){const t=tokens[i];if(t.type==='heading_open'&&t.level===0){const id=`section-${headings.length}`;t.attrSet('id',id);headings.push({id,title:tokens[i+1].content.replace(/[*`_]/g,''),level:Number(t.tag.slice(1)),line:t.map[0]+1});}if(t.map&&t.type.endsWith('_open')&&t.level===0)t.attrSet('data-source-line',String(t.map[0]+1));}
     $('#preview').innerHTML=DOMPurify.sanitize(renderer.renderer.render(tokens,renderer.options,env),{ALLOW_UNKNOWN_PROTOCOLS:true,ADD_ATTR:['data-source-line','encoding']});
     $('#outline').innerHTML='<div class="outline-title">本文目录</div>'+headings.map(h=>`<button data-section="${h.id}" data-line="${h.line}" style="padding-left:${12+(h.level-1)*10}px">${escape(h.title)}</button>`).join('');
+    if(!headings.length)$('#outline').insertAdjacentHTML('beforeend','<p class="reader-outline-empty">本文暂无标题，可直接阅读正文。</p>');
+    reader.render({tokens,content,headings,key:`${state.workspace?.root||''}/${state.doc.path}`});
     $('#status-right').textContent=`${content.length.toLocaleString()} 字符 · UTF-8 · Markdown`;
   }
   function setMode(mode){
     mode=document.body.classList.contains('answer-document-active')?'edit':mode==='read'?'read':'edit';
     state.mode=mode;$('#content-area').className=`content-area ${mode}`;
+    reader.mode(mode);
     $('#format-toolbar').classList.toggle('hidden',mode==='read');
     $('.mode-tabs').classList.toggle('hidden',document.body.classList.contains('answer-document-active'));
     editor?.dispatch({effects:liveMode.reconfigure(mode==='edit'?liveMarkdown({renderer,renderMD,path:state.doc.path}):[])});
@@ -252,7 +259,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
       const result=await api.backupRestore(state.doc.path,b.dataset.backup,current.version);state.doc=result;replaceSource(result.content);if(state.answer?.path===result.path)await acceptAnswer(result);setMode('read');renderAnswers();await flushDraft();closeModal();message('历史版本已恢复，恢复前的内容已备份。');
     });$('#modal-actions').append(restore);}catch(error){message(cleanError(error),true);}};
   }
-  function applyPreferences(){const p=state.preferences;document.documentElement.style.setProperty('--reading-font',p.fontSize+'px');document.documentElement.style.setProperty('--reading-line',p.lineHeight);document.documentElement.style.setProperty('--reading-width',p.readingWidth+'px');}
+  function applyPreferences(){const p=state.preferences;document.documentElement.style.setProperty('--reading-font',p.fontSize+'px');document.documentElement.style.setProperty('--reading-line',p.lineHeight);document.documentElement.style.setProperty('--reading-width',p.readingWidth+'px');reader.refresh();}
   function preferences(){const p=state.preferences;modal('阅读与备份设置',`<div class="preferences-form"><label>正文字号 <output id="font-output">${p.fontSize}px</output><input id="font-size" type="range" min="13" max="24" value="${p.fontSize}"></label><label>行距 <output id="line-output">${p.lineHeight}</output><input id="line-height" type="range" min="1.4" max="2.4" step=".1" value="${p.lineHeight}"></label><label>阅读宽度 <output id="width-output">${p.readingWidth}px</output><input id="reading-width" type="range" min="540" max="1200" step="20" value="${p.readingWidth}"></label><label>每份文档保留的备份数量<input id="retention" type="number" min="5" max="100" value="${p.backupRetention}"></label></div>`,[{label:'保存设置',primary:true,action:async()=>{state.preferences=await api.preferences(state.preferences);applyPreferences();closeModal();message('阅读与备份设置已保存。');}}],'按你的阅读习惯');
     $('#modal-body').oninput=()=>{state.preferences={fontSize:Number($('#font-size').value),lineHeight:Number($('#line-height').value),readingWidth:Number($('#reading-width').value),backupRetention:Number($('#retention').value)||20};$('#font-output').value=state.preferences.fontSize+'px';$('#line-output').value=state.preferences.lineHeight;$('#width-output').value=state.preferences.readingWidth+'px';applyPreferences();};
   }

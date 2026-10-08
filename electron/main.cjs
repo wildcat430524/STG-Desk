@@ -44,6 +44,16 @@ function handle(name,fn) {
   });
 }
 app.whenReady().then(async()=>{
+  ipcMain.handle('app-theme',(event,theme)=>{
+    const owner=BrowserWindow.fromWebContents(event.sender);
+    if(!owner||owner.isDestroyed()||event.senderFrame!==owner.webContents.mainFrame||!['dark','light'].includes(theme))throw new Error('非法主题请求。');
+    const dark=theme==='dark';
+    // Keep the floating DSH window's rounded transparent edges intact.
+    if(!new URL(event.sender.getURL()).searchParams.has('dsh')){
+      owner.setBackgroundColor(dark?'#171d26':'#f1f2f4');
+      owner.setTitleBarOverlay({color:dark?'#171d26':'#f1f2f4',symbolColor:dark?'#c9d2df':'#58616e',height:34});
+    }
+  });
   drafts=new DraftStore(path.join(app.getPath('userData'),'drafts'));
   documentWindows=require('./document-windows.cjs').createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest,onStateChange:state=>{
     documentWindowNotifications=documentWindowNotifications.catch(()=>{}).then(async()=>{
