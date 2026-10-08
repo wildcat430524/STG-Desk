@@ -24,26 +24,31 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 ## 界面预览
 
-教学、回答、当前章节进度和总体进度分别提供入口；文档可以移到独立窗口，DSH 支持侧边面板与小窗。
+教学、学生回答、当前章节进度和总体进度各有入口；教学与回答文档可以移到独立窗口，DSH 支持侧边面板与独立小窗。
 
-![学习工作台：教学文档、作答区与 DSH 面板](docs/screenshots/workspace.png)
+![学习工作台：教学文档、作答区与 DSH 面板](docs/screenshots/workspace.png)<br>
+<sub><strong>学习工作台。</strong>左边读教学，中间按题作答，右边连接 DSH 继续对话；三块区域各自滚动，互不遮挡。</sub>
 
-<details>
-<summary><strong>更多界面</strong></summary>
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/welcome.png" alt="欢迎页与导入入口"><br><sub><strong>欢迎页。</strong>导入学习文件夹，或先试用内置演示工作区；最近打开的目录会列在下方。</sub></td>
+<td width="50%"><img src="docs/screenshots/answer-saved.png" alt="保存本轮作答"><br><sub><strong>保存本轮作答。</strong>答案按原答追加进学生文档，旧版本自动备份，接着就能在 DSH 里发评估请求。</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/visual-editor.png" alt="所见即所得编辑"><br><sub><strong>所见即所得编辑。</strong>就地改标题、清单、表格、公式与代码；没动过的区块保留原始 Markdown。</sub></td>
+<td width="50%"><img src="docs/screenshots/history.png" alt="历史版本与恢复"><br><sub><strong>历史版本。</strong>每份文档保留近期备份，可先预览原文，再决定恢复哪一个版本。</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/overall-progress.png" alt="总体进度与掌握表"><br><sub><strong>总体进度。</strong>从学习档案读出已掌握单元、章节进度与交接状态，不额外维护一份数据。</sub></td>
+<td width="50%"><img src="docs/screenshots/teaching-window.png" alt="独立教学窗口"><br><sub><strong>独立教学窗口。</strong>把教学文档移到独立窗口，与作答区并排看；两边各自保留阅读位置。</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/student-window.png" alt="独立回答窗口"><br><sub><strong>独立回答窗口。</strong>回答文档同样可以开窗，主窗口切换课程后仍使用原工作区继续作答。</sub></td>
+<td width="50%"><img src="docs/screenshots/dsh-floating.png" alt="DSH 独立小窗"><br><sub><strong>DSH 独立小窗。</strong>面板与小窗共用同一会话、模型和输入草稿，可置顶悬浮随时提问。</sub></td>
+</tr>
+</table>
 
-| 文档编辑 | 学习进度 |
-| --- | --- |
-| ![所见即所得编辑](docs/screenshots/visual-editor.png) | ![总体进度与掌握记录](docs/screenshots/overall-progress.png) |
-
-| 独立教学窗口 | 独立回答窗口 |
-| --- | --- |
-| ![独立教学窗口](docs/screenshots/teaching-window.png) | ![独立回答窗口](docs/screenshots/student-window.png) |
-
-<img src="docs/screenshots/dsh-floating.png" alt="尚未连接的 DSH 独立小窗" width="420">
-
-</details>
-
-截图使用演示课程与测试草稿，不包含真实学习记录或模型回复；部分控件布局可能早于当前源码。
+截图使用演示课程与测试草稿，不包含真实学习记录或模型回复；界面目前为中文。
 
 ## 功能特性
 
@@ -194,6 +199,8 @@ npm start
 | `npm run dist` | 生成 `release/STG-Desk-<版本号>-Windows.exe` |
 
 开发桌面界面时，先运行 `npm run dev`，再在另一终端设置 `$env:STG_DEV_URL='http://127.0.0.1:5178'` 并执行 `npx electron .`。
+
+> 桌面冒烟验收需要在未被 `ELECTRON_RUN_AS_NODE=1` 污染的环境中运行；若出现 `app.setPath is not a function`，先清除该变量再重试。验收会在 `tests/artifacts/` 留下界面截图与 `desktop-smoke.json`。
 
 <details>
 <summary><strong>源码结构与技术组成</strong></summary>

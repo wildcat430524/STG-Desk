@@ -61,7 +61,10 @@ module.exports=async function smoke(window,app){
     await js("document.querySelector('#tree [data-file]').click()");await wait("!document.querySelector('#document').classList.contains('hidden')");
     assert.ok(await js("!document.querySelector('#tree').textContent.includes('学习档案')"));
     evidence.push('Four navigation pages: teaching, answer, current chapter progress, overall progress; popout is only inside documents');
-    assert.ok(await js("!document.querySelector('#dsh-host').classList.contains('hidden')"));
+    assert.equal(await js("document.querySelector('#dsh-host').classList.contains('hidden')"),true);
+    evidence.push('DSH panel stays closed at startup and only opens from the explicit entry');
+    await js("document.querySelector('#open-dsh').click()");await wait("!document.querySelector('#dsh-host').classList.contains('hidden')");
+    assert.equal(await js("document.querySelector('#open-dsh').textContent.includes('连接 DSH')"),true);
     await js("document.querySelector('#dsh-input').value='保留会话草稿';document.querySelector('#dsh-input').dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#dsh-detach').click()");
     await wait("document.querySelector('#dsh-host').classList.contains('hidden')");
     assert.equal((await js('window.stg.dshState()')).draft,'保留会话草稿');
@@ -121,6 +124,15 @@ module.exports=async function smoke(window,app){
     evidence.push('Side-by-side conflict comparison and explicit merged save preserved both edits');
     assert.ok(await js("window.stg.backups('我的学习/学科/Python/01-认识变量/01_学生回答.md').then(items=>items.length>0)"));
     evidence.push('Version-checked saves continue making automatic backups without a history control row');
+    await js("document.querySelector('[data-answer-tab=document]').click()");await wait("!document.querySelector('#answer-document').classList.contains('hidden')");
+    await js("document.querySelector('#answer-history').click()");await wait("document.querySelector('#modal-title').textContent.includes('历史版本')");
+    assert.ok(await js("document.querySelectorAll('[data-answer-backup]').length>0"));
+    await js("document.querySelector('[data-answer-backup]').click()");await wait("document.querySelector('#answer-backup-preview').textContent!=='选择版本查看原文。'");
+    assert.ok(await js("document.querySelector('#modal-actions button').textContent==='恢复这个版本'"));
+    await screenshot('history.png');
+    await js("document.querySelector('#modal-close').click()");await wait("document.querySelector('#modal').classList.contains('hidden')");
+    await js("document.querySelector('[data-answer-tab=current]').click()");
+    evidence.push('Answer history lists real local backups, previews the selected version and offers restore');
     await js("document.querySelector('#choose-course').click()");await wait("!document.querySelector('#modal').classList.contains('hidden')");await js("document.querySelector('[data-file=\"可视化测试.md\"]').click()");await wait("document.querySelector('#editor .tiptap').textContent.includes('初始段落')");await wait("!!document.querySelector('.tiptap')");assert.equal(await fs.readFile(path.join(root,'可视化测试.md'),'utf8'),visualFixture);assert.equal(await js("document.querySelector('#save-status').textContent"),'已保存');
     await js("document.querySelector('.tiptap').focus()");window.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});window.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});await window.webContents.insertText('可视化新增内容');await wait("document.querySelector('#save-status').textContent.includes('待保存')");await js("document.querySelector('#save').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");const visualSaved=await fs.readFile(path.join(root,'可视化测试.md'),'utf8');assert.ok(visualSaved.includes('可视化新增内容'));for(const original of ['<!-- s2g-goal-view:start -->','公式 $x^2$ 与 **加粗**。','- [ ] 原始清单','| 原文 | 1 |','print(21)'])assert.ok(visualSaved.includes(original));await screenshot('visual-editor.png');evidence.push('Single-column WYSIWYG typing saved through version-checked IPC');
     await js("document.querySelector('.visual-math').dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}))");assert.ok(await js("!!document.querySelector('.tiptap .visual-math .katex')&&!document.querySelector('.cm-live-active')"));assert.equal(await js("document.querySelector('#save-status').textContent"),'已保存');evidence.push('Clicking a rendered formula preserves visual formatting and saved content');

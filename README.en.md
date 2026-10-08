@@ -26,24 +26,29 @@ Reading, editing, and answering work independently; connect DSH when needed. Lea
 
 Teaching, answers, current chapter progress, and overall progress have separate entries. Documents can open in detached windows, and DSH offers a side panel or a floating window.
 
-![Learning workspace with teaching, answers, and the DSH panel](docs/screenshots/workspace.png)
+![Learning workspace with teaching, answers, and the DSH panel](docs/screenshots/workspace.png)<br>
+<sub><strong>The workspace.</strong> Read the lesson on the left, answer question by question in the middle, and continue with DSH on the right. Each area scrolls on its own.</sub>
 
-<details>
-<summary><strong>More screenshots</strong></summary>
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/welcome.png" alt="Welcome screen and import entry"><br><sub><strong>Welcome.</strong> Import a learning folder or try the bundled demo workspace; recent folders are listed below.</sub></td>
+<td width="50%"><img src="docs/screenshots/answer-saved.png" alt="Saving the current round"><br><sub><strong>Saving a round.</strong> Answers are appended to the answer document, the previous version is backed up, and the evaluation request is ready to send.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/visual-editor.png" alt="WYSIWYG editing"><br><sub><strong>WYSIWYG editing.</strong> Edit headings, checklists, tables, math, and code in place; untouched blocks keep their original Markdown.</sub></td>
+<td width="50%"><img src="docs/screenshots/history.png" alt="Version history and restore"><br><sub><strong>Version history.</strong> Each document keeps recent backups; preview a version before deciding to restore it.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/overall-progress.png" alt="Overall progress and mastery table"><br><sub><strong>Overall progress.</strong> Chapter progress, handoff status, and mastery records are read from the learning profile, with no second copy to maintain.</sub></td>
+<td width="50%"><img src="docs/screenshots/teaching-window.png" alt="Detached teaching window"><br><sub><strong>Detached teaching window.</strong> Move the lesson into its own window and read it beside the answer workspace; both keep their own reading position.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/student-window.png" alt="Detached answer window"><br><sub><strong>Detached answer window.</strong> The answer document opens the same way and keeps its original workspace after the main window switches lessons.</sub></td>
+<td width="50%"><img src="docs/screenshots/dsh-floating.png" alt="DSH floating window"><br><sub><strong>DSH floating window.</strong> The panel and the floating window share one session, model, and input draft, and can stay on top.</sub></td>
+</tr>
+</table>
 
-| Document editing | Learning progress |
-| --- | --- |
-| ![WYSIWYG editing](docs/screenshots/visual-editor.png) | ![Overall progress and mastery records](docs/screenshots/overall-progress.png) |
-
-| Detached teaching window | Detached answer window |
-| --- | --- |
-| ![Teaching window](docs/screenshots/teaching-window.png) | ![Answer window](docs/screenshots/student-window.png) |
-
-<img src="docs/screenshots/dsh-floating.png" alt="DSH floating window before connection" width="420">
-
-</details>
-
-Screenshots use demo lessons and test drafts, with no real learning records or model responses. Some control layouts may predate the current source.
+Screenshots use demo lessons and test drafts, with no real learning records or model responses. The interface is currently in Chinese.
 
 ## Features
 
@@ -194,6 +199,8 @@ npm start
 | `npm run dist` | Create `release/STG-Desk-<version>-Windows.exe` |
 
 For desktop UI development, run `npm run dev`, then set `$env:STG_DEV_URL='http://127.0.0.1:5178'` in another terminal and run `npx electron .`.
+
+> The desktop smoke checks must run in an environment that is not polluted by `ELECTRON_RUN_AS_NODE=1`; if Electron reports `app.setPath is not a function`, clear that variable and retry. The run writes interface screenshots and `desktop-smoke.json` into `tests/artifacts/`.
 
 <details>
 <summary><strong>Source layout and technology</strong></summary>
