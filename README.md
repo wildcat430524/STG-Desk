@@ -29,26 +29,7 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 ![学习工作台：教学文档与作答区，DSH 按需展开](docs/screenshots/workspace.png)<br>
 <sub><strong>学习工作台。</strong>左边读教学，右边按题作答；需要评估或讨论时，从右上角展开 DSH 面板。</sub>
 
-<table>
-<tr>
-<td width="50%"><img src="docs/screenshots/welcome.png" alt="欢迎页与导入入口"><br><sub><strong>欢迎页。</strong>导入学习文件夹，或先试用内置演示工作区；最近打开的目录会列在下方。</sub></td>
-<td width="50%"><img src="docs/screenshots/answer-saved.png" alt="保存本轮作答"><br><sub><strong>保存本轮作答。</strong>答案按原答追加进学生文档，旧版本自动备份，接着就能在 DSH 里发评估请求。</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/screenshots/visual-editor.png" alt="所见即所得编辑"><br><sub><strong>所见即所得编辑。</strong>就地改标题、清单、表格、公式与代码；没动过的区块保留原始 Markdown。</sub></td>
-<td width="50%"><img src="docs/screenshots/history.png" alt="历史版本与恢复"><br><sub><strong>历史版本。</strong>每份文档保留近期备份，可先预览原文，再决定恢复哪一个版本。</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/screenshots/overall-progress.png" alt="总体进度与掌握表"><br><sub><strong>总体进度。</strong>从学习档案读出已掌握单元、章节进度与交接状态，不额外维护一份数据。</sub></td>
-<td width="50%"><img src="docs/screenshots/teaching-window.png" alt="独立教学窗口"><br><sub><strong>独立教学窗口。</strong>把教学文档移到独立窗口，与作答区并排看；两边各自保留阅读位置。</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/screenshots/student-window.png" alt="独立回答窗口"><br><sub><strong>独立回答窗口。</strong>回答文档同样可以开窗，主窗口切换课程后仍使用原工作区继续作答。</sub></td>
-<td width="50%"><img src="docs/screenshots/dsh-floating.png" alt="DSH 独立小窗"><br><sub><strong>DSH 独立小窗。</strong>面板与小窗共用同一会话、模型和输入草稿，可置顶悬浮随时提问。</sub></td>
-</tr>
-</table>
-
-截图使用演示课程与测试草稿，不包含真实学习记录或模型回复；界面目前为中文。
+截图使用演示课程与测试草稿，不包含真实学习记录或模型回复。
 
 ## 功能特性
 
@@ -73,6 +54,8 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 暂时没有学习资料，可以从欢迎页体验 [内置演示课程](demo/StepsToGreat)。导入目录会直接读取原文件；保存时写入原学习目录，不复制成另一套资料。
 
+![欢迎页：导入学习文件夹或体验演示课程](docs/screenshots/welcome.png)
+
 <details>
 <summary><strong>学习目录与文档配对</strong></summary>
 
@@ -96,9 +79,13 @@ StepsToGreat/
 
 ## 使用指南
 
-### 阅读与作答
+### 阅读与编辑
 
 点击文档的标题、正文、清单或表格直接编辑；行内公式可双击修改。文档信息与操作集中在底部，可调整阅读设置、切换夜间主题或进入「专注」。按 `Esc` 或点击退出入口返回普通布局。
+
+![直接编辑标题、清单、表格、公式与代码](docs/screenshots/visual-editor.png)
+
+### 按题作答
 
 教学旁的作答区提供三个入口：
 
@@ -112,11 +99,27 @@ StepsToGreat/
 
 **自动草稿用于恢复输入，正式文档仍需点击保存。** 本轮提交会保留已有答案与评估，不自动修改掌握表或交接状态。
 
+![保存本轮作答后，答案原文出现在学生文档中](docs/screenshots/answer-saved.png)
+
+### 学习进度
+
+点击「当前章节进度」核对当前交接记录，或打开「总体进度」查看课程路线与学习档案中已有的掌握记录。进度来自原文档，导师更新记录后会刷新。
+
+![总体进度：已记录的掌握数量与掌握表](docs/screenshots/overall-progress.png)
+
 ### 独立窗口
 
 在教学或回答页点击「开窗口 ↗」，主应用切到另一份文档，已弹出的入口暂时禁用；进度页仍可进入。关闭独立窗口后，主应用回到对应文档并恢复草稿。
 
 主窗口切换课程、切换学习目录或关闭后，独立窗口继续使用打开时的文档与工作区。各窗口保留独立草稿，写入同一文件时共享保存队列并校验版本。
+
+把教学移到独立窗口，可以一边阅读、一边在主窗口答题。
+
+<img src="docs/screenshots/teaching-window.png" alt="独立教学窗口" width="720">
+
+回答文档也可以独立打开，直接编辑全文，并保留原工作区。
+
+<img src="docs/screenshots/student-window.png" alt="独立回答窗口" width="720">
 
 ### DSH 协作
 
@@ -125,6 +128,10 @@ StepsToGreat/
 模型目录、账号和额度由你本机的 DSH 管理。保存答案后，再发送评估请求，让学习 Agent 读取文档进行评估。
 
 [dsh-stg-learning](https://github.com/wildcat430524/dsh-stg-learning) 是独立的 DSH 学习管理插件，用于在 DSH 内组织工作区与会话；连接 DSH 无需安装该插件。
+
+DSH 面板可切换为置顶小窗，继续使用同一会话、模型和输入草稿。下图展示尚未连接时的界面。
+
+<img src="docs/screenshots/dsh-floating.png" alt="DSH 独立小窗，尚未连接" width="420">
 
 <details>
 <summary><strong>DSH 版本与连接配置</strong></summary>
@@ -154,6 +161,10 @@ $env:DSH_HOME = 'C:\你的DSH配置目录'
 保存前校验文件版本，备份旧内容，再通过临时文件替换。外部修改会提示重新载入或手动合并；恢复历史版本前也会备份当前内容。
 
 输入停顿约 250 毫秒后写入草稿；草稿恢复不会自动覆盖原文件。本地备份不等于云端同步，重要学习资料建议另行备份。
+
+在历史版本中先预览旧内容，再决定是否恢复。
+
+![历史版本：备份列表、原文预览与恢复入口](docs/screenshots/history.png)
 
 ## 常见问题
 

@@ -29,26 +29,7 @@ Teaching, answers, current chapter progress, and overall progress have separate 
 ![Teaching and answers in one workspace, with DSH available on demand](docs/screenshots/workspace.png)<br>
 <sub><strong>The workspace.</strong> Read the lesson on the left and answer question by question on the right. Open the DSH panel from the top-right corner when you need evaluation or discussion.</sub>
 
-<table>
-<tr>
-<td width="50%"><img src="docs/screenshots/welcome.png" alt="Welcome screen and import entry"><br><sub><strong>Welcome.</strong> Import a learning folder or try the bundled demo workspace; recent folders are listed below.</sub></td>
-<td width="50%"><img src="docs/screenshots/answer-saved.png" alt="Saving the current round"><br><sub><strong>Saving a round.</strong> Answers are appended to the answer document, the previous version is backed up, and the evaluation request is ready to send.</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/screenshots/visual-editor.png" alt="WYSIWYG editing"><br><sub><strong>WYSIWYG editing.</strong> Edit headings, checklists, tables, math, and code in place; untouched blocks keep their original Markdown.</sub></td>
-<td width="50%"><img src="docs/screenshots/history.png" alt="Version history and restore"><br><sub><strong>Version history.</strong> Each document keeps recent backups; preview a version before deciding to restore it.</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/screenshots/overall-progress.png" alt="Overall progress and mastery table"><br><sub><strong>Overall progress.</strong> Chapter progress, handoff status, and mastery records are read from the learning profile, with no second copy to maintain.</sub></td>
-<td width="50%"><img src="docs/screenshots/teaching-window.png" alt="Detached teaching window"><br><sub><strong>Detached teaching window.</strong> Move the lesson into its own window and read it beside the answer workspace; both keep their own reading position.</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/screenshots/student-window.png" alt="Detached answer window"><br><sub><strong>Detached answer window.</strong> The answer document opens the same way and keeps its original workspace after the main window switches lessons.</sub></td>
-<td width="50%"><img src="docs/screenshots/dsh-floating.png" alt="DSH floating window"><br><sub><strong>DSH floating window.</strong> The panel and the floating window share one session, model, and input draft, and can stay on top.</sub></td>
-</tr>
-</table>
-
-Screenshots use demo lessons and test drafts, with no real learning records or model responses. The interface is currently in Chinese.
+Screenshots use demo lessons and test drafts, with no real learning records or model responses.
 
 ## Features
 
@@ -73,6 +54,8 @@ The app displays existing records. Mastery decisions, tutor evaluations, and new
 
 If you have no learning files yet, try the [bundled demo lessons](demo/StepsToGreat) from the welcome screen. Importing reads the original files; saving writes to the original learning directory without making a separate copy.
 
+![Welcome screen: import a learning folder or try the demo](docs/screenshots/welcome.png)
+
 <details>
 <summary><strong>Learning directory and document pairing</strong></summary>
 
@@ -96,9 +79,13 @@ Teaching and answer documents share a filename prefix and directory so the app c
 
 ## Usage
 
-### Reading and answering
+### Reading and editing
 
 Click headings, text, checklists, or tables to edit directly; double-click inline math to edit it. Document information and controls sit at the bottom, with reading settings, a night theme, and 「专注」 (Focus). Press `Esc` or use the exit control to leave focus mode.
+
+![Edit headings, checklists, tables, math, and code directly](docs/screenshots/visual-editor.png)
+
+### Answering by question
 
 The answer workspace beside the lesson has three entries:
 
@@ -112,11 +99,27 @@ Question-based input supports ordinary and Feynman rounds with 1–3 recognized 
 
 **Automatic drafts help recover input; saving the actual document still requires an explicit save.** Round submissions preserve previous answers and evaluations and do not update mastery tables or handoff status automatically.
 
+![Saved answers appear in the student document](docs/screenshots/answer-saved.png)
+
+### Learning progress
+
+Open 「当前章节进度」 (Current chapter progress) to review the current handoff record, or 「总体进度」 (Overall progress) to view mastery records from the course roadmap and learning profile. Progress comes from the original documents and refreshes when the tutor updates them.
+
+![Overall progress: recorded mastery counts and the mastery table](docs/screenshots/overall-progress.png)
+
 ### Detached windows
 
 Click 「开窗口 ↗」 (Open window) on the teaching or answer page. The main app switches to the other document and temporarily disables the detached document's entry; progress pages remain accessible. Closing the detached window returns the main app to that document and restores its draft.
 
 Detached windows keep their original document and workspace when the main window switches lessons, switches directories, or closes. Windows have separate drafts and share a save queue with version checks when writing to the same file.
+
+Move the lesson into a detached window to read while answering in the main window.
+
+<img src="docs/screenshots/teaching-window.png" alt="Detached teaching window" width="720">
+
+The answer document can also open separately for full-document editing while keeping its original workspace.
+
+<img src="docs/screenshots/student-window.png" alt="Detached answer window" width="720">
 
 ### DSH integration
 
@@ -125,6 +128,10 @@ Start **DeepSeek Harness Desktop**, configure an available model, and keep its m
 Your local DSH manages the model catalog, accounts, and quotas. Save your answers before sending an evaluation request so the learning agent can read the document.
 
 [dsh-stg-learning](https://github.com/wildcat430524/dsh-stg-learning) is a separate DSH learning-management plugin for organizing workspaces and sessions. It is not required to connect STG Desk to DSH.
+
+Switch the panel to a floating window that can stay on top, keeping the same session, model, and input draft. The screenshot shows the window before connection.
+
+<img src="docs/screenshots/dsh-floating.png" alt="DSH floating window before connection" width="420">
 
 <details>
 <summary><strong>DSH version and connection settings</strong></summary>
@@ -154,6 +161,10 @@ Only local HTTP addresses are accepted. Desktop connection authorization is read
 Before saving, the app checks the file version, backs up the old content, and replaces the file through a temporary file. External changes prompt a reload or manual merge. Restoring a history version also backs up the current content first.
 
 Drafts are written about 250 milliseconds after input pauses; restoring a draft does not automatically overwrite the original file. Local backups are not cloud synchronization. Keep separate backups of important learning files.
+
+Preview an older version in the history dialog before deciding to restore it.
+
+![Version history: backups, content preview, and restore controls](docs/screenshots/history.png)
 
 ## FAQ
 
