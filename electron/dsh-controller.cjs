@@ -1,6 +1,7 @@
 const fs=require('node:fs/promises');
 const path=require('node:path');
 const {relevantDocuments}=require('../lib/documents.cjs');
+const {appIcon}=require('./app-icon.cjs');
 
 module.exports=function attachDsh({app,ipcMain,BrowserWindow,workspace,getWindow,dev,smokeTest,serviceFactory}){
   let floating,service,currentPath=null,connecting=null;
@@ -85,7 +86,7 @@ module.exports=function attachDsh({app,ipcMain,BrowserWindow,workspace,getWindow
   }
   async function ensureFloating(){
     if(floating&&!floating.isDestroyed())return floating;
-    floating=new BrowserWindow({width:510,height:740,minWidth:400,minHeight:460,show:false,title:'DSH · 当前会话',backgroundColor:'#00000000',transparent:true,hasShadow:false,roundedCorners:true,autoHideMenuBar:true,frame:false,resizable:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+    floating=new BrowserWindow({width:510,height:740,minWidth:400,minHeight:460,show:false,icon:appIcon(app),title:'DSH · 当前会话',backgroundColor:'#00000000',transparent:true,hasShadow:false,roundedCorners:true,autoHideMenuBar:true,frame:false,resizable:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
     floating.webContents.setWindowOpenHandler(()=>({action:'deny'}));floating.webContents.on('will-navigate',e=>e.preventDefault());
     floating.on('close',event=>{if(!app.isQuitting){event.preventDefault();floating.hide();state.visible=false;publish();}});
     floating.on('closed',()=>floating=null);

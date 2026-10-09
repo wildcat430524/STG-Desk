@@ -5,6 +5,7 @@ const chokidar=require('chokidar');
 const {dialog,shell,screen}=require('electron');
 const {Workspace}=require('../lib/workspace.cjs');
 const {DraftStore}=require('../lib/drafts.cjs');
+const {appIcon}=require('./app-icon.cjs');
 
 function createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest,onStateChange}){
   const contexts=new Map(),opened=new Map(),records=new Map();
@@ -29,7 +30,7 @@ function createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest
     const localDrafts=new DraftStore(path.join(app.getPath('userData'),'document-drafts',namespace));
     if(!await localDrafts.get(root,relative)){const previous=await drafts.get(root,relative);if(previous)await localDrafts.put(root,relative,previous);}
     const available=screen.getPrimaryDisplay().workAreaSize;
-    const w=new BrowserWindow({width:Math.min(kind==='answer'?760:960,available.width),height:Math.min(900,available.height),minWidth:Math.min(550,available.width),minHeight:Math.min(600,available.height),title:`${kind==='answer'?'学生文档':'教学文档'} · ${path.basename(relative)}`,titleBarStyle:'hidden',titleBarOverlay:{color:'#f1f2f4',symbolColor:'#58616e',height:34},autoHideMenuBar:true,backgroundColor:'#f1f2f4',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:!smokeTest}});
+    const w=new BrowserWindow({width:Math.min(kind==='answer'?760:960,available.width),height:Math.min(900,available.height),minWidth:Math.min(550,available.width),minHeight:Math.min(600,available.height),icon:appIcon(app),title:`${kind==='answer'?'学生文档':'教学文档'} · ${path.basename(relative)}`,titleBarStyle:'hidden',titleBarOverlay:{color:'#f1f2f4',symbolColor:'#58616e',height:34},autoHideMenuBar:true,backgroundColor:'#f1f2f4',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:!smokeTest}});
     const contentsId=w.webContents.id,assetHost='document-'+contentsId;
     const c={window:w,workspace:own,drafts:localDrafts,root,path:relative,kind,assetHost,closing:false,closeRequested:false,dirty:false,ready:false,failed:false};
     contexts.set(w.webContents.id,c);opened.set(key,c);records.set(key,c);

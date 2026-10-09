@@ -5,6 +5,7 @@ const fs=require('node:fs/promises');
 const chokidar=require('chokidar');
 const {Workspace}=require('../lib/workspace.cjs');
 const {DraftStore}=require('../lib/drafts.cjs');
+const {appIcon}=require('./app-icon.cjs');
 const workspace=new Workspace();
 let window,watcher,dirty=false,closing=false;
 let drafts,closeRequested=false;
@@ -137,7 +138,7 @@ app.whenReady().then(async()=>{
     if(!result.canceled) {await fs.writeFile(result.filePath,content,'utf8');return true;} return false;
   });
   const available=screen.getPrimaryDisplay().workAreaSize;
-  window=new BrowserWindow({width:Math.min(1460,available.width),height:Math.min(960,available.height),minWidth:Math.min(1050,available.width),minHeight:Math.min(720,available.height),title:'STG Desk · 学习工作台',titleBarStyle:'hidden',titleBarOverlay:{color:'#f1f2f4',symbolColor:'#58616e',height:34},autoHideMenuBar:true,backgroundColor:'#f1f2f4',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:!smokeTest}});
+  window=new BrowserWindow({width:Math.min(1460,available.width),height:Math.min(960,available.height),minWidth:Math.min(1050,available.width),minHeight:Math.min(720,available.height),icon:appIcon(app),title:'STG Desk · 学习工作台',titleBarStyle:'hidden',titleBarOverlay:{color:'#f1f2f4',symbolColor:'#58616e',height:34},autoHideMenuBar:true,backgroundColor:'#f1f2f4',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:!smokeTest}});
   Menu.setApplicationMenu(null);
   window.webContents.on('before-input-event',(event,input)=>{
     if(input.type!=='keyDown')return;

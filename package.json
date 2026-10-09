@@ -59,11 +59,16 @@
       {
         "from": "demo",
         "to": "demo"
+      },
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
       }
     ],
     "win": {
       "target": "portable",
-      "signAndEditExecutable": false
+      "icon": "build/icon.ico",
+      "signExecutable": false
     },
     "portable": {
       "artifactName": "STG-Desk-${version}-Windows.exe"
