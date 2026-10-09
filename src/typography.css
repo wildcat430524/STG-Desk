@@ -1,0 +1,267 @@
+/* ==========================================================================
+   STG Desk — UI 字号层级 (typography scale)
+
+   Owner: this file only. It is imported last in src/main.js, so every rule is a
+   deliberate, minimal override that wins by cascade order at equal specificity.
+   No `!important` is used anywhere below.
+
+   Contract kept by this file:
+   - the reader's own --reading-font preference is untouched: nothing here sets
+     font-size on .markdown-body, .visual-document, #preview, .tiptap or on the
+     editor root, so the reading size, line-height and reading width keep coming
+     from the 阅读设置 panel;
+   - only UI chrome grows. Metadata that sat at 9–11px moves to 12–13px, common
+     controls to 13–14px, inputs to 15px, panel titles to 16px;
+   - pure icon buttons are never resized (DSH send/quote, DSH window actions,
+     document refresh, modal close) — their glyph is an inline SVG, so a size
+     change would only distort them;
+   - document headings retain their existing ratios and continue scaling with
+     --reading-font; DSH message headings stay above their 15px body text;
+   - a markdown table follows the surrounding body text inside the reading
+     surfaces instead of keeping a fixed 12px;
+   - no colour, motion, radius or functionality rule is added.
+
+   The token ladder is intentionally small: caption 12, small 13, body 14,
+   input 15, title 16, plus an 11px micro tier for kbd and editor gutter labels.
+   ========================================================================== */
+
+:root {
+  --ui-font-micro: 11px;
+  --ui-font-caption: 12px;
+  --ui-font-small: 13px;
+  --ui-font-body: 14px;
+  --ui-font-input: 15px;
+  --ui-font-title: 16px;
+}
+
+
+/* --------------------------------------------------------------------------
+   1. Window chrome and workspace header
+   -------------------------------------------------------------------------- */
+
+/* Native title bar + brand subtitle. */
+.native-titlebar { font-size: var(--ui-font-caption); }
+.native-titlebar span { font-size: var(--ui-font-caption); }
+
+.workspace-header .brand small { font-size: var(--ui-font-caption); }
+
+/* Workspace name and the path/meta line under it. */
+.workspace-header .workspace-card strong { font-size: var(--ui-font-input); }
+.workspace-header .workspace-card #workspace-meta,
+.workspace-header .workspace-card #current-learning { font-size: var(--ui-font-caption); }
+
+/* Import / continue-learning / DSH entry are the three primary header actions. */
+.workspace-header .import { font-size: var(--ui-font-body); }
+.workspace-header .workspace-card .continue-learning { font-size: var(--ui-font-body); }
+.workspace-header .dsh-launch { font-size: var(--ui-font-body); }
+
+/* Top bar controls (课程与文档 / 阅读设置 / 夜间). */
+.header-actions button { font-size: var(--ui-font-small); }
+.topbar .breadcrumb { font-size: var(--ui-font-caption); }
+.statusbar { font-size: var(--ui-font-caption); }
+
+
+/* --------------------------------------------------------------------------
+   2. Document strip: label, open-document tabs, empty hint
+   -------------------------------------------------------------------------- */
+
+.document-access .document-access-label { font-size: var(--ui-font-caption); }
+.document-access .document-tabs .file { font-size: var(--ui-font-body); }
+.document-access .document-tabs .file small { font-size: var(--ui-font-caption); }
+.document-access .documents-empty { font-size: var(--ui-font-caption); }
+
+
+/* --------------------------------------------------------------------------
+   3. Welcome surface
+   -------------------------------------------------------------------------- */
+
+.main .welcome-tag { font-size: var(--ui-font-caption); }
+.welcome > p { font-size: var(--ui-font-body); }
+
+.main .drop-card p { font-size: var(--ui-font-small); }
+.main .drop-card small { font-size: var(--ui-font-caption); }
+.main .drop-card .primary { font-size: var(--ui-font-body); }
+.main .drop-card .demo-link { font-size: var(--ui-font-small); }
+
+.main .feature-grid strong { font-size: var(--ui-font-body); }
+.main .feature-grid p { font-size: var(--ui-font-small); }
+
+.main .recent { font-size: var(--ui-font-small); }
+.main .recent button { font-size: var(--ui-font-small); }
+
+
+/* --------------------------------------------------------------------------
+   4. Document heading + the footer bar it was moved into
+   The footer rules mirror document-footer.css selector-for-selector so they win
+   by order, never by importance; the footer's wrapping and @container responses
+   are left exactly as they are.
+   -------------------------------------------------------------------------- */
+
+#document .document-heading #document-title { font-size: var(--ui-font-title); }
+#document .document-heading #document-kind { font-size: var(--ui-font-caption); }
+
+#document .document-footer { font-size: var(--ui-font-caption); }
+
+#document .document-footer #save-status { font-size: var(--ui-font-caption); }
+#document .document-footer .statusbar { font-size: var(--ui-font-caption); }
+#document .document-footer #draft-status { font-size: var(--ui-font-caption); }
+
+#document .document-footer .doc-actions button { font-size: var(--ui-font-small); }
+#document .document-footer .doc-actions button kbd { font-size: var(--ui-font-micro); }
+
+#document .document-footer .header-actions button { font-size: var(--ui-font-small); }
+
+kbd { font-size: var(--ui-font-micro); }
+
+.toast { font-size: var(--ui-font-small); }
+.change-banner { font-size: var(--ui-font-caption); }
+.change-banner button { font-size: var(--ui-font-caption); }
+.orphan-draft { font-size: var(--ui-font-small); }
+.orphan-draft button { font-size: var(--ui-font-caption); }
+
+
+/* --------------------------------------------------------------------------
+   5. Answer workspace
+   -------------------------------------------------------------------------- */
+
+.eyebrow { font-size: var(--ui-font-caption); }
+.answer-heading .eyebrow { font-size: var(--ui-font-caption); }
+.answer-document-name { font-size: var(--ui-font-caption); }
+.answer-tabs button { font-size: var(--ui-font-small); }
+
+.answers-panel .question-number { font-size: var(--ui-font-caption); }
+.answers-panel .question-number span { font-size: var(--ui-font-caption); }
+.answers-panel .question-card h3 { font-size: var(--ui-font-title); }
+.answers-panel .question-prompt { font-size: var(--ui-font-body); }
+.answers-panel .question-card label { font-size: var(--ui-font-caption); }
+
+.answers-panel .question-card textarea { font-size: var(--ui-font-input); }
+/* monochrome.css pins ::placeholder to 11px; let it follow the textarea. */
+.answers-panel .question-card textarea::placeholder { font-size: inherit; }
+
+.answer-input-tools { font-size: var(--ui-font-caption); }
+.answer-input-tools button { font-size: var(--ui-font-caption); }
+
+.answer-question-record { font-size: var(--ui-font-caption); }
+.answer-question-record .markdown-body { font-size: var(--ui-font-small); }
+.answer-record-note { font-size: var(--ui-font-caption); }
+.answer-record summary { font-size: var(--ui-font-small); }
+.answer-record .markdown-body { font-size: var(--ui-font-body); }
+
+.answer-document-tools span { font-size: var(--ui-font-caption); }
+.answer-document-tools button { font-size: var(--ui-font-small); }
+#answer-document-preview { font-size: var(--ui-font-body); }
+#answer-source { font-size: var(--ui-font-body); }
+
+#answer-footer .primary { font-size: var(--ui-font-body); }
+#answer-footer p { font-size: var(--ui-font-caption); }
+.answer-footer-status { font-size: var(--ui-font-caption); }
+
+.answer-empty { font-size: var(--ui-font-small); }
+.answer-empty > strong { font-size: var(--ui-font-body); }
+
+
+/* --------------------------------------------------------------------------
+   6. Learning progress
+   Big figures (.progress-card__value, __status, __percent) keep their size; only
+   the label/note/helper tier moves.
+   -------------------------------------------------------------------------- */
+
+.progress-page .markdown-body { font-size: var(--ui-font-input); }
+.progress-card__label { font-size: var(--ui-font-small); }
+.progress-card__note { font-size: var(--ui-font-small); }
+.progress-card__pending { font-size: var(--ui-font-small); }
+.progress-empty { font-size: var(--ui-font-small); }
+
+
+/* --------------------------------------------------------------------------
+   7. Modal: dialogs, history list, compare/backup panes, preferences
+   -------------------------------------------------------------------------- */
+
+.modal-card button { font-size: var(--ui-font-body); }
+.modal-card .history-list button { font-size: var(--ui-font-small); }
+.modal-card .history-list small { font-size: var(--ui-font-caption); }
+
+.modal-note { font-size: var(--ui-font-small); }
+.compare-grid h3 { font-size: var(--ui-font-small); }
+.compare-grid pre,
+.compare-grid textarea,
+.backup-preview { font-size: var(--ui-font-body); }
+
+.preferences-form label { font-size: var(--ui-font-body); }
+#formula-source { font-size: var(--ui-font-input); }
+
+.course-list strong { font-size: var(--ui-font-body); }
+.course-list small { font-size: var(--ui-font-caption); }
+
+
+/* --------------------------------------------------------------------------
+   8. DSH panel — identical ladder for the docked host and the floating window
+   -------------------------------------------------------------------------- */
+
+.dsh-heading strong,
+.dsh-only .dsh-heading strong { font-size: var(--ui-font-body); }
+
+.dsh-heading small,
+.dsh-only .dsh-heading small { font-size: var(--ui-font-caption); }
+
+.dsh-context,
+.dsh-only .dsh-context { font-size: var(--ui-font-caption); }
+
+.dsh-message > small { font-size: var(--ui-font-caption); }
+.dsh-message-text { font-size: var(--ui-font-input); }
+.dsh-message .markdown-body { font-size: var(--ui-font-input); }
+.dsh-message.error .dsh-message-text { font-size: var(--ui-font-small); }
+.dsh-message .markdown-body :is(h1, h2, h3) { font-size: var(--ui-font-title); }
+.dsh-message .markdown-body table { font-size: var(--ui-font-body); }
+.dsh-message .markdown-body pre { font-size: var(--ui-font-small); }
+
+.dsh-input-box textarea,
+.dsh-only .dsh-input-box textarea { font-size: var(--ui-font-input); }
+
+.dsh-input-tools select,
+.dsh-only .dsh-input-tools select { font-size: var(--ui-font-small); }
+
+.dsh-more-menu button { font-size: var(--ui-font-small); }
+.dsh-more-menu select { font-size: var(--ui-font-small); }
+
+.dsh-connect-bar { font-size: var(--ui-font-small); }
+.dsh-empty { font-size: var(--ui-font-body); }
+
+
+/* --------------------------------------------------------------------------
+   9. Editor chrome: code-block toolbar, formula helper, heading gutter labels
+   -------------------------------------------------------------------------- */
+
+#editor .edh-code-tools { font-size: var(--ui-font-small); }
+.formula-help { font-size: var(--ui-font-small); }
+.visual-document :is(h1, h2, h3)::before { font-size: var(--ui-font-micro); }
+
+
+/* --------------------------------------------------------------------------
+   10. Tables follow the surrounding text inside the reading surfaces only.
+   .markdown-body table pins a fixed 12px upstream, which left tables visibly
+   smaller than the paragraph next to them; `inherit` hands the size back to the
+   reading font. The DSH message table keeps its own size (rule 8) and the modal
+   compare panes keep theirs (rule 7). KaTeX is untouched.
+   -------------------------------------------------------------------------- */
+
+#editor table,
+#preview table,
+.answers-panel .markdown-body table,
+.progress-page .markdown-body table { font-size: inherit; }
+
+
+/* --------------------------------------------------------------------------
+   11. Layout adjustments required by the new sizes
+   -------------------------------------------------------------------------- */
+
+/* Top bar is a fixed 34px (refined-surfaces.css). At 11px the buttons measured
+   ~30px tall; at 13px with the global 8px 12px button padding they reach ~33px,
+   which still fits but leaves no room for the CJK line box. Trimming the padding
+   to 6px 10px holds them at ~29px so the bar can never clip them. */
+.header-button { padding: 6px 10px; }
+
+/* A longer 13px tab label can now exceed its third of a narrow answers panel;
+   allow the group to wrap instead of pushing the panel wider. */
+.answer-tabs { flex-wrap: wrap; }
