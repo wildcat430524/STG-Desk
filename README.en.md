@@ -20,7 +20,9 @@ STG Desk is a Windows desktop workspace for [StepsToGreat](https://github.com/wi
 
 Reading, editing, and answering work independently; connect DSH when needed. Learning files stay in their original directory so a tutor or learning agent can read and update them.
 
-> This README covers [v0.3.6](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.6). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
+> This README covers [v0.3.7](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.7). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
+
+v0.3.7 raises the interface type scale: metadata and helper text, common buttons, answer inputs, and the DSH input now use larger baseline sizes, and document tables scale with the body text. Body text is still controlled by 「阅读设置」 (Reading settings) — 16px by default, adjustable from 13 to 24px. Colour themes, learning data, and the DSH account model are unchanged.
 
 ## Preview
 
@@ -120,7 +122,7 @@ Headings, lists, tables, and formulas are organised by content level: `H1`/`H2`/
 To open it:
 
 - **Running from source**: import the `demo/EditorShowcase` directory.
-- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.6/STG-Desk-0.3.6-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
+- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.7/STG-Desk-0.3.7-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
 - After importing, 「选择课程」 (Choose lesson) lists this showcase lesson at `我的学习/学科/Markdown/01-复杂内容演示/`. The welcome screen's [bundled demo lessons](demo/StepsToGreat) open a separate workspace.
 
 > The Java example targets Java 17+ and was only reviewed, not compiled: this machine runs Java 11. The Python example was executed. The showcase demonstrates layout and editing behaviour; it is not a learning assessment.
