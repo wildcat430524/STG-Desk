@@ -26,8 +26,8 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 教学、学生回答、当前章节进度和总体进度各有入口；教学与回答文档可以移到独立窗口，DSH 支持侧边面板与独立小窗。
 
-![学习工作台：教学文档、作答区与 DSH 面板](docs/screenshots/workspace.png)<br>
-<sub><strong>学习工作台。</strong>左边读教学，中间按题作答，右边连接 DSH 继续对话；三块区域各自滚动，互不遮挡。</sub>
+![学习工作台：教学文档与作答区，DSH 按需展开](docs/screenshots/workspace.png)<br>
+<sub><strong>学习工作台。</strong>左边读教学，右边按题作答；需要评估或讨论时，从右上角展开 DSH 面板。</sub>
 
 <table>
 <tr>
@@ -120,7 +120,7 @@ StepsToGreat/
 
 ### DSH 协作
 
-先打开 **DeepSeek Harness 桌面端**并配置可用模型，再在 STG Desk 中打开 DSH 面板，点击「连接」。首次连接会为当前学习目录创建专用会话，之后恢复该会话；也可选择这个目录的已有会话或新建会话。应用启动时默认不展开 DSH。
+先打开 **DeepSeek Harness 桌面端**并配置可用模型，保持其主窗口打开，再在 STG Desk 中打开 DSH 面板，点击「连接」。仅有后台进程运行时无法连接。首次连接会为当前学习目录创建专用会话，之后恢复该会话；也可选择这个目录的已有会话或新建会话。应用启动时默认不展开 DSH。
 
 模型目录、账号和额度由你本机的 DSH 管理。保存答案后，再发送评估请求，让学习 Agent 读取文档进行评估。
 

@@ -26,8 +26,8 @@ Reading, editing, and answering work independently; connect DSH when needed. Lea
 
 Teaching, answers, current chapter progress, and overall progress have separate entries. Documents can open in detached windows, and DSH offers a side panel or a floating window.
 
-![Learning workspace with teaching, answers, and the DSH panel](docs/screenshots/workspace.png)<br>
-<sub><strong>The workspace.</strong> Read the lesson on the left, answer question by question in the middle, and continue with DSH on the right. Each area scrolls on its own.</sub>
+![Teaching and answers in one workspace, with DSH available on demand](docs/screenshots/workspace.png)<br>
+<sub><strong>The workspace.</strong> Read the lesson on the left and answer question by question on the right. Open the DSH panel from the top-right corner when you need evaluation or discussion.</sub>
 
 <table>
 <tr>
@@ -120,7 +120,7 @@ Detached windows keep their original document and workspace when the main window
 
 ### DSH integration
 
-Start **DeepSeek Harness Desktop** and configure an available model, then open the DSH panel in STG Desk and click 「连接」 (Connect). The first connection creates a dedicated session for the learning directory; subsequent connections restore it. You can also choose an existing session for that directory or create a new one. The DSH panel stays closed at app startup.
+Start **DeepSeek Harness Desktop**, configure an available model, and keep its main window open. Background processes alone are insufficient for connection. Then open the DSH panel in STG Desk and click 「连接」 (Connect). The first connection creates a dedicated session for the learning directory; subsequent connections restore it. You can also choose an existing session for that directory or create a new one. The DSH panel stays closed at app startup.
 
 Your local DSH manages the model catalog, accounts, and quotas. Save your answers before sending an evaluation request so the learning agent can read the document.
 
