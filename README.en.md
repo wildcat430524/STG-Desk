@@ -20,7 +20,7 @@ STG Desk is a Windows desktop workspace for [StepsToGreat](https://github.com/wi
 
 Reading, editing, and answering work independently; connect DSH when needed. Learning files stay in their original directory so a tutor or learning agent can read and update them.
 
-> This README describes the current source. Downloaded builds follow their [release notes](https://github.com/wildcat430524/STG-Desk/releases); source updates may not yet be available in the latest portable build. The app interface is currently in Chinese.
+> This README covers [v0.3.6](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.6). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
 
 ## Preview
 
@@ -35,6 +35,7 @@ Screenshots use demo lessons and test drafts, with no real learning records or m
 
 - **Pick up where you left off**: restore the last workspace, locate the current lesson from the learning profile, or choose an existing lesson.
 - **Edit documents directly**: single-column WYSIWYG editing with code, tables, checklists, math, and local images. Unchanged blocks retain their original Markdown.
+- **Handle code and math in place**: code blocks offer syntax highlighting, a language picker, and a copy button; KaTeX typesets inline and display math you can insert, preview, and edit by double-clicking.
 - **Answer beside the lesson**: fill in the current round, insert code blocks, and append your answers. Review previous answers, evaluations, and reassessments.
 - **Edit the full answer document**: open the answer page directly or view and edit the complete student document beside the lesson.
 - **Follow recorded progress**: read chapter progress, overall progress, handoff status, and mastery records from existing documents.
@@ -84,6 +85,45 @@ Teaching and answer documents share a filename prefix and directory so the app c
 Click headings, text, checklists, or tables to edit directly; double-click inline math to edit it. Document information and controls sit at the bottom, with reading settings, a night theme, and 「专注」 (Focus). Press `Esc` or use the exit control to leave focus mode.
 
 ![Edit headings, checklists, tables, math, and code directly](docs/screenshots/visual-editor.png)
+
+### Code blocks
+
+Code sits on a neutral light-grey reading surface inside a white, thinly bordered card; font size, line height, and spacing stay steady for long listings, and the whole palette follows the dark theme. Each block carries a toolbar for choosing a language or copying the code.
+
+![Code blocks: syntax highlighting, language picker, and copy button](docs/screenshots/editor-code.png)
+
+Highlighting shares one highlight.js instance and stylesheet with the document preview, so the editor and the reader use the same colours. The picker offers 17 syntax languages plus plain text:
+
+```text
+Java · Python · JavaScript · TypeScript · JSON · Shell/Bash · SQL · HTML/XML · CSS
+C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · plain text
+```
+
+An unknown language, or a block longer than 20,000 characters, stays fully editable and saves unchanged; it simply renders without colour. The toolbar is not document content and is never written into the Markdown.
+
+### Math
+
+Write inline math between `$...$` and display formulas between `$$...$$`; KaTeX typesets both and the original LaTeX is preserved. Click 「公式」 (Formula) at the bottom to insert one: the dialog previews the result live and reports syntax errors. Double-click an existing formula to edit its source.
+
+![Inline and display math: KaTeX typesetting for derivations and matrices](docs/screenshots/editor-math.png)
+
+Formula detection reuses Markdown's code-span rules, so dollar signs inside inline code stay as code. When LaTeX cannot be parsed, the editor keeps the original source and shows the error instead of losing it.
+
+### Complex-content showcase
+
+Headings, lists, tables, and formulas are organised by content level: `H1`/`H2`/`H3` markers in the left margin show heading depth, and task lists, nested lists, and data tables stay editable.
+
+![Task lists, nested lists, and a data table](docs/screenshots/editor-structure.png)
+
+`demo/EditorShowcase` in this repository is a dedicated content showcase: a full Java 17+ Stream/CompletableFuture generics example, Python gradient descent, TypeScript async retry, SQL window functions, four display formulas, plus tables, task lists, and nested lists. All sample data is fictional.
+
+To open it:
+
+- **Running from source**: import the `demo/EditorShowcase` directory.
+- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.6/STG-Desk-0.3.6-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
+- After importing, 「选择课程」 (Choose lesson) lists this showcase lesson at `我的学习/学科/Markdown/01-复杂内容演示/`. The welcome screen's [bundled demo lessons](demo/StepsToGreat) open a separate workspace.
+
+> The Java example targets Java 17+ and was only reviewed, not compiled: this machine runs Java 11. The Python example was executed. The showcase demonstrates layout and editing behaviour; it is not a learning assessment.
 
 ### Answering by question
 
@@ -204,7 +244,7 @@ npm start
 | --- | --- |
 | `npm run dev` | Start a Vite interface preview; full desktop file operations are unavailable in the browser |
 | `npm run build` | Build the frontend into `dist/` |
-| `npm test` | Run parsing, navigation, file-saving, draft, and DSH protocol tests |
+| `npm test` | Run parsing, navigation, file-saving, draft, DSH protocol, and editor highlighting/math tests |
 | `npm run test:desktop` | Build and run the Electron desktop smoke checks |
 | `npm run pack` | Create a Windows directory build; keep the entire `release/win-unpacked/` directory when running it |
 | `npm run dist` | Create `release/STG-Desk-<version>-Windows.exe` |
@@ -221,12 +261,14 @@ electron/          Desktop windows, IPC, DSH control, detached documents
 src/               Learning pages, answer workspace, editors, styles
 lib/               Navigation, parsing, file saving, drafts, DSH services
 tests/             Logic tests and desktop checks
-demo/              Demo lessons
+demo/              Demo lessons (StepsToGreat, EditorShowcase)
 docs/screenshots/  README screenshots
 .github/workflows/ Windows verification, build, and release
 ```
 
 The WYSIWYG editor uses **Tiptap / ProseMirror**. markdown-it / KaTeX render documents, DOMPurify sanitizes output, chokidar watches file changes, and Vite / electron-builder build and package the app.
+
+The editor implements syntax highlighting and the code toolbar as ProseMirror decorations, so they never enter the document content. highlight.js reuses the Atom One Light / Dark themes directly (BSD-3-Clause; attribution and licence are kept in `src/editor-syntax.css` and [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)), changing only selector scope so that colour changes stay inside the Markdown document area. The design draws on layout decisions from several mature Markdown editors, but adds no second editing engine and copies no code from those projects; see [editor research](docs/editor-research.md) and the [rendering handoff](docs/editor-rendering-handoff.md).
 
 Raw HTML rendering is disabled, and renderer processes have no Node access. File access is restricted to the imported directory, excluding hidden directories, symbolic links, and dependency/build directories.
 

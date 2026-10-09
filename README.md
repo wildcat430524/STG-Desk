@@ -20,7 +20,7 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 阅读、编辑和作答可以独立使用，DSH 对话按需连接。学习资料仍保存在原目录中，便于导师或学习 Agent 接着读取和更新。
 
-> 本文介绍当前源码的功能。便携版以 [发布说明](https://github.com/wildcat430524/STG-Desk/releases) 为准，源码更新可能尚未进入最新下载版。应用界面目前为中文。
+> 本文对应 [v0.3.6](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.6)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
 
 ## 界面预览
 
@@ -35,6 +35,7 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 - **接着上次学**：恢复最近工作区，从学习档案定位当前课，也可选择已有课程。
 - **直接编辑文档**：单栏所见即所得，支持代码、表格、清单、公式和本地图片；未修改区块保留原始 Markdown。
+- **代码与公式就地处理**：代码块带语法高亮、语言选择和复制按钮；行内与独立公式由 KaTeX 排版，可插入、预览并双击修改。
 - **教学旁边作答**：按题填写当前轮答案、插入代码块并追加保存；历轮原答、评估和复评可以随时核对。
 - **完整文档随时修改**：回答页直接编辑全文，也能在教学旁查看与修改完整学生文档。
 - **进度有据可查**：读取文档中的章节进度、总体进度、交接状态和掌握记录。
@@ -84,6 +85,45 @@ StepsToGreat/
 点击文档的标题、正文、清单或表格直接编辑；行内公式可双击修改。文档信息与操作集中在底部，可调整阅读设置、切换夜间主题或进入「专注」。按 `Esc` 或点击退出入口返回普通布局。
 
 ![直接编辑标题、清单、表格、公式与代码](docs/screenshots/visual-editor.png)
+
+### 代码块
+
+代码使用中性浅灰阅读背景与白底细边框卡片，字号、行距和留白为长代码保持稳定；深色主题下整套颜色同步切换。每段代码上方有工具条，可选择语言或一键复制。
+
+![代码块：语法高亮、语言选择与复制按钮](docs/screenshots/editor-code.png)
+
+语法高亮与文档预览共用同一套 highlight.js 实例和样式，因此编辑区与阅读区的配色一致。可选语言共 17 种语法加纯文本：
+
+```text
+Java · Python · JavaScript · TypeScript · JSON · Shell/Bash · SQL · HTML/XML · CSS
+C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
+```
+
+未知语言或超过 20000 字符的代码块仍可正常编辑和保存，只是不做着色。工具条不属于文档内容，不会写入 Markdown。
+
+### 数学公式
+
+行内公式写在 `$...$` 中，独立公式块使用 `$$...$$`，两者都由 KaTeX 排版并保留原始 LaTeX。点击底部「公式」可以插入新公式；对话框会实时预览结果并检查语法，双击已有公式即可修改源式。
+
+![行内与独立公式：KaTeX 排版与推导、矩阵](docs/screenshots/editor-math.png)
+
+公式识别复用 Markdown 的代码跨度规则，行内代码中的美元符号不会被当作公式。LaTeX 无法解析时，编辑区保留原式并提示错误，不会丢失内容。
+
+### 复杂内容演示
+
+标题、清单、表格和公式按内容层级组织：标题在左侧留白处以 `H1`/`H2`/`H3` 标注层级，任务清单、嵌套清单和数据表格保持可编辑。
+
+![任务清单、嵌套清单与数据表格](docs/screenshots/editor-structure.png)
+
+仓库内 `demo/EditorShowcase` 是专门的内容演示工作区，涵盖 Java 17+ Stream/CompletableFuture 泛型、Python 梯度下降、TypeScript 异步重试、SQL 窗口函数、4 组独立公式，以及表格、任务与嵌套清单。示例数据均为虚构。
+
+导入方式：
+
+- **从源码运行**：导入 `demo/EditorShowcase` 目录。
+- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.6/STG-Desk-0.3.6-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
+- 导入后「选择课程」会列出这门演示课程（路径为 `我的学习/学科/Markdown/01-复杂内容演示/`），与内置的 [示例课程](demo/StepsToGreat) 相互独立。
+
+> 演示中的 Java 示例按 Java 17+ 语法编写，仅经过审查，未在本机 Java 11 环境编译；Python 示例已实际运行。示例用于展示排版与编辑效果，不代表学习评估。
 
 ### 按题作答
 
@@ -204,7 +244,7 @@ npm start
 | --- | --- |
 | `npm run dev` | 启动 Vite 界面预览，浏览器中不提供完整桌面文件功能 |
 | `npm run build` | 构建前端到 `dist/` |
-| `npm test` | 运行解析、导航、文件保存、草稿与 DSH 协议等测试 |
+| `npm test` | 运行解析、导航、文件保存、草稿、DSH 协议与编辑器高亮/公式等测试 |
 | `npm run test:desktop` | 构建并运行 Electron 桌面冒烟验收 |
 | `npm run pack` | 生成 Windows 目录版，使用时保留整个 `release/win-unpacked/` |
 | `npm run dist` | 生成 `release/STG-Desk-<版本号>-Windows.exe` |
@@ -221,12 +261,14 @@ electron/          桌面窗口、IPC、DSH 控制与独立文档窗口
 src/               学习页面、作答区、编辑器与样式
 lib/               导航、文档解析、文件保存、草稿与 DSH 服务
 tests/             逻辑测试与桌面验收
-demo/              演示课程
+demo/              演示课程（StepsToGreat、EditorShowcase）
 docs/screenshots/  README 界面截图
 .github/workflows/ Windows 验证、构建与发布
 ```
 
 所见即所得编辑器使用 **Tiptap / ProseMirror**，文档展示使用 markdown-it / KaTeX，输出由 DOMPurify 净化；chokidar 监测文件变化，Vite / electron-builder 负责构建与分发。
+
+编辑器把语法高亮和代码工具条实现为 ProseMirror 装饰，不写入文档内容；highlight.js 直接复用 Atom One Light / Dark 主题（BSD-3-Clause，作者署名与许可保留在 `src/editor-syntax.css` 与 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)），仅调整选择器作用域，使颜色变化限定在 Markdown 文档区。设计参考了若干成熟 Markdown 编辑器的排版取舍，但未引入第二个编辑引擎，也不从这些项目复制代码，详见 [编辑器调研](docs/editor-research.md) 与 [渲染整合说明](docs/editor-rendering-handoff.md)。
 
 文档渲染关闭原始 HTML，渲染进程无 Node 访问权限；文件访问限制在导入目录内，忽略隐藏目录、符号链接和依赖/构建目录。
 
