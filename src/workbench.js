@@ -1,10 +1,14 @@
 import {createVisualEditor} from './visual-editor';
+import katex from 'katex';
+import {editorIcon} from './editor-icons';
+import {formulaBody,isDisplaySource,wrapFormula,renderFormula} from './editor-formula.mjs';
+import {copyText} from './editor-rich.js';
 import {mountFocusMode} from './focus-mode';
 import {renderProgressSummary} from './progress-view';
 import './progress-view.css';
 import './workbench.css';
 
-export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,documentOnly=false}) {
+export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,highlight,registry,documentOnly=false}) {
   const $=s=>document.querySelector(s);
   const state={workspace:null,doc:null,answer:null,answerCache:null,answerTab:'current',answerEditing:false,answerSource:'',answerBaseContent:'',answerBaseVersion:null,answerRecords:null,documentWindow:null,dirty:false,answers:{},orphans:[],loading:false,busy:false,documents:[],learning:null,preferences:{fontSize:16,lineHeight:1.9,readingWidth:820,backupRetention:20}};
   let visual,sourceContent=null,draftTimer,loadEpoch=0,page='document',progress={},detachedWindows=[],windowEvents=[],handlingWindowEvents=false,returningPaths=new Set();
@@ -12,6 +16,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
   $('.header-actions').insertAdjacentHTML('afterbegin','<button id="preferences" class="header-button">阅读设置</button>');
   $('.doc-actions').insertAdjacentHTML('afterbegin','<span id="draft-status"></span>');
   $('.doc-actions').insertAdjacentHTML('beforeend','<button id="document-popout" class="hidden" title="移到独立窗口，主应用切换到另一份文档">开窗口 ↗</button>');
+  $('.doc-actions').insertAdjacentHTML('beforeend',`<button id="insert-formula" title="插入数学公式">${editorIcon('math')}公式</button>`);
   $('#app').insertAdjacentHTML('afterend','<div id="modal" class="modal-overlay hidden" role="dialog" aria-modal="true"><section class="modal-card"><header><div><span id="modal-eyebrow" class="eyebrow"></span><h2 id="modal-title"></h2></div><button id="modal-close" aria-label="关闭">×</button></header><div id="modal-body"></div><footer id="modal-actions"></footer></section></div>');
   const smallIcons={preferences:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="white"/><circle cx="15" cy="17" r="2" fill="white"/>',save:'<path d="M5 3h12l4 4v14H3V3Z"/><path d="M7 3v6h10V3M7 21v-8h10v8"/>'};
   for(const [id,path] of Object.entries(smallIcons)){const button=$('#'+id);button.insertAdjacentHTML('afterbegin',icon(path,14)+' ');}
@@ -148,8 +153,33 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,do
     const host=document.createElement('div');host.className='visual-host';$('#editor').append(host);
     visual=createVisualEditor(host,text(),content=>{
       sourceContent=content;dirtyState();updateDocumentText();scheduleDraft();
-    },{renderer,renderMD,path:state.doc.path,onMath:({source,apply})=>modal('编辑公式',`<div class="preferences-form"><label>LaTeX 公式<input id="formula-source" value="${escape(source.replace(/^\$\$?|\$\$?$/g,''))}"></label></div>`,[{label:'应用',primary:true,action:async()=>{const value=$('#formula-source').value.trim();if(!value)throw Error('请输入公式。');apply('$'+value+'$');closeModal();visual.commands.focus();}}])});
+    },{renderer,renderMD,path:state.doc.path,onMath:editFormula,highlight,registry,onCopyCode:copyText});
   }
+  function editFormula({source='',display,apply}={}){
+    const savedSelection=visual?.state.selection;
+    const block=display??isDisplaySource(source);
+    modal(source?'编辑公式':'插入公式',`<div class="preferences-form"><label>LaTeX 公式<textarea id="formula-source" rows="3" spellcheck="false">${escape(formulaBody(source).trim())}</textarea></label><label>显示方式<select id="formula-display" ${source?'disabled':''}><option value="inline" ${block?'':'selected'}>行内公式</option><option value="block" ${block?'selected':''}>独立公式块</option></select></label></div><p class="formula-help">例如：x^2 + y^2 = z^2、\\frac{a}{b}、\\sum_{i=1}^{n} i。已有公式可双击修改。</p><div id="formula-preview" class="formula-preview" aria-label="公式预览"></div>`,[{label:source?'应用':'插入',primary:true,action:async()=>{
+      const value=$('#formula-source').value.trim();if(!value)throw Error('请输入公式。');
+      const displayMode=$('#formula-display').value==='block';
+      if(!displayMode&&/[\r\n]/.test(value))throw Error('多行公式请选择独立公式块。');
+      const wrapped=wrapFormula(value,displayMode);
+      const rendered=renderFormula(wrapped,katex,{display:displayMode});if(rendered.error)throw Error(rendered.error);
+      if(apply)apply(wrapped);
+      else if(visual){
+        visual.commands.setTextSelection({from:savedSelection.from,to:savedSelection.to});
+        visual.commands.insertContent(displayMode?{type:'mathBlock',attrs:{source:wrapped}}:{type:'mathInline',attrs:{source:wrapped}});
+      }
+      closeModal();visual?.commands.focus();
+    }},{label:'取消',action:async()=>closeModal()}],'数学公式 · 实时预览');
+    const preview=()=>{
+      const value=$('#formula-source').value.trim();
+      if(!value){$('#formula-preview').textContent='在上方输入公式';return;}
+      const rendered=renderFormula(wrapFormula(value,$('#formula-display').value==='block'),katex);
+      if(rendered.error)$('#formula-preview').textContent=rendered.error;else $('#formula-preview').innerHTML=rendered.html;
+    };
+    $('#modal-body').oninput=preview;preview();$('#formula-source').focus();
+  }
+  $('#insert-formula').onclick=()=>{if(visual)editFormula();};
   function renderAnswers(){
     const answer=state.answer,current=answer?.questions?.current||[];$('#answer-footer').innerHTML='';
     if(!answer){$('#answer-description').textContent='选择教学引导或学生回答文档。';$('#answer-content').innerHTML='<div class="answer-empty"><span>✎</span><strong>在这里专注作答</strong><p>教学引导关联同目录的学生回答。</p></div>';return;}

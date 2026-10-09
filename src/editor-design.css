@@ -1,0 +1,53 @@
+/* STG Desk reading surface: neutral paper, clear type, colour for syntax. */
+:root{--editor-paper:#f8f8f8;--editor-code-bg:#fff;--editor-code-line:#e3e3e3;--editor-heading:#333;--editor-ink:#222;--editor-quote:#888;--editor-blue:#2787dc}
+html[data-app-theme=dark]{--editor-paper:#22252a;--editor-code-bg:#282c34;--editor-code-line:#3c4048;--editor-heading:#e7e7e7;--editor-ink:#d0d0d0;--editor-quote:#9298a2;--editor-blue:#86b5e2}
+.editor-icon{flex:none;vertical-align:middle}
+:is(.doc-actions,.header-actions) button:has(.editor-icon){display:inline-flex;align-items:center;gap:5px}
+html :is(#content-area,#editor,#preview){background:var(--editor-paper)!important}
+html #editor .visual-document{color:var(--editor-ink)!important;line-height:var(--reading-line);padding-inline:8px}
+html :is(#editor .visual-document,#editor .markdown-body,#preview,#answer-document-preview) :is(h1,h2,h3,h4,h5,h6){color:var(--editor-heading)!important;line-height:1.4;letter-spacing:0;font-weight:700;border:0;padding-bottom:0}
+.visual-document h1{font-size:1.95em;margin:0 0 .75em}
+.visual-document h2{font-size:1.5em;margin:1.2em 0 .6em}
+.visual-document h3{font-size:1.25em;margin:1.15em 0 .6em}
+.visual-document h4{font-size:1.12em}.visual-document h5{font-size:1em}.visual-document h6{font-size:.95em}
+.visual-document :is(h1,h2,h3){position:relative}
+.visual-document :is(h1,h2,h3)::before{position:absolute;right:calc(100% + 12px);top:.65em;font:500 9px/1 "Segoe UI",sans-serif;letter-spacing:0;color:#ccc;pointer-events:none}
+.visual-document h1::before{content:'H1'}.visual-document h2::before{content:'H2'}.visual-document h3::before{content:'H3'}
+.visual-document p{margin:.65em 0}.visual-document li{margin:.15em 0}.visual-document li::marker{color:var(--editor-quote)}
+html :is(#editor .visual-document,#editor .markdown-body,#preview,#answer-document-preview) blockquote{border:0!important;border-left:2px solid var(--editor-blue)!important;background:transparent!important;color:var(--editor-quote)!important;border-radius:0;padding:0 16px;margin:1em 0 1em 14px;font-size:1em}
+#editor blockquote>:first-child{margin-top:0}#editor blockquote>:last-child{margin-bottom:0}
+html :is(#editor .visual-document,#editor .markdown-body,#preview,#answer-document-preview) a{color:var(--editor-blue)!important;text-decoration-color:var(--editor-blue);border-bottom-color:#c7d8e8}
+html :is(#editor .visual-document,#editor .markdown-body,#preview,#answer-document-preview) code{font-family:"Cascadia Code",Consolas,monospace;color:var(--editor-ink)!important;background:var(--editor-code-bg)!important;padding:2px 5px;border-radius:3px;font-size:.9em}
+html :is(#editor .visual-document,#editor .markdown-body,#preview,#answer-document-preview) pre{background:var(--editor-code-bg)!important;border:1px solid var(--editor-code-line)!important;border-radius:5px;padding:16px 18px;font-size:.9em;line-height:1.7;box-shadow:none}
+html :is(#editor .visual-document,#editor .markdown-body,#preview,#answer-document-preview) pre code{background:transparent!important;color:var(--editor-ink)!important;padding:0;font-size:inherit}
+html :is(#editor .visual-document,#editor .markdown-body,#preview,#answer-document-preview) :is(th,td){border-color:var(--editor-code-line)!important;padding:9px 12px}
+html :is(#editor .visual-document,#editor .markdown-body,#preview,#answer-document-preview) th{background:var(--editor-code-bg)!important;color:var(--editor-heading)!important;font-weight:650}
+.visual-document tr:nth-child(even) td{background:#00000002}
+html :is(#editor .visual-document,#editor .markdown-body,#preview,#answer-document-preview) hr{border:0;border-top:2px dashed var(--editor-code-line);margin:1.8em 0}
+.visual-document ul[data-type=taskList]>li input{accent-color:#8ab99f;width:17px;height:17px}
+.visual-document li[data-checked=true]>div>p{color:var(--editor-quote)}
+.visual-math{color:var(--editor-ink);border-radius:3px}.visual-math:hover{background:var(--editor-code-bg);outline:1px solid var(--editor-code-line)}
+#editor .visual-preserved{font-size:inherit;line-height:inherit;color:inherit!important}
+.visual-document .katex-display{overflow-x:auto;overflow-y:hidden;padding:10px 0;margin:.8em 0}
+.formula-preview{display:flex;align-items:center;justify-content:center;padding:20px;background:var(--editor-code-bg);border:1px solid var(--editor-code-line);border-radius:5px;overflow:auto;min-height:110px;margin-top:16px;color:var(--editor-heading);font-size:1.15em}
+.formula-help{font-size:12px;color:var(--editor-quote)}
+#formula-source{width:100%;min-height:94px;resize:vertical;padding:12px;border:1px solid var(--editor-code-line);border-radius:5px;font:14px/1.7 Consolas,monospace}
+.modal-card:has(#formula-source){width:min(720px,calc(100vw - 40px))}
+.modal-card:has(#formula-source) .preferences-form{max-width:none;margin:0}
+#formula-display{min-height:32px;padding:5px 9px;border:1px solid var(--editor-code-line);border-radius:5px;background:var(--editor-code-bg);color:var(--editor-ink)}
+#editor .edh-code-tools{font:500 11px/1.6 "Segoe UI","Microsoft YaHei UI",sans-serif;color:var(--editor-quote);padding:4px 2px;gap:8px;letter-spacing:0;margin-top:1.1em}
+#editor .edh-code-tools:first-child{margin-top:0}
+#editor .edh-code-language-label{display:none}
+html #editor .edh-code-tools :is(select,button){font:inherit;color:var(--editor-quote)!important;background:transparent!important;border:1px solid transparent!important;box-shadow:none;padding:3px 7px;border-radius:4px;min-height:24px}
+html #editor .edh-code-tools select{margin-right:auto;max-width:150px;cursor:pointer}
+html #editor .edh-code-tools :is(select,button):hover{color:var(--editor-heading)!important;background:var(--editor-code-bg)!important;border-color:var(--editor-code-line)!important}
+html #editor .edh-code-copy[data-state=copied]{color:#448564!important}
+html #editor .edh-code-copy[data-state=failed]{color:#b4493c!important}
+#editor .edh-code-copy::before{content:'';display:inline-block;vertical-align:-2px;margin-right:5px;width:12px;height:12px;background:currentColor;mask:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linejoin='round'%3E%3Crect x='9' y='9' width='12' height='12' rx='2'/%3E%3Cpath d='M15 9V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4'/%3E%3C/svg%3E")}
+#editor .edh-code-tools+pre{margin-top:0}
+html #editor .edh-math-error{color:#a34b43!important;background:var(--editor-code-bg);border:1px dashed #d9b7b1;font:12px/1.6 Consolas,monospace}
+#editor .visual-math-block{cursor:pointer;border-radius:4px}
+#editor .visual-math-block:hover{outline:1px solid var(--editor-code-line)}
+@media(max-width:700px){html #editor .visual-document{padding-inline:0}.visual-document :is(h1,h2,h3)::before{display:none}.visual-document h1{font-size:1.7em}}
+@media(max-width:1100px){.doc-body>#answers-panel{display:none}}
+@media(forced-colors:active){.visual-document :is(h1,h2,h3)::before{color:GrayText}html #editor blockquote{border-left-color:Highlight!important}}

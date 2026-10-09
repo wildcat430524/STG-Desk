@@ -13,7 +13,7 @@
 | KaTeX | https://github.com/KaTeX/KaTeX | MIT | 数学公式 |
 | markdown-it-texmath | https://github.com/goessner/markdown-it-texmath | MIT | Markdown 公式语法 |
 | markdown-it-task-lists | https://github.com/revin/markdown-it-task-lists | ISC | 只读任务清单 |
-| highlight.js | https://github.com/highlightjs/highlight.js | BSD-3-Clause | 阅读区代码语法颜色 |
+| highlight.js（含 Daniel Gamage 的 Atom One Light / Dark 主题） | https://github.com/highlightjs/highlight.js | BSD-3-Clause | Markdown 代码语法高亮与配色；主题选择器限定在文档区 |
 | js-yaml | https://github.com/nodeca/js-yaml | MIT | 本机 DSH 桌面连接授权配置读取 |
 | ws | https://github.com/websockets/ws | MIT | DSH 原生会话实时同步 |
 

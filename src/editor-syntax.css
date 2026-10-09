@@ -1,0 +1,158 @@
+/* highlight.js Atom One Light / Dark by Daniel Gamage. BSD-3-Clause.
+   Original themes retained; only selector scope and precedence are adapted. */
+/*
+
+Atom One Light by Daniel Gamage
+Original One Light Syntax theme from https://github.com/atom/one-light-syntax
+
+base:    #fafafa
+mono-1:  #383a42
+mono-2:  #686b77
+mono-3:  #a0a1a7
+hue-1:   #0184bb
+hue-2:   #4078f2
+hue-3:   #a626a4
+hue-4:   #50a14f
+hue-5:   #e45649
+hue-5-2: #c91243
+hue-6:   #986801
+hue-6-2: #c18401
+
+*/
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-comment,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-quote {
+  color: #a0a1a7 !important;
+  font-style: italic !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-doctag,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-keyword,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-formula {
+  color: #a626a4 !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-section,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-name,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-selector-tag,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-deletion,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-subst {
+  color: #e45649 !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-literal {
+  color: #0184bb !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-string,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-regexp,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-addition,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-attribute,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-meta .hljs-string {
+  color: #50a14f !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-attr,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-variable,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-template-variable,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-type,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-selector-class,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-selector-attr,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-selector-pseudo,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-number {
+  color: #986801 !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-symbol,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-bullet,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-link,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-meta,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-selector-id,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-title {
+  color: #4078f2 !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-built_in,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-title.class_,
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-class .hljs-title {
+  color: #c18401 !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-emphasis {
+  font-style: italic !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-strong {
+  font-weight: bold !important
+}
+html:not([data-app-theme=dark]) :is(#editor,#preview,#answer-document-preview) .hljs-link {
+  text-decoration: underline !important
+}
+/*
+
+Atom One Dark by Daniel Gamage
+Original One Dark Syntax theme from https://github.com/atom/one-dark-syntax
+
+base:    #282c34
+mono-1:  #abb2bf
+mono-2:  #818896
+mono-3:  #5c6370
+hue-1:   #56b6c2
+hue-2:   #61aeee
+hue-3:   #c678dd
+hue-4:   #98c379
+hue-5:   #e06c75
+hue-5-2: #be5046
+hue-6:   #d19a66
+hue-6-2: #e6c07b
+
+*/
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-comment,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-quote {
+  color: #5c6370 !important;
+  font-style: italic !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-doctag,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-keyword,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-formula {
+  color: #c678dd !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-section,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-name,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-selector-tag,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-deletion,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-subst {
+  color: #e06c75 !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-literal {
+  color: #56b6c2 !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-string,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-regexp,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-addition,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-attribute,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-meta .hljs-string {
+  color: #98c379 !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-attr,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-variable,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-template-variable,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-type,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-selector-class,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-selector-attr,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-selector-pseudo,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-number {
+  color: #d19a66 !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-symbol,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-bullet,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-link,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-meta,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-selector-id,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-title {
+  color: #61aeee !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-built_in,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-title.class_,
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-class .hljs-title {
+  color: #e6c07b !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-emphasis {
+  font-style: italic !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-strong {
+  font-weight: bold !important
+}
+html[data-app-theme=dark] :is(#editor,#preview,#answer-document-preview) .hljs-link {
+  text-decoration: underline !important
+}

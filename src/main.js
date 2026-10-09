@@ -7,20 +7,20 @@ import DOMPurify from 'dompurify';
 import katex from 'katex';
 import texmath from 'markdown-it-texmath';
 import taskLists from 'markdown-it-task-lists';
-import hljs from 'highlight.js/lib/core';
-import python from 'highlight.js/lib/languages/python';
-import javascript from 'highlight.js/lib/languages/javascript';
-import typescript from 'highlight.js/lib/languages/typescript';
-import json from 'highlight.js/lib/languages/json';
-import bash from 'highlight.js/lib/languages/bash';
-import sql from 'highlight.js/lib/languages/sql';
-for(const [name,language] of Object.entries({python,javascript,typescript,json,bash,sql}))hljs.registerLanguage(name,language);
+import {hljs,highlightCode,languageRegistry} from './editor-highlight.mjs';
 
 const api=window.stg;
 const state={workspace:null,doc:null,answer:null,mode:'read',dirty:false,answerDirty:false,answers:{},loading:false,filter:'',scope:'all',busy:false};
 const $=s=>document.querySelector(s);
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const renderer=new MarkdownIt({html:false,linkify:true,typographer:false,highlight:(code,language)=>language&&hljs.getLanguage(language)&&code.length<100000?hljs.highlight(code,{language}).value:''}).use(taskLists,{enabled:false}).use(texmath,{engine:katex,delimiters:'dollars',katexOptions:{throwOnError:false,trust:false}});
+const originalFence=renderer.renderer.rules.fence;
+const originalHighlightLanguages=new Set(['python','javascript','typescript','json','bash','sql']);
+renderer.renderer.rules.fence=(tokens,index,options,env,self)=>{
+  const language=tokens[index].info.trim().split(/\s+/)[0];
+  const fenceOptions=env.keepOriginalHighlight&&!originalHighlightLanguages.has(languageRegistry(language))?{...options,highlight:()=>''}:options;
+  return originalFence(tokens,index,fenceOptions,env,self);
+};
 const originalImage=renderer.renderer.rules.image;
 renderer.renderer.rules.image=(tokens,idx,options,env,self)=>{
   const t=tokens[idx];const src=t.attrGet('src')||'';
@@ -36,7 +36,7 @@ function resolveLink(from,target){
   for(const part of decoded.replace(/\\/g,'/').split('/')){if(part==='..'){if(!pieces.length)return null;pieces.pop();}else if(part&&part!=='.')pieces.push(part);}
   return pieces.join('/');
 }
-function renderMD(text,path=''){return DOMPurify.sanitize(renderer.render(text,{path}),{ADD_TAGS:['annotation','semantics'],ADD_ATTR:['encoding'],ALLOW_UNKNOWN_PROTOCOLS:true});}
+function renderMD(text,path='',keepOriginalHighlight=false){return DOMPurify.sanitize(renderer.render(text,{path,keepOriginalHighlight}),{ADD_TAGS:['annotation','semantics'],ADD_ATTR:['encoding'],ALLOW_UNKNOWN_PROTOCOLS:true});}
 document.querySelector('#app').innerHTML=`
 <div class="native-titlebar">STG Desk <span>学习工作台</span></div>
 <header class="workspace-header">
@@ -88,11 +88,15 @@ import './answer-workspace.css';
 import './app-theme.css';
 import './focus-mode.css';
 import './document-footer.css';
+import './editor-design.css';
+import './editor-syntax.css';
+import {mountEditorIcons} from './editor-icons';
 const dshOnly=new URLSearchParams(location.search).has('dsh');
 const documentOnly=new URLSearchParams(location.search).has('document');
 if(documentOnly)document.body.classList.add('document-only');
 if(dshOnly){document.body.classList.add('dsh-only');document.documentElement.classList.add('dsh-window');}
-else mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,documentOnly});
-if(!documentOnly)mountDsh({api,renderMD,escape,icon,dshOnly});
+else mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,highlight:highlightCode,registry:languageRegistry,documentOnly});
+if(!documentOnly)mountDsh({api,renderMD:(text,path)=>renderMD(text,path,true),escape,icon,dshOnly});
 mountApplicationTheme({dshOnly});
 if(!dshOnly)mountDocumentFooter();
+if(!dshOnly)mountEditorIcons();

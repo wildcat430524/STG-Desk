@@ -1,3 +1,4 @@
+import {editorIcon} from './editor-icons';
 export function mountApplicationTheme({dshOnly=false}={}) {
   const key='stg-app-theme';
   const button=document.createElement('button');button.type='button';button.id='app-theme-toggle';button.className='app-theme-toggle';
@@ -6,7 +7,7 @@ export function mountApplicationTheme({dshOnly=false}={}) {
   host?.prepend(button);
   function apply(theme){
     const dark=theme==='dark';document.documentElement.dataset.appTheme=dark?'dark':'light';
-    button.textContent=dark?'☀ 日间':'☾ 夜间';button.setAttribute('aria-pressed',String(dark));
+    button.innerHTML=editorIcon(dark?'sun':'moon')+(dark?' 日间':' 夜间');button.setAttribute('aria-pressed',String(dark));
     document.querySelectorAll('[data-reader-theme]').forEach(b=>{b.disabled=dark;});
     window.dispatchEvent(new Event('stg-theme-changed'));
     window.stg?.applyTheme?.(dark?'dark':'light').catch(()=>{});

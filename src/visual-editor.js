@@ -10,18 +10,46 @@ import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import katex from 'katex';
 import {splitSource,assembleSource,withoutOrigins} from './visual-source.mjs';
+import {isDisplayMathBlock,renderFormula,formulaBody,normalizeFormula,replaceMathOutsideCode} from './editor-formula.mjs';
+import {createRichPlugin,installRichStyles,richPluginKey} from './editor-rich.js';
+import {highlightCode,languageRegistry} from './editor-highlight.mjs';
 import './live-editor.css';
 
 const parser=new MarkdownIt({html:true});
 const semanticParser=new MarkdownIt({html:false});
 const semantic=text=>JSON.stringify(semanticParser.parse(text,{}).map(t=>({type:t.type,content:t.type==='inline'?null:t.content,info:t.info,attrs:t.attrs,children:t.children?.map(c=>({type:c.type,content:c.content,attrs:c.attrs}))})));
-const mathPattern=/\$\$[\s\S]+?\$\$|(?<![\\$])\$(?!\s)(?:\\.|[^$\n])+?(?<!\s)\$(?!\$)/g;
+// Formula sanitize options, deliberately identical to the read-only preview
+// (main.js `renderMD`), so the SAME formula produces the SAME DOM in both modes.
+// DOMPurify already ships the full MathML allow-list (`munderover`, `mroot`,
+// `mglyph`, `mtable`, `style`, …), so only KaTeX's semantic wrapper elements and
+// the `encoding` attribute need adding. Widening this list is unnecessary and
+// would let the two surfaces drift apart.
+const formulaSanitize={ADD_TAGS:['annotation','semantics'],ADD_ATTR:['encoding'],ALLOW_UNKNOWN_PROTOCOLS:true};
 
 export function createVisualEditor(element,content,onChange,options={}){
   let visual,initialJSON;
   const ledger=new Map(),eol=content.includes('\r\n')?'\r\n':'\n';
   const renderEnv={path:options.path};options.renderer?.parse(content,renderEnv);
   const render=source=>options.renderer?options.renderer.render(source,{...renderEnv}):options.renderMD?options.renderMD(source,options.path):semanticParser.render(source);
+  installRichStyles();
+  // `highlight`/`registry` default to the bundled highlight.js glue, so the
+  // editor colours code out of the box; callers may still inject alternatives.
+  const highlight=options.highlight??highlightCode;
+  const registry=options.registry??languageRegistry;
+  // Render one formula into an already-created host element. A parse failure is
+  // shown in place; the formula source itself is never changed or dropped.
+  const paintFormula=(host,source,displayMode)=>{
+    const {html,error}=renderFormula(source,katex,{display:displayMode});
+    if(error){
+      host.textContent='';host.dataset.mathError=error;host.classList.add('edh-math-error');
+      host.textContent=`公式错误：${error}`;host.title=`${formulaBody(source)}\n${error}`;
+      return error;
+    }
+    delete host.dataset.mathError;host.classList.remove('edh-math-error');
+    host.innerHTML=DOMPurify.sanitize(html,formulaSanitize);
+    host.title=formulaBody(source).trim();
+    return null;
+  };
   const Preserved=Node.create({
     name:'preservedBlock',group:'block',atom:true,selectable:true,
     addAttributes(){return {source:{default:''},label:{default:'特殊内容'},preview:{default:''}};},
@@ -47,14 +75,46 @@ export function createVisualEditor(element,content,onChange,options={}){
     renderMarkdown(node){return node.attrs.source;},
     addNodeView(){return ({node,getPos,editor})=>{
       const dom=document.createElement('span');dom.className='visual-math';dom.contentEditable='false';dom.title='双击编辑公式';
-      dom.innerHTML=katex.renderToString(node.attrs.source.replace(/^\$\$?|\$\$?$/g,''),{throwOnError:false,trust:false});
-      dom.addEventListener('dblclick',event=>{event.preventDefault();options.onMath?.({source:node.attrs.source,apply:value=>{
-        const pos=getPos();if(typeof pos==='number')editor.commands.command(({tr,dispatch})=>{if(dispatch)tr.setNodeMarkup(pos,undefined,{...node.attrs,source:value});return true;});
+      paintFormula(dom,node.attrs.source,false);
+      dom.addEventListener('dblclick',event=>{event.preventDefault();options.onMath?.({source:node.attrs.source,display:false,apply:value=>{
+        const pos=getPos();if(typeof pos==='number')editor.commands.command(({tr,dispatch})=>{if(dispatch)tr.setNodeMarkup(pos,undefined,{...node.attrs,source:normalizeFormula(value,false)});return true;});
       }});});
       return {dom,ignoreMutation:()=>true};
     };}
   });
-  const Origin=Extension.create({name:'sourceOrigins',addGlobalAttributes(){return [{types:['heading','paragraph','bulletList','orderedList','taskList','blockquote','codeBlock','table','horizontalRule','image','preservedBlock'],attributes:{sourceKey:{default:null,rendered:false}}}];}});
+  // Display math is a block atom, so `$$...$$` on its own block renders as a
+  // centred formula instead of an inline formula inside a paragraph. The node
+  // stores the exact original source and re-emits it verbatim.
+  const MathBlock=Node.create({
+    name:'mathBlock',group:'block',atom:true,selectable:true,draggable:false,
+    addAttributes(){return {source:{default:''}};},
+    parseHTML(){return [{tag:'div[data-visual-math-block]',getAttrs:el=>({source:el.getAttribute('data-visual-math-block')||''})}];},
+    renderHTML({node}){return ['div',{'data-visual-math-block':node.attrs.source,class:'visual-math-block'},node.attrs.source];},
+    renderText({node}){return node.attrs.source;},
+    renderMarkdown(node){return node.attrs.source;},
+    addNodeView(){return ({node,getPos,editor})=>{
+      const dom=document.createElement('div');dom.className='visual-math-block edh-math-block';dom.contentEditable='false';dom.title='双击编辑公式块';
+      paintFormula(dom,node.attrs.source,true);
+      dom.addEventListener('dblclick',event=>{event.preventDefault();options.onMath?.({source:node.attrs.source,display:true,apply:value=>{
+        const pos=getPos();if(typeof pos==='number')editor.commands.command(({tr,dispatch})=>{if(dispatch)tr.setNodeMarkup(pos,undefined,{...node.attrs,source:normalizeFormula(value,true)});return true;});
+      }});});
+      return {dom,ignoreMutation:()=>true};
+    };}
+  });
+  const Origin=Extension.create({name:'sourceOrigins',addGlobalAttributes(){return [{types:['heading','paragraph','bulletList','orderedList','taskList','blockquote','codeBlock','table','horizontalRule','image','preservedBlock','mathBlock'],attributes:{sourceKey:{default:null,rendered:false}}}];}});
+  const Rich=Extension.create({
+    name:'richDecorations',
+    addProseMirrorPlugins(){return [createRichPlugin({
+      highlight,
+      registry,
+      onLanguage:({pos,language,view})=>{
+        const node=view.state.doc.nodeAt(pos);if(!node)return;
+        view.dispatch(view.state.tr.setNodeMarkup(pos,undefined,{...node.attrs,language}));
+        view.focus();
+      },
+      onCopy:options.onCopyCode,
+    })];}
+  });
   const LocalImage=Image.extend({addNodeView(){return ({node})=>{
     const dom=document.createElement('img');dom.alt=node.attrs.alt||'';dom.title=node.attrs.title||'';
     const holder=document.createElement('div');
@@ -64,7 +124,7 @@ export function createVisualEditor(element,content,onChange,options={}){
     if(src)dom.src=src;
     return {dom,ignoreMutation:()=>true};
   };}});
-  const extensions=[StarterKit.configure({link:{openOnClick:false,protocols:['http','https']}}),Markdown,TableKit.configure({table:{resizable:false}}),LocalImage.configure({allowBase64:false}),TaskList,TaskItem.configure({nested:true}),Preserved,MathInline,Origin];
+  const extensions=[StarterKit.configure({link:{openOnClick:false,protocols:['http','https']}}),Markdown,TableKit.configure({table:{resizable:false}}),LocalImage.configure({allowBase64:false}),TaskList,TaskItem.configure({nested:true}),Preserved,MathInline,MathBlock,Origin,Rich];
   const manager=new MarkdownManager({extensions});
   const parts=splitSource(content,parser),nodes=[];
   const restoreMath=(node,formulas)=>{
@@ -82,17 +142,27 @@ export function createVisualEditor(element,content,onChange,options={}){
   for(const [i,part] of parts.blocks.entries()){
     const sourceKey=String(i),source=part.source;let json;
     const code=part.kind==='fence'||part.kind==='code_block';
-    const special=part.special||!code&&/<!--|<\/?[a-z][^>]*>|\[\^[^\]]+\]|\[[^\]]+\](?:\[[^\]]*\])|^\s*\$\$/im.test(source);
+    let input=source,formulas=[];
+    if(!code&&!part.special&&!isDisplayMathBlock(source))input=replaceMathOutsideCode(source,value=>{
+      let number=formulas.length,key;
+      do{key=`STGMATH${number++}TOKEN`;}while(source.includes(key)||formulas.some(f=>f.key===key));
+      formulas.push({key,value});return key;
+    });
+    const special=part.special||!code&&/<!--|<\/?[a-z][^>]*>|\[\^[^\]]+\]|\[[^\]]+\](?:\[[^\]]*\])|^\s*\$\$/im.test(input);
     try{
+      // A whole-block display formula becomes a block atom. This is decided
+      // before the special/preserve checks so `$$...$$` is rendered as display
+      // math rather than kept as an opaque block, and the atom stores the
+      // untouched source so serialization stays byte-exact.
+      if(!code&&!part.special&&isDisplayMathBlock(source)){
+        json={type:'mathBlock',attrs:{source:source.trim()}};
+        if(semantic(manager.serialize({type:'doc',content:[json]}))!==semantic(source))throw Error('unsupported math round trip');
+      }else{
       if(special)throw Error('preserve');
-      let input=source,formulas=[];
-      if(part.kind!=='fence'&&part.kind!=='code_block'){
-        input=source.replace(mathPattern,value=>{const key=`STGMATH${formulas.length}TOKEN`;formulas.push({key,value});return key;});
-        if(formulas.length&&/`/.test(source))throw Error('mixed code and math');
-      }
       const parsed=manager.parse(input);if(parsed.content?.length!==1)throw Error('multiple blocks');
       json=parsed.content[0];restoreMath(json,formulas);
       if(semantic(manager.serialize({type:'doc',content:[json]}))!==semantic(source))throw Error('unsupported round trip');
+      }
     }catch{
       const label=part.kind==='html_block'&&/^\s*<!--/.test(source)?'文档标记':part.special?'文档元数据':/\$/.test(source)?'公式与特殊内容':'保留的 Markdown 内容';
       json={type:'preservedBlock',attrs:{source,label,preview:/^\s*<!--[\s\S]*?-->\s*$/.test(source)?'':render(source)}};
@@ -107,6 +177,9 @@ export function createVisualEditor(element,content,onChange,options={}){
   initialJSON=JSON.stringify(visual.getJSON());
   for(const node of visual.getJSON().content||[]){const entry=ledger.get(node.attrs?.sourceKey);if(entry)entry.json=JSON.stringify(withoutOrigins(node));}
   visual.getSource=getSource;
+  // Force a decoration rebuild after the decorations are first mounted, so the
+  // code toolbar and colours exist without waiting for the first edit.
+  visual.view.dispatch(visual.state.tr.setMeta(richPluginKey,{rebuild:true}));
   visual.jumpToSource=offset=>{
     let index=0,target=0;
     assembleSource(visual.getJSON().content||[],ledger,parts.tail,eol,node=>manager.serialize({type:'doc',content:[node]}),range=>{if(range.from<=offset)index=range.index;});

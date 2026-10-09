@@ -67,6 +67,9 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     await js("document.querySelector('#app-theme-toggle').click()");
     assert.equal(await js("document.querySelectorAll('.view-toolbar,.format-toolbar,.reader-tools,[data-mode],[data-format],[data-reader-theme],#outline,.reader-progress,#editor-source-toggle').length"),0);
     assert.equal(await js("document.querySelectorAll('#editor .visual-preserved button').length"),0);
+    // The per-code-block toolbar is decoration content anchored to a fence, not
+    // a new application control row: its count matches the number of code blocks.
+    assert.equal(await js("document.querySelectorAll('#editor .edh-code-tools').length"),await js("document.querySelectorAll('#editor .tiptap pre').length"));
     const focusSelector='.document-toolbar button[aria-pressed]';
     assert.equal(await js("!!document.querySelector('.document-footer #breadcrumb')&&!!document.querySelector('.document-footer #save')&&!!document.querySelector('.document-footer #app-theme-toggle')&&!!document.querySelector('.document-footer #preferences')&&!!document.querySelector('.document-footer #choose-course')"),true);
     assert.equal(await js("(()=>{const f=document.querySelector('.document-footer').getBoundingClientRect(),d=document.querySelector('.doc-body').getBoundingClientRect();return f.top>=d.bottom-1&&f.bottom<=innerHeight})()"),true);
@@ -127,6 +130,114 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     const copied=await js("(()=>{const e=document.querySelector('#editor .tiptap').editor;e.commands.selectAll();return e.view.someProp('clipboardTextSerializer')()})()");
     assert.ok(copied.includes('$x^2$'));assert.ok(copied.includes('<!-- hidden -->'));
     evidence.push('Explicit formula editing and undo preserve surrounding Markdown; copying retains math and hidden comments');
+    const mixedMath='# 混排\r\n\r\n代码 `$x$`、金额 `$price`，公式 $y^2$。\r\n';
+    await openFixture('代码公式混排测试.md',mixedMath);
+    assert.equal(await js("document.querySelectorAll('#editor .visual-math').length"),1);
+    assert.equal(await js("document.querySelectorAll('#editor .visual-preserved').length"),0);
+    await js("document.querySelector('#editor .visual-math').dispatchEvent(new MouseEvent('dblclick',{bubbles:true}))");await wait("!!document.querySelector('#formula-source')");
+    await js("document.querySelector('#formula-source').value='y^3';document.querySelector('#modal-actions .primary').click()");await wait("document.querySelector('#modal').classList.contains('hidden')");
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),mixedMath.replace('$y^2$','$y^3$'));
+    await js("document.querySelector('#editor .tiptap').editor.commands.undo()");
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),mixedMath);
+    evidence.push('Math beside code stays directly editable; literal code dollars and CRLF survive editing and undo');
+    // Display math is a block atom: it renders as display KaTeX, survives the
+    // open round trip byte-for-byte, and edits through the same modal.
+    const blockMath='# 块级公式\n\n前言段落。\n\n$$\nE=mc^2\n$$\n\n后记段落。\n';
+    await openFixture('块级公式测试.md',blockMath);
+    assert.equal(await js("document.querySelectorAll('#editor .visual-math-block .katex-display').length"),1);
+    assert.equal(await js("document.querySelectorAll('#editor .tiptap p .katex-display').length"),0);
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),blockMath);
+    await js("document.querySelector('#editor .visual-math-block').dispatchEvent(new MouseEvent('dblclick',{bubbles:true}))");await wait("!!document.querySelector('#formula-source')");
+    await js("document.querySelector('#formula-source').value='E=mc^3';document.querySelector('#modal-actions button').click()");await wait("document.querySelector('#modal').classList.contains('hidden')");
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),blockMath.replace('E=mc^2','E=mc^3'));
+    assert.equal(await js("document.querySelectorAll('#editor .visual-math-block .katex-display').length"),1);
+    await js("document.querySelector('#editor .tiptap').focus()");await key('Z',['control']);
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),blockMath);
+    evidence.push('Display math renders as a KaTeX block, edits through the formula dialog and round-trips the original $$ fences');
+    // A formula the parser rejects must show the error in place and keep source.
+    const brokenMath='# 错误公式\n\n错误公式 $\\frac{$ 在此。\n';
+    await openFixture('错误公式测试.md',brokenMath);
+    await wait("!!document.querySelector('#editor .edh-math-error')");
+    assert.equal(await js("document.querySelector('#editor .edh-math-error').textContent.includes('公式错误')"),true);
+    assert.equal(await js("document.querySelector('#editor .visual-math .katex')"),null);
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),brokenMath);
+    evidence.push('An unparsable formula shows a visible error instead of an empty box and leaves the Markdown untouched');
+    // Complex MathML must survive DOMPurify with its nested structure intact;
+    // an over-restrictive sanitize allow-list would silently flatten these.
+    const complexMath='# 复杂公式\n\n$$\n\\sum_{i=1}^{n} \\frac{x_i}{2}\n$$\n';
+    await openFixture('复杂公式测试.md',complexMath);
+    await wait("!!document.querySelector('#editor .visual-math-block .katex')");
+    const mathml=await js("(()=>{const n=document.querySelector('#editor .visual-math-block');return {tags:[...new Set([...n.querySelectorAll('.katex-mathml *')].map(x=>x.tagName.toLowerCase()))].sort(),style:!!n.querySelector('[style]'),annotation:n.querySelector('annotation')?.textContent??null,display:!!n.querySelector('.katex-display')}})()");
+    assert.equal(mathml.display,true);
+    for(const tag of ['math','semantics','annotation','mrow','munderover','mfrac','mi','mn','mo'])assert.ok(mathml.tags.includes(tag),`missing ${tag}: ${mathml.tags}`);
+    assert.equal(mathml.style,true,'KaTeX layout styles must survive sanitization');
+    assert.equal(mathml.annotation,'\\sum_{i=1}^{n} \\frac{x_i}{2}');
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),complexMath);
+    evidence.push('Complex MathML (munderover/mfrac/mrow) keeps its nested structure and layout styles through DOMPurify');
+    // Code highlighting is decoration-only: colours appear, the code text, the
+    // selection and the saved bytes are unchanged.
+    const richCode='# 高亮\n\n```java\nList<String> values = stream.toList(); // 注释 & <tag>\n```\n\n未修改段落。\n';
+    await openFixture('高亮测试.md',richCode);
+    await wait("!!document.querySelector('#editor .tiptap pre code span.hljs-type')");
+    const codeClasses=await js("[...document.querySelectorAll('#editor .tiptap pre code span')].map(s=>s.className)");
+    assert.ok(codeClasses.includes('hljs-type'),JSON.stringify(codeClasses));
+    assert.ok(codeClasses.includes('hljs-comment'),JSON.stringify(codeClasses));
+    assert.equal(await js("document.querySelector('#editor .tiptap pre code').textContent"),'List<String> values = stream.toList(); // 注释 & <tag>');
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),richCode);
+    // Selecting inside the code keeps the text and the highlight intact.
+    await js("(()=>{const e=document.querySelector('#editor .tiptap').editor;let p=null;e.state.doc.descendants((n,i)=>{if(n.type.name==='codeBlock'&&p===null)p=i+1});e.commands.setTextSelection({from:p,to:p+4});e.view.focus()})()");
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.state.doc.textBetween(document.querySelector('#editor .tiptap').editor.state.selection.from,document.querySelector('#editor .tiptap').editor.state.selection.to)"),'List');
+    assert.ok(await js("!!document.querySelector('#editor .tiptap pre code span.hljs-type')"));
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),richCode);
+    evidence.push('highlight.js ranges paint existing code text only; selecting inside the fence leaves text, colours and saved bytes unchanged');
+    // The per-block toolbar offers every language and rewrites only the fence.
+    await wait("!!document.querySelector('#editor .edh-code-tools')");
+    assert.equal(await js("document.querySelector('#editor .edh-code-language-label').textContent"),'Java');
+    assert.ok(await js("document.querySelectorAll('#editor .edh-code-language option').length>=10"));
+    assert.equal(await js("document.querySelector('#editor .edh-code-language').value"),'java');
+    await js("(()=>{const s=document.querySelector('#editor .edh-code-language');s.value='python';s.dispatchEvent(new Event('change',{bubbles:true}))})()");
+    await wait("document.querySelector('#editor .tiptap').editor.getSource().includes('```python')");
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),richCode.replace('```java','```python'));
+    assert.equal(await js("document.querySelector('#editor .edh-code-language-label').textContent"),'Python');
+    await js("document.querySelector('#editor .tiptap').focus()");await key('Z',['control']);
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),richCode);
+    evidence.push('The code toolbar lists the language catalog and changing the language rewrites only the fence; undo restores it');
+    // Copy uses the real clipboard path and reports honest feedback.
+    const copiedCode=await js(`(async()=>{let captured=null;const original=navigator.clipboard;
+      Object.defineProperty(navigator,'clipboard',{value:{writeText:async t=>{captured=t;}},configurable:true});
+      document.querySelector('#editor .edh-code-copy').click();await new Promise(r=>setTimeout(r,150));
+      const text=document.querySelector('#editor .edh-code-copy').textContent;
+      const state=document.querySelector('#editor .edh-code-copy').dataset.state;
+      if(original)Object.defineProperty(navigator,'clipboard',{value:original,configurable:true});
+      return {captured,text,state};})()`);
+    assert.equal(copiedCode.captured,'List<String> values = stream.toList(); // 注释 & <tag>');
+    assert.equal(copiedCode.text,'已复制');assert.equal(copiedCode.state,'copied');
+    assert.equal(await js("document.querySelector('.edh-copy-scratch')"),null);
+    evidence.push('Code copy captures the exact fence text and shows a success state without leaving clipboard scratch nodes behind');
+    // A language the runtime cannot highlight keeps the block editable and plain.
+    const unknownLang='# 未知语言\n\n```mermaid\ngraph TD;\n```\n';
+    await openFixture('未知语言测试.md',unknownLang);
+    assert.equal(await js("document.querySelectorAll('#editor .tiptap pre code span.hljs-type').length"),0);
+    assert.equal(await js("document.querySelector('#editor .tiptap pre code').textContent"),'graph TD;');
+    assert.equal(await js("document.querySelector('#editor .edh-code-language').value"),'mermaid');
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),unknownLang);
+    evidence.push('An unregistered fence language stays editable plain text and the picker still shows the saved language');
+    // IME composition inside a highlighted fence commits once and keeps the code.
+    const imeCode='# 输入法\n\n```java\nint a = 1;\n```\n';
+    await openFixture('输入法测试.md',imeCode);
+    await js("(()=>{const e=document.querySelector('#editor .tiptap').editor;let p=null;e.state.doc.descendants((n,i)=>{if(n.type.name==='codeBlock'&&p===null)p=i+n.nodeSize-1});e.commands.setTextSelection(p);e.view.focus()})()");
+    win.webContents.debugger.attach('1.3');
+    await win.webContents.debugger.sendCommand('Input.imeSetComposition',{text:'中文',selectionStart:2,selectionEnd:2});
+    await win.webContents.debugger.sendCommand('Input.insertText',{text:'中文'});
+    win.webContents.debugger.detach();
+    await wait("document.querySelector('#editor .tiptap').editor.getSource().includes('中文')");
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),imeCode.replace('int a = 1;','int a = 1;中文'));
+    assert.equal(await js("document.querySelector('#editor .tiptap pre code').textContent"),'int a = 1;中文');
+    assert.ok(await js("!!document.querySelector('#editor .tiptap pre code span.hljs-type')"));
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource().split('中文').length"),2);
+    await js("document.querySelector('#editor .tiptap').focus()");await key('Z',['control']);
+    assert.equal(await js("document.querySelector('#editor .tiptap').editor.getSource()"),imeCode);
+    evidence.push('IME composition inside a highlighted fence commits the CJK text exactly once and undo restores the original code');
     await openFixture('空文档测试.md','');
     await js("document.querySelector('#editor .tiptap').editor.commands.focus('end');document.querySelector('#editor .tiptap').editor.view.focus()");
     win.webContents.debugger.attach('1.3');
