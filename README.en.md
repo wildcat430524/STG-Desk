@@ -20,9 +20,9 @@ STG Desk is a Windows desktop workspace for [StepsToGreat](https://github.com/wi
 
 Reading, editing, and answering work independently; connect DSH when needed. Learning files stay in their original directory so a tutor or learning agent can read and update them.
 
-> This README covers [v0.3.8](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.8). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
+> This README covers [v0.3.9](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.9). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
 
-v0.3.8 fixes future rounds reserved inside HTML comments in a student answer document being mistaken for the current round and for history: real courseware still shows round two with questions 3 and 4, a round three reserved in a comment no longer takes part in answering, and the comment text is preserved byte for byte. The input placeholder `**你的代码：**` now ends the prompt correctly, so template or reserved content no longer leaks into a question. History backups, version checks, and save protection are unchanged.
+v0.3.9 gives the answer workspace more usable room with a compact heading and save bar, one question at a time, and expandable long prompts. The new focused answering mode enlarges the writing area and lets Ctrl+S save the whole round. Drafts survive question switches and reopening the app.
 
 ## Preview
 
@@ -122,7 +122,7 @@ Headings, lists, tables, and formulas are organised by content level: `H1`/`H2`/
 To open it:
 
 - **Running from source**: import the `demo/EditorShowcase` directory.
-- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.8/STG-Desk-0.3.8-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
+- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.9/STG-Desk-0.3.9-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
 - After importing, 「选择课程」 (Choose lesson) lists this showcase lesson at `我的学习/学科/Markdown/01-复杂内容演示/`. The welcome screen's [bundled demo lessons](demo/StepsToGreat) open a separate workspace.
 
 > The Java example targets Java 17+ and was only reviewed, not compiled: this machine runs Java 11. The Python example was executed. The showcase demonstrates layout and editing behaviour; it is not a learning assessment.
@@ -133,11 +133,17 @@ The answer workspace beside the lesson has three entries:
 
 | Entry | Purpose |
 | --- | --- |
-| 「本轮作答」 (Current round) | Answer the latest published round; saving appends your original answers |
+| 「本轮作答」 (Current round) | Answer the latest published round one question at a time; saving appends all filled-in answers |
 | 「作答记录」 (Answer records) | Review previous answers, tutor evaluations, and final reassessments |
 | 「完整文档」 (Full document) | Read and edit the entire answer file, including content outside the question interface |
 
 Question-based input supports ordinary and Feynman rounds with 1–3 recognized questions in the current round. For more questions or unrecognized formatting, edit the full answer document. Save pending full-document edits before submitting question-based answers.
+
+Click a question number to switch questions; filled-in questions show `✓`. Switching preserves input, and saving includes answers to questions that are currently hidden. Long prompts start collapsed. Click 「题干与示例」 to expand them; the column then scrolls as one area.
+
+Click 「专注作答」 to enlarge the answer area. Click 「返回对照」 or press `Esc` to restore the lesson beside your answers. In focused answering, `Ctrl+S` saves the whole round, or the answer document while editing the full-document tab. In the normal layout, `Ctrl+S` still saves the current document.
+
+![Answer workspace with question navigation, expandable prompts, and focused answering](docs/screenshots/answer-workspace.png)
 
 **Automatic drafts help recover input; saving the actual document still requires an explicit save.** Round submissions preserve previous answers and evaluations and do not update mastery tables or handoff status automatically.
 
@@ -248,6 +254,7 @@ npm start
 | `npm run build` | Build the frontend into `dist/` |
 | `npm test` | Run parsing, navigation, file-saving, draft, DSH protocol, and editor highlighting/math tests |
 | `npm run test:desktop` | Build and run the Electron desktop smoke checks |
+| `npx electron tests/answer-layout-ui.cjs` | After building, verify question switching, draft recovery, focused answering, and round saving |
 | `npm run pack` | Create a Windows directory build; keep the entire `release/win-unpacked/` directory when running it |
 | `npm run dist` | Create `release/STG-Desk-<version>-Windows.exe` |
 

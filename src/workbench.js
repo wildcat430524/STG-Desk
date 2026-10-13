@@ -25,6 +25,15 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   const folderIcon=icon('<path d="M3 7V5h7l2 2h9v13H3Z"/>',15);
 
   mountFocusMode($('#document-focus'));
+  let activeQuestionKey=null;
+  const setAnswerFocused=enabled=>{
+    document.body.classList.toggle('answer-focused',enabled);
+    $('#answer-focus').setAttribute('aria-pressed',String(enabled));
+    $('#answer-focus').textContent=enabled?'返回对照':'专注作答';
+  };
+  $('#answer-focus').addEventListener('click',()=>setAnswerFocused(!document.body.classList.contains('answer-focused')));
+  $('#document-focus').addEventListener('click',()=>setAnswerFocused(false));
+  document.addEventListener('keydown',event=>{if(event.key==='Escape')setAnswerFocused(false);});
 
   function message(text,error=false){const box=$('#toast');box.textContent=text;box.className=`toast ${error?'error':''}`;clearTimeout(message.timer);message.timer=setTimeout(()=>box.classList.add('hidden'),5000);}
   async function guarded(task){if(state.busy)return;state.busy=true;document.documentElement.dataset.busy='true';try{await task();}catch(e){message(cleanError(e),true);}finally{state.busy=false;document.documentElement.dataset.busy='false';drainWindowEvents();}}
@@ -114,6 +123,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(isDetached(path)){message('这份文档已在独立窗口中，关闭窗口后会返回这里。');return;}
     if(state.documentWindow&&path!==state.documentWindow.path){if(/(教学引导|学生回答)\.md$/i.test(path))await api.documentWindowOpen(path);else await api.reveal(path);return;}
     if(!approved)await mayLeave();const epoch=++loadEpoch;
+    setAnswerFocused(false);
     page='document';$('#progress-page').classList.add('hidden');
     const [disk,answer,draft,description]=await Promise.all([api.read(path),api.companion(path),api.draftGet(path),api.describe(path)]);
     if(epoch!==loadEpoch)return;
@@ -182,22 +192,40 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   $('#insert-formula').onclick=()=>{if(visual)editFormula();};
   function renderAnswers(){
     const answer=state.answer,current=answer?.questions?.current||[];$('#answer-footer').innerHTML='';
+    $('#answer-question-nav').classList.add('hidden');
     if(!answer){$('#answer-description').textContent='选择教学引导或学生回答文档。';$('#answer-content').innerHTML='<div class="answer-empty"><span>✎</span><strong>在这里专注作答</strong><p>教学引导关联同目录的学生回答。</p></div>';return;}
     $('#answer-description').textContent=`${answer.questions.round} · ${current.length} 道题`;
     if(!current.length||current.length>3){$('#answer-content').innerHTML='<div class="answer-empty"><p>这份文档暂不支持按题作答，可以在这里编辑完整回答文档。</p><button id="answer-edit-fallback">编辑完整文档</button></div>';return;}
     const known=new Set(current.map(questionKey));
     const orphan=Object.entries(state.answers).filter(([k,v])=>v&& !known.has(k));
-    $('#answer-content').innerHTML=current.map((q,i)=>`<section class="question-card"><div class="question-number">问题 ${escape(q.number)} <span>${i+1} / ${current.length}</span></div><h3>${escape(q.title.replace(/.*(?:问题|题目|练习题)\s*\d+\s*[:：·]?/,''))||'当前问题'}</h3><div class="question-prompt markdown-body">${renderMD(q.prompt,answer.path)}</div><label for="answer-${i}">你的回答</label><textarea id="answer-${i}" data-answer-index="${i}" placeholder="写下你的理解，或粘贴代码…" spellcheck="false">${escape(state.answers[questionKey(q)]||'')}</textarea></section>`).join('')+orphan.map(([key,value])=>`<section class="orphan-draft"><strong>题目变化前的草稿</strong><p>已保留，请核对后复制到当前题目。</p><textarea readonly>${escape(value)}</textarea><button data-discard-answer="${escape(key)}">移除此草稿</button></section>`).join('');
+    $('#answer-content').innerHTML=current.map((q,i)=>`<section class="question-card"><div class="question-number">问题 ${escape(q.number)} <span>${i+1} / ${current.length}</span></div><h3>${escape(q.title.replace(/.*(?:问题|题目|练习题)\s*\d+\s*[:：·]?/,''))||'当前问题'}</h3><details class="answer-prompt"><summary>题干与示例 <span class="answer-prompt-hint"></span></summary><div class="question-prompt markdown-body">${renderMD(q.prompt,answer.path)}</div></details><label for="answer-${i}">你的回答</label><textarea id="answer-${i}" data-answer-index="${i}" placeholder="写下你的理解，或粘贴代码…" spellcheck="false">${escape(state.answers[questionKey(q)]||'')}</textarea></section>`).join('')+orphan.map(([key,value])=>`<section class="orphan-draft"><strong>题目变化前的草稿</strong><p>已保留，请核对后复制到当前题目。</p><textarea readonly>${escape(value)}</textarea><button data-discard-answer="${escape(key)}">移除此草稿</button></section>`).join('');
     $('#answer-content').querySelectorAll('.question-card').forEach((card,i)=>{
       const q=current[i],guideQuestion=/教学引导\.md$/i.test(state.doc.path)?state.doc.questions?.questions?.find(g=>g.number===q.number&&g.round===q.round):null;
-      if(guideQuestion&&(!q.prompt.trim()||/^[\s<>→-]+$/.test(q.prompt)))card.querySelector('.question-prompt').innerHTML=renderMD(guideQuestion.prompt,state.doc.path);
+      const prompt=guideQuestion&&(!q.prompt.trim()||/^[\s<>→-]+$/.test(q.prompt))?guideQuestion.prompt:q.prompt;
+      if(prompt!==q.prompt)card.querySelector('.question-prompt').innerHTML=renderMD(prompt,state.doc.path);
+      card.querySelector('.answer-prompt').open=prompt.length<=260&&prompt.split('\n').length<=8;
       card.insertAdjacentHTML('beforeend',`<div class="answer-input-tools"><button data-answer-code="${i}">插入代码块</button><span data-answer-count="${i}">${(state.answers[questionKey(q)]||'').length} 字</span></div><details class="answer-question-record"><summary>查看本题已保存记录</summary><div class="markdown-body">${renderMD(answer.content.slice(q.start,q.end),answer.path)}</div></details>`);
     });
     $('#answer-footer').innerHTML='<div class="answer-footer-status" id="answer-draft-status">输入会自动保留草稿</div><button class="primary" id="submit">保存本轮作答 <span>→</span></button><p>原答追加到学生文档，历史和导师评估保留。</p>';
+    $('#submit').title='保存所有已填写的本轮答案。原答追加到学生文档，历史和导师评估保留。专注作答时可按 Ctrl S 保存。';
+    $('#answer-question-nav').innerHTML='<span class="answer-question-position" aria-live="polite"></span>'+current.map((q,i)=>`<button data-answer-question="${i}" aria-controls="answer-${i}" aria-pressed="false" aria-label="问题 ${escape(q.number)}，${state.answers[questionKey(q)]?.trim()?'已填写':'未填写'}">问题 ${escape(q.number)} <span class="answer-question-check" aria-hidden="true">${state.answers[questionKey(q)]?.trim()?'✓':''}</span></button>`).join('');
+    showAnswerQuestion(Math.max(0,current.findIndex(q=>questionKey(q)===activeQuestionKey)));
+  }
+  function showAnswerQuestion(index){
+    const current=state.answer?.questions?.current||[];
+    if(!current[index])return;
+    activeQuestionKey=questionKey(current[index]);
+    $('#answer-content').querySelectorAll('.question-card').forEach((card,i)=>card.classList.toggle('hidden',i!==index));
+    $('#answer-question-nav').classList.toggle('hidden',state.answerTab!=='current');
+    $('#answer-question-nav').querySelectorAll('[data-answer-question]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.answerQuestion)===index)));
+    $('.answer-question-position').textContent=`${index+1} / ${current.length}`;
+    $('#answer-content').scrollTop=0;
   }
   function updateAnswerStatus(){const el=$('#answer-draft-status');if(el)el.textContent=hasAnswers()||answerSourceDirty()?'有未提交内容 · 草稿自动保留':'学生文档已保存 · 可继续作答';}
   function renderAnswerWorkspace(){
     const answer=state.answer,tab=state.answerTab;
+    $('#answer-question-nav').classList.add('hidden');
+    $('#answer-focus').disabled=!answer;
     $('#answer-document-name').textContent=answer?.path.split('/').at(-1)||'尚无配套学生文档';$('#answer-document-name').title=answer?.path||'';
     document.querySelectorAll('[data-answer-tab]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.answerTab===tab));b.disabled=!answer;});
     $('#answer-content').classList.toggle('hidden',tab!=='current');$('#answer-records').classList.toggle('hidden',tab!=='records');$('#answer-document').classList.toggle('hidden',tab!=='document');
@@ -278,6 +306,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(b.dataset.progress){guarded(()=>showProgress(b.dataset.progress));return;}
     if(b.dataset.file){guarded(()=>selectFile(b.dataset.file,{line:b.dataset.resultLine?Number(b.dataset.resultLine):null}));return;}
     if(b.dataset.discardAnswer){delete state.answers[b.dataset.discardAnswer];renderAnswers();scheduleDraft();return;}
+    if(b.dataset.answerQuestion!==undefined){showAnswerQuestion(Number(b.dataset.answerQuestion));return;}
     if(b.dataset.answerTab){state.answerTab=b.dataset.answerTab;renderAnswerWorkspace();return;}
     if(b.dataset.answerCode!==undefined){const input=document.querySelector(`[data-answer-index="${b.dataset.answerCode}"]`);const from=input.selectionStart,to=input.selectionEnd;input.setRangeText('\n```\n'+input.value.slice(from,to)+'\n```\n',from,to,'end');input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();return;}
     if(b.id==='answer-edit-source'||b.id==='answer-edit-fallback'){state.answerTab='document';state.answerEditing=b.id==='answer-edit-fallback'||!state.answerEditing;renderAnswerWorkspace();if(state.answerEditing)$('#answer-source').focus();return;}
@@ -289,12 +318,21 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   });
   $('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();}});
-  $('#answer-content').addEventListener('input',e=>{if(e.target.dataset.answerIndex!==undefined){const q=state.answer.questions.current[Number(e.target.dataset.answerIndex)];state.answers[questionKey(q)]=e.target.value;const count=document.querySelector(`[data-answer-count="${e.target.dataset.answerIndex}"]`);if(count)count.textContent=e.target.value.length+' 字';dirtyState();scheduleDraft();updateAnswerStatus();}});
+  $('#answer-content').addEventListener('input',e=>{if(e.target.dataset.answerIndex!==undefined){const q=state.answer.questions.current[Number(e.target.dataset.answerIndex)];state.answers[questionKey(q)]=e.target.value;const count=document.querySelector(`[data-answer-count="${e.target.dataset.answerIndex}"]`);if(count)count.textContent=e.target.value.length+' 字';const button=document.querySelector(`[data-answer-question="${e.target.dataset.answerIndex}"]`);if(button){button.querySelector('.answer-question-check').textContent=e.target.value.trim()?'✓':'';button.setAttribute('aria-label',`问题 ${q.number}，${e.target.value.trim()?'已填写':'未填写'}`);}dirtyState();scheduleDraft();updateAnswerStatus();}});
   $('#answer-source').addEventListener('input',e=>{state.answerSource=e.target.value;state.answerCache={...(state.answerCache||{}),content:state.answerSource,baseContent:state.answerBaseContent,baseVersion:state.answerBaseVersion};if(state.doc.path===state.answer.path)replaceSource(state.answerSource);dirtyState();scheduleDraft();$('#answer-source-status').textContent='本地草稿 · 未写入';updateAnswerStatus();});
   for(const selector of ['#answer-records','#answer-document-preview','#answer-content'])$(selector).addEventListener('click',e=>{const link=e.target.closest('a');if(!link)return;const href=link.getAttribute('href');e.preventDefault();if(/^https?:\/\//i.test(href)){api.external(href);return;}if(href&&!href.startsWith('#')){const path=resolveLink(state.answer.path,href);if(path)guarded(()=>selectFile(path));}});
   $('#editor').addEventListener('click',e=>{const link=e.target.closest('a');if(!link)return;e.preventDefault();if(!e.ctrlKey&&!e.metaKey)return;const href=link.getAttribute('href');if(!href)return;if(/^https?:\/\//i.test(href)){api?.external(href);return;}if(href.startsWith('#')){const title=decodeURIComponent(href.slice(1));const target=[...$('#editor').querySelectorAll('h1,h2,h3,h4,h5,h6')].find(h=>h.id===title||h.textContent.toLowerCase().replace(/\s+/g,'-')===title);target?.scrollIntoView();return;}const p=resolveLink(state.doc.path,href);if(p)guarded(()=>selectFile(p));});
   let dragCounter=0;document.addEventListener('dragenter',e=>{e.preventDefault();if(e.dataTransfer?.types.includes('Files')){dragCounter++;$('#drop-overlay').classList.remove('hidden');}});document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('dragleave',e=>{e.preventDefault();if(--dragCounter<=0){dragCounter=0;$('#drop-overlay').classList.add('hidden');}});document.addEventListener('drop',e=>{e.preventDefault();dragCounter=0;$('#drop-overlay').classList.add('hidden');const file=e.dataTransfer.files[0];if(file&&api)guarded(()=>importFolder(api.droppedPath(file)));});
-  api?.onShortcut(name=>guarded(()=>name==='import'?state.documentWindow?Promise.resolve():importFolder():page!=='document'?Promise.resolve():!document.body.classList.contains('answer-document-active')&&state.answerTab==='document'&&state.answerEditing?saveAnswerDocument():saveDoc()));
+  api?.onShortcut(name=>guarded(()=>{
+    if(name==='import')return state.documentWindow?Promise.resolve():importFolder();
+    if(page!=='document')return Promise.resolve();
+    if(document.body.classList.contains('answer-focused')){
+      if(state.answerTab==='current')return submitAnswers();
+      if(state.answerTab==='document'&&state.answerEditing)return saveAnswerDocument();
+      return Promise.resolve();
+    }
+    return !document.body.classList.contains('answer-document-active')&&state.answerTab==='document'&&state.answerEditing?saveAnswerDocument():saveDoc();
+  }));
   api?.onPrepareClose(async()=>{try{await flushDraft();await api.closeReady(true);}catch(e){await api.closeReady(false);message(cleanError(e),true);}});
   api?.onChange(async()=>{try{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}if(state.doc){const disk=await api.read(state.doc.path);const answer=state.answer&&state.answer.path!==state.doc.path?await api.read(state.answer.path):null;if(disk.version!==state.doc.version||(answer&&answer.version!==state.answer.version))$('#change-banner').classList.remove('hidden');}}catch{message('文档可能已移动或删除，请刷新当前文档。',true);}});
   api?.onWarning(text=>message('文件监测提示：'+text,true));

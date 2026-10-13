@@ -20,9 +20,9 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 阅读、编辑和作答可以独立使用，DSH 对话按需连接。学习资料仍保存在原目录中，便于导师或学习 Agent 接着读取和更新。
 
-> 本文对应 [v0.3.8](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.8)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
+> 本文对应 [v0.3.9](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.9)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
 
-v0.3.8 修复了学生回答文档中 HTML 注释里预留的后续轮次被误当成当前轮次与历史记录的问题：真实课件仍显示第二轮的问题 3、4，注释中预留的第三轮不再参与作答，注释原文逐字保留。作答输入占位标记 `**你的代码：**` 也会正确结束题面，模板与预留内容不再混入题目；历史备份、版本校验与保存保护均未改动。
+v0.3.9 扩大了作答工作区的可用空间：顶部与保存栏更紧凑，题目逐题切换，长题干可展开查看。新增「专注作答」，可放大答题区，并用 Ctrl+S 保存整轮答案；切题与关闭后恢复仍保留草稿。
 
 ## 界面预览
 
@@ -122,7 +122,7 @@ C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
 导入方式：
 
 - **从源码运行**：导入 `demo/EditorShowcase` 目录。
-- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.8/STG-Desk-0.3.8-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
+- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.9/STG-Desk-0.3.9-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
 - 导入后「选择课程」会列出这门演示课程（路径为 `我的学习/学科/Markdown/01-复杂内容演示/`），与内置的 [示例课程](demo/StepsToGreat) 相互独立。
 
 > 演示中的 Java 示例按 Java 17+ 语法编写，仅经过审查，未在本机 Java 11 环境编译；Python 示例已实际运行。示例用于展示排版与编辑效果，不代表学习评估。
@@ -133,11 +133,17 @@ C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
 
 | 入口 | 用途 |
 | --- | --- |
-| 本轮作答 | 填写最新已发布轮次的题目，保存时追加原答 |
+| 本轮作答 | 逐题填写最新已发布轮次，保存时一起追加所有已填写的原答 |
 | 作答记录 | 查看历轮答案、导师评估与最终复评 |
 | 完整文档 | 阅读和编辑整个学生回答，包括按题界面未覆盖的内容 |
 
 按题输入支持普通轮与费曼轮，适用于当前轮有 1–3 道可识别题目的文档；题目更多或格式无法识别时，可直接编辑回答全文。全文有未保存修改时，先保存完整文档，再提交按题答案。
+
+点击题号切换当前题目，已填写的题会显示 `✓`；切题保留输入，保存包含当前未显示的题目。长题干默认收起，点击「题干与示例」展开查看；展开后整列统一滚动。
+
+点击「专注作答」放大答题区，点击「返回对照」或按 `Esc` 返回教学与作答并列布局。专注作答时，`Ctrl+S` 保存整轮答案；在「完整文档」编辑时则保存回答文档。普通布局下，`Ctrl+S` 仍保存当前文档。
+
+![作答工作区：逐题切换、展开题干与专注作答](docs/screenshots/answer-workspace.png)
 
 **自动草稿用于恢复输入，正式文档仍需点击保存。** 本轮提交会保留已有答案与评估，不自动修改掌握表或交接状态。
 
@@ -248,6 +254,7 @@ npm start
 | `npm run build` | 构建前端到 `dist/` |
 | `npm test` | 运行解析、导航、文件保存、草稿、DSH 协议与编辑器高亮/公式等测试 |
 | `npm run test:desktop` | 构建并运行 Electron 桌面冒烟验收 |
+| `npx electron tests/answer-layout-ui.cjs` | 构建后验证切题、草稿恢复、专注作答与整轮保存 |
 | `npm run pack` | 生成 Windows 目录版，使用时保留整个 `release/win-unpacked/` |
 | `npm run dist` | 生成 `release/STG-Desk-<版本号>-Windows.exe` |
 
