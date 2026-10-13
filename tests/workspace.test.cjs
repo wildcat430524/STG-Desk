@@ -13,6 +13,36 @@ test('real document questions, current round, fenced pseudo-headings',()=>{
   const result=appendAnswers(text,{[p.current[0].id]:'原文\n```python\nprint(1)\n```'});
   assert.ok(result.includes('历史评估\n## 最终复评结果\n保留'));assert.ok(result.includes('````text'));assert.ok(result.indexOf('学生作答')<result.indexOf('## 第三轮评估'));
 });
+test('commented future rounds are not published questions and cannot receive answers',()=>{
+  const hidden='<!-- 第三轮（第二轮全通过后由导师追加）\n## 第三轮 · 问题 5：Stream 综合练习\n-->';
+  const text='# 学生回答\n## 第一轮 · 问题 1\n历史题目\n**你的回答：**\n已答\n## 第二轮 · 问题 3：Lambda\n改写并启动线程。\n**你的回答：**\n\n---\n\n## 第二轮 · 问题 4：Stream\n筛选、平方并收集。\n**你的回答：**\n\n---\n\n'+hidden+'\n\n---\n\n## 最终复评结果\n待填写\n';
+  const parsed=parseQuestions(text);
+  assert.equal(parsed.round,'第二轮');
+  assert.deepEqual(parsed.current.map(q=>q.number),['3','4']);
+  assert.deepEqual(parsed.questions.map(q=>q.number),['1','3','4']);
+  assert.throws(()=>appendAnswers(text,{[String(text.indexOf('## 第三轮'))]:'不能答预留题'}),/题目已变化/);
+  const updated=appendAnswers(text,Object.fromEntries(parsed.current.map(q=>[q.id,'第'+q.number+'题原答'])));
+  assert.ok(updated.includes(hidden));
+  assert.ok(updated.endsWith('## 最终复评结果\n待填写\n'));
+  for(const q of parseQuestions(updated).current){
+    assert.ok(updated.slice(q.start,q.end).includes('第'+q.number+'题原答'));
+  }
+});
+test('commented bold and list questions are ignored while code and offsets stay intact',()=>{
+  const text='## 第二轮\r\n### 问题 3\r\n题目\r\n**你的回答：**\r\n```md\r\n<!-- literal comment in an answer\r\n```\r\n\r\n<!--\r\n## 第三轮\r\n**问题 5**：未发布\r\n## 本轮题目\r\n6. 未发布\r\n-->\r\n\r\n### 问题 4\r\n正式题目\r\n**你的回答：**\r\n';
+  const parsed=parseQuestions(text);
+  assert.equal(parsed.round,'第二轮');
+  assert.deepEqual(parsed.current.map(q=>q.number),['3','4']);
+  for(const q of parsed.current)assert.ok(text.slice(q.start).startsWith('### 问题 '+q.number));
+  const unterminated=text+'\r\n<!--\r\n## 第三轮 · 问题 7\r\n';
+  assert.deepEqual(parseQuestions(unterminated).current.map(q=>q.number),['3','4']);
+});
+test('code answer slots end the prompt before placeholders and commented future rounds',()=>{
+  const source='## 第二轮 · 问题 4：Stream\n请写出完整代码。\n\n**你的代码：**\n\n```java\n// 在这里写出完整代码\n```\n\n<!--\n## 第三轮 · 问题 5\n-->\n';
+  const parsed=parseQuestions(source);
+  assert.equal(parsed.round,'第二轮');
+  assert.equal(parsed.current[0].prompt,'请写出完整代码。');
+});
 test('append saves original answers, final assessment, and backups',async t=>{
   const {root,w}=await fixture(t);const before=await w.read(answer);const q=before.questions.current;assert.equal(q.length,2);
   const after=await w.submit(answer,{[q[0].id]:'price 是变量名，25 是值。',[q[1].id]:'age = 21\nprint(age)'},before.version);

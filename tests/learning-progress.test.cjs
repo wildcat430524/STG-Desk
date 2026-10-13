@@ -25,3 +25,26 @@ test('route status tables and unknown statuses retain the actual planned denomin
   const p=await run({[routePath]:'## 课程\n| 课次 | 状态 |\n| --- | --- |\n| #1 | 已掌握 |\n| #2 | — |\n| #3 | 部分掌握 |'});
   assert.equal(p.overall,'Python · 1 / 3 课已掌握（1 课待记录）');
 });
+// 「当前章节进度」的轮次/状态来自文档扫描，而学习档案的 round 为空时才会走这条回退分支
+// （17-Lambda与Stream 一课正是如此），所以下面几条用 round/status:null 覆盖真实情形。
+test('注释里预留的轮次标题不被当成当前轮次，注释原文与其它轮次不受影响',async()=>{
+  const hidden='<!-- 第三轮（第二轮全通过后由导师追加）\n## 第三轮 · 问题 5：Stream 综合练习\n-->';
+  const guide='## 第二轮 · 问题 3：Lambda\n\n| 字段 | 内容 |\n| --- | --- |\n| 课程状态 | 待复评 |\n\n'+hidden+'\n';
+  assert.equal((await run({[guidePath]:guide},{round:null,status:null})).chapter,'第二轮 · 待复评');
+});
+test('注释里预留的状态行不被当成真实课程状态',async()=>{
+  const guide='## 第一轮\n\n| 字段 | 内容 |\n| --- | --- |\n| 课程状态 | 待复评 |\n\n<!--\n| 字段 | 内容 |\n| --- | --- |\n| 课程状态 | 已全部通过（预留草稿） |\n-->\n';
+  assert.equal((await run({[guidePath]:guide},{round:null,status:null})).chapter,'第一轮 · 待复评');
+});
+test('注释里预留的掌握表不进入 overall，注释后紧邻的真实轮次与表格仍然生效',async()=>{
+  const profile='## 📊 掌握表\n| 单元 | 状态 |\n| --- | --- |\n| 变量 | ✅ 已掌握 |\n| 循环 | 未掌握 |\n\n<!--\n## 📊 掌握表（预留）\n| 单元 | 状态 |\n| --- | --- |\n| 假A | 已掌握 |\n| 假B | 已掌握 |\n-->\n';
+  assert.equal((await run({[profilePath]:profile})).overall,'学习档案 · 1 / 2 课已掌握');
+  const guide='## 第一轮\n\n<!-- 预留\n## 第九轮 · 问题 99\n-->\n\n## 第二轮 · 问题 3\n\n| 字段 | 内容 |\n| --- | --- |\n| 课程状态 | 待复评 |\n';
+  assert.equal((await run({[guidePath]:guide},{round:null,status:null})).chapter,'第二轮 · 待复评');
+});
+test('注释里预留的路线单元不进入分母，fence 与引用块示例仍被忽略',async()=>{
+  const route='## 逐课规划表\n### #1 变量（状态：已完成）\n### #2 循环（状态：未掌握）\n\n<!--\n### #9 未发布单元（状态：已完成）\n### #10 未发布单元（状态：已完成）\n-->\n';
+  assert.equal((await run({[routePath]:route})).overall,'Python · 1 / 2 课已掌握');
+  const profile='## 📊 掌握表\n| 单元 | 状态 |\n| --- | --- |\n| 变量 | ✅ 已掌握 |\n\n```md\n<!--\n## 📊 掌握表\n| 假 | 已掌握 |\n-->\n```\n\n> <!--\n> | 假 | 已掌握 |\n> -->\n';
+  assert.equal((await run({[profilePath]:profile})).overall,'学习档案 · 1 / 1 课已掌握');
+});

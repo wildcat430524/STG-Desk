@@ -19,6 +19,9 @@ module.exports=async function smoke(window,app){
   };
   try{
     await fs.cp(app.isPackaged?path.join(process.resourcesPath,'demo/StepsToGreat'):path.join(__dirname,'../demo/StepsToGreat'),root,{recursive:true});
+    const roundFixture=path.join(root,'我的学习/学科/Python/01-认识变量/01_学生回答.md');
+    const futureRound='<!-- 尚未发布的后续轮次\n## 第三轮 · 问题 5：预留题\n-->\n\n';
+    await fs.writeFile(roundFixture,(await fs.readFile(roundFixture,'utf8')).replace('## 最终复评结果',futureRound+'## 最终复评结果'));
     const visualFixture='# 可视化测试\n\n初始段落。\n\n<!-- s2g-goal-view:start -->\n\n公式 $x^2$ 与 **加粗**。\n\n- [ ] 原始清单\n\n| 列 | 值 |\n| --- | --- |\n| 原文 | 1 |\n\n```python\nprint(21)\n```\n';
     await fs.writeFile(path.join(root,'可视化测试.md'),visualFixture);
     await fs.appendFile(path.join(root,'我的学习/学科/Python/01-认识变量/01_教学引导.md'),'\n[可视化测试](../../../../可视化测试.md)\n');
@@ -33,10 +36,14 @@ module.exports=async function smoke(window,app){
     evidence.push('Native IPC folder import and recursive file tree passed');
     await js(`document.querySelector('[data-file="我的学习/学科/Python/01-认识变量/01_教学引导.md"]').click()`);
     await wait("document.querySelectorAll('[data-answer-index]').length===2");
+    assert.equal(await js("document.querySelector('#answer-description').textContent"),'第一轮 · 2 道题');
+    assert.deepEqual(await js("[...document.querySelectorAll('.question-number')].map(el=>el.textContent.trim().split(/\\s+/)[1])"),['1','2']);
     evidence.push('Guide-to-answer linking and two-question current round passed');
     await js("document.querySelector('[data-answer-tab=records]').click()");
     assert.ok(await js("document.querySelector('#answer-records').textContent.includes('最终复评结果')"));
     assert.ok(await js("document.querySelector('#answer-records').textContent.includes('正确答案与解析')"));
+    assert.equal(await js("[...document.querySelectorAll('.answer-record>summary')].some(el=>el.textContent.includes('第三轮'))"),false);
+    evidence.push('Commented future rounds do not advance answer cards or create history entries');
     await js("document.querySelector('[data-answer-tab=document]').click();document.querySelector('#answer-edit-source').click()");
     await js("document.querySelector('#answer-source').value+='\\n面板完整文档编辑验证';document.querySelector('#answer-source').dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#answer-save-source').click()");
     await wait("document.querySelector('#toast').textContent.includes('回答文档已保存')");

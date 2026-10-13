@@ -40,6 +40,15 @@ function assertOrderedRounds(result) {
   }
 }
 
+test('注释中的预留轮次不生成记录，原文仍完整保留', () => {
+  const hidden='<!-- 后续轮次\r\n## 第三轮 · 问题 5\r\n未发布题目\r\n-->';
+  const source='# 学生回答\r\n\r\n## 第二轮 · 问题 3\r\n正式题目\r\n\r\n'+hidden+'\r\n\r\n## 最终复评结果\r\n待填写\r\n';
+  const result=analyzeAnswerRecords(source);
+  assert.deepEqual(result.rounds.map(r=>r.round),['第二轮']);
+  assert.ok(result.rounds[0].content.includes(hidden));
+  assertExactDeck(source,result.blocks);
+  assertCleanDeck(source,result);
+});
 test('导师标题与轮次词重叠时：导师反馈留在本轮，不另开轮次', () => {
   const source = [
     '# 学生回答',
