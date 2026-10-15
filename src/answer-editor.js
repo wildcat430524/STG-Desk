@@ -1,5 +1,6 @@
 import { answerSyntax } from './answer-syntax.mjs';
 import { LANGUAGE_CATALOG, languageLabel } from './editor-syntax.mjs';
+import { answerIndent } from './answer-indent.mjs';
 
 // The native textarea owns input, selection, IME, undo and answer persistence.
 // An inaccessible mirror only paints the same text beneath it.
@@ -39,11 +40,27 @@ export function mountAnswerEditor(input, { context = '', language = 'auto', onLa
     sync();
   };
   picker.addEventListener('change', () => { onLanguage?.(picker.value); paint(); });
+  const indent = event => {
+    if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
+    event.preventDefault(); event.stopPropagation();
+    const edit = answerIndent(input.value, input.selectionStart, input.selectionEnd, event.shiftKey);
+    if (input.value.slice(edit.from, edit.to) === edit.text) return;
+    const top = input.scrollTop, left = input.scrollLeft, direction = input.selectionDirection;
+    input.setSelectionRange(edit.from, edit.to);
+    // Chromium's native edit command preserves the textarea's undo history.
+    if (!document.execCommand('insertText', false, edit.text)) {
+      input.setRangeText(edit.text, edit.from, edit.to, 'end');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    input.setSelectionRange(edit.start, edit.end, direction);
+    input.scrollTop = top; input.scrollLeft = left; sync();
+  };
+  input.addEventListener('keydown', indent);
   input.addEventListener('input', paint);
   input.addEventListener('scroll', sync);
   const resize = new ResizeObserver(sync); resize.observe(input);
   const preferences = new MutationObserver(sync);
   preferences.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'data-app-theme'] });
   paint();
-  return () => { resize.disconnect(); preferences.disconnect(); input.removeEventListener('input', paint); input.removeEventListener('scroll', sync); };
+  return () => { resize.disconnect(); preferences.disconnect(); input.removeEventListener('keydown', indent); input.removeEventListener('input', paint); input.removeEventListener('scroll', sync); };
 }

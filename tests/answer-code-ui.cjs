@@ -35,6 +35,18 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     await js("document.querySelector('#answer-0').setSelectionRange(0,0)");await win.webContents.insertText('// 中文输入\n');
     assert.equal(await js("document.querySelector('.answer-input-highlight').textContent"),'// 中文输入\n'+code+'\n');
     await js("document.execCommand('undo')");await wait(`document.querySelector('#answer-0').value===${JSON.stringify(code)}`);
+    await js("document.querySelector('#answer-0').setSelectionRange(0,0)");
+    const tab=async modifiers=>{win.webContents.sendInputEvent({type:'keyDown',keyCode:'Tab',modifiers});win.webContents.sendInputEvent({type:'keyUp',keyCode:'Tab',modifiers});await new Promise(r=>setTimeout(r,60));};
+    await tab([]);
+    assert.equal(await js("document.activeElement.id"),'answer-0');
+    assert.equal(await js("document.querySelector('#answer-0').value"),'    '+code);
+    await js("document.execCommand('undo')");await wait(`document.querySelector('#answer-0').value===${JSON.stringify(code)}`);
+    await js("document.querySelector('#answer-0').setSelectionRange(0,24)");
+    await tab([]);await tab(['shift']);
+    assert.equal(await js("document.querySelector('#answer-0').value"),code);
+    assert.equal(await js("document.activeElement.id"),'answer-0');
+    assert.equal(await js("document.querySelector('.answer-input-highlight').textContent"),code+'\n');
+    evidence.push('Native Tab inserts indentation without moving focus; undo and multiline Tab/Shift+Tab preserve content and highlighting');
     await click('[data-answer-question="1"]');
     await js("document.querySelector('#answer-1').focus()");await win.webContents.insertText('这里用文字解释代码。');
     assert.equal(await js("document.querySelector('#answer-1').parentElement.classList.contains('answer-code')"),false);
