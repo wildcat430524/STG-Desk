@@ -11,7 +11,7 @@ import './workbench.css';
 export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,highlight,registry,documentOnly=false}) {
   const $=s=>document.querySelector(s);
   const state={workspace:null,doc:null,answer:null,answerCache:null,answerTab:'current',answerEditing:false,answerSource:'',answerBaseContent:'',answerBaseVersion:null,answerRecords:null,documentWindow:null,dirty:false,answers:{},orphans:[],loading:false,busy:false,documents:[],learning:null,preferences:{fontSize:16,lineHeight:1.9,readingWidth:820,backupRetention:20}};
-  let visual,sourceContent=null,draftTimer,loadEpoch=0,page='document',progress={},detachedWindows=[],windowEvents=[],handlingWindowEvents=false,returningPaths=new Set();
+  let visual,sourceContent=null,draftTimer,draftWrites=Promise.resolve(),loadEpoch=0,page='document',progress={},detachedWindows=[],windowEvents=[],handlingWindowEvents=false,returningPaths=new Set();
   $('#workspace-meta').insertAdjacentHTML('afterend','<button id="continue-learning" class="continue-learning hidden">继续学习 <span>→</span></button><small id="current-learning"></small>');
   $('.header-actions').insertAdjacentHTML('afterbegin','<button id="preferences" class="header-button">阅读设置</button>');
   $('.doc-actions').insertAdjacentHTML('afterbegin','<span id="draft-status"></span>');
@@ -43,10 +43,14 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   function text(){return sourceContent??state.doc?.content??'';}
   function sourceLineOffset(line){let offset=0;for(let n=1;n<line;n++){const next=text().indexOf('\n',offset);if(next<0)return text().length;offset=next+1;}return offset;}
   function answerSourceDirty(){return !!state.answer&&state.answerSource!==state.answer.content;}
-  function dirtyState(){state.dirty=!!state.doc&&text()!==state.doc.content;api?.dirty(state.dirty||hasAnswers()||answerSourceDirty());$('#save-status').textContent=state.dirty?'待保存到文档':'已保存';$('#save-status').classList.toggle('unsaved',state.dirty);}
-  function scheduleDraft(){clearTimeout(draftTimer);$('#draft-status').textContent='保存草稿…';draftTimer=setTimeout(()=>flushDraft().catch(e=>{message(cleanError(e),true);$('#draft-status').textContent='草稿保存失败';}),250);}
-  async function flushDraft(){
-    clearTimeout(draftTimer);if(!api||!state.doc)return;
+  function recoveredEdits(record){return record&&record.content!==record.baseContent&&renderer.render(record.content.replace(/\r\n/g,'\n'))!==renderer.render((record.baseContent??'').replace(/\r\n/g,'\n'));}
+  function dirtyState(){state.dirty=!!state.doc&&text()!==state.doc.content;api?.dirty(state.dirty||hasAnswers()||answerSourceDirty());const pending=state.dirty||hasAnswers()||answerSourceDirty();$('#save-status').textContent=pending?'待保存到文档':'已保存';$('#save-status').classList.toggle('unsaved',pending);}
+  function scheduleDraft(){clearTimeout(draftTimer);$('#draft-status').textContent='';draftTimer=setTimeout(()=>flushDraft().catch(e=>{message(cleanError(e),true);$('#draft-status').textContent='输入保留失败，请点击保存';}),250);}
+  function flushDraft(){
+    clearTimeout(draftTimer);draftWrites=draftWrites.catch(()=>{}).then(persistInput);return draftWrites;
+  }
+  async function persistInput(){
+    if(!api||!state.doc)return;
     const doc=state.doc,answer=state.answer,content=text(),answers={...state.answers};
     const has=Object.values(answers).some(v=>v.length);
     const docRecord={content,baseContent:doc.content,baseVersion:doc.version,mode:'edit',answers:doc.path===answer?.path?answers:{}};
@@ -55,7 +59,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
       const record={...(state.answerCache||{}),content:state.answerSource,baseContent:state.answerBaseContent,baseVersion:state.answerBaseVersion,answers};
       if(has||record.content!==record.baseContent)await api.draftPut(answer.path,record);else await api.draftRemove(answer.path);
     }
-    $('#draft-status').textContent=content!==doc.content||has||answerSourceDirty()?'草稿已自动保存':'';
+    $('#draft-status').textContent='';
     updateAnswerStatus();
   }
   async function mayLeave(){await flushDraft();return true;}
@@ -128,12 +132,13 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     const [disk,answer,draft,description]=await Promise.all([api.read(path),api.companion(path),api.draftGet(path),api.describe(path)]);
     if(epoch!==loadEpoch)return;
     state.doc=disk;state.answer=answer;state.answers={};state.answerCache=answer?(answer.path===path?draft:await api.draftGet(answer.path)):null;
-    let content=disk.content,recovered=false;
-    if(draft&&draft.content!==disk.content){content=draft.content;state.doc={...disk,content:draft.baseContent??disk.content,version:draft.baseVersion};recovered=true;}
+    let content=disk.content;
+    if(recoveredEdits(draft)&&draft.content!==disk.content){content=draft.content;state.doc={...disk,content:draft.baseContent??disk.content,version:draft.baseVersion};}
     state.answers={...(state.answerCache?.answers||{})};
-    state.answerSource=state.answerCache?.content??answer?.content??'';
-    state.answerBaseContent=state.answerCache?.baseContent??answer?.content??'';
-    state.answerBaseVersion=state.answerCache?.baseVersion??answer?.version??null;
+    const editedAnswer=recoveredEdits(state.answerCache);
+    state.answerSource=editedAnswer?state.answerCache.content:answer?.content??'';
+    state.answerBaseContent=editedAnswer?state.answerCache.baseContent:answer?.content??'';
+    state.answerBaseVersion=editedAnswer?state.answerCache.baseVersion:answer?.version??null;
     state.answerEditing=false;state.answerRecords=answer?await api.answerRecords(answer.content):null;
     if(epoch!==loadEpoch)return;
     sourceContent=content;visual?.destroy();visual=null;$('#editor').innerHTML='';
@@ -147,7 +152,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     document.body.classList.toggle('answer-document-active',description.kind==='answer');
     mountVisual();
     $('#document-popout').classList.toggle('hidden',!/(教学引导|学生回答)\.md$/i.test(path)||!!state.documentWindow);
-    $('#draft-status').textContent=recovered||hasAnswers()?'草稿已恢复':'';
+    $('#draft-status').textContent='';
     $('#status-left').textContent=path;
     if(line)visual?.jumpToSource(sourceLineOffset(line));
   }
@@ -198,7 +203,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(!current.length||current.length>3){$('#answer-content').innerHTML='<div class="answer-empty"><p>这份文档暂不支持按题作答，可以在这里编辑完整回答文档。</p><button id="answer-edit-fallback">编辑完整文档</button></div>';return;}
     const known=new Set(current.map(questionKey));
     const orphan=Object.entries(state.answers).filter(([k,v])=>v&& !known.has(k));
-    $('#answer-content').innerHTML=current.map((q,i)=>`<section class="question-card"><div class="question-number">问题 ${escape(q.number)} <span>${i+1} / ${current.length}</span></div><h3>${escape(q.title.replace(/.*(?:问题|题目|练习题)\s*\d+\s*[:：·]?/,''))||'当前问题'}</h3><details class="answer-prompt"><summary>题干与示例 <span class="answer-prompt-hint"></span></summary><div class="question-prompt markdown-body">${renderMD(q.prompt,answer.path)}</div></details><label for="answer-${i}">你的回答</label><textarea id="answer-${i}" data-answer-index="${i}" placeholder="写下你的理解，或粘贴代码…" spellcheck="false">${escape(state.answers[questionKey(q)]||'')}</textarea></section>`).join('')+orphan.map(([key,value])=>`<section class="orphan-draft"><strong>题目变化前的草稿</strong><p>已保留，请核对后复制到当前题目。</p><textarea readonly>${escape(value)}</textarea><button data-discard-answer="${escape(key)}">移除此草稿</button></section>`).join('');
+    $('#answer-content').innerHTML=current.map((q,i)=>`<section class="question-card"><div class="question-number">问题 ${escape(q.number)} <span>${i+1} / ${current.length}</span></div><h3>${escape(q.title.replace(/.*(?:问题|题目|练习题)\s*\d+\s*[:：·]?/,''))||'当前问题'}</h3><details class="answer-prompt"><summary>题干与示例 <span class="answer-prompt-hint"></span></summary><div class="question-prompt markdown-body">${renderMD(q.prompt,answer.path)}</div></details><label for="answer-${i}">你的回答</label><textarea id="answer-${i}" data-answer-index="${i}" placeholder="写下你的理解，或粘贴代码…" spellcheck="false">${escape(state.answers[questionKey(q)]||'')}</textarea></section>`).join('')+orphan.map(([key,value])=>`<section class="orphan-draft"><strong>题目变化前的输入</strong><p>已保留，请核对后复制到当前题目。</p><textarea readonly>${escape(value)}</textarea><button data-discard-answer="${escape(key)}">移除此输入</button></section>`).join('');
     $('#answer-content').querySelectorAll('.question-card').forEach((card,i)=>{
       const q=current[i],guideQuestion=/教学引导\.md$/i.test(state.doc.path)?state.doc.questions?.questions?.find(g=>g.number===q.number&&g.round===q.round):null;
       const prompt=guideQuestion&&(!q.prompt.trim()||/^[\s<>→-]+$/.test(q.prompt))?guideQuestion.prompt:q.prompt;
@@ -206,7 +211,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
       card.querySelector('.answer-prompt').open=prompt.length<=260&&prompt.split('\n').length<=8;
       card.insertAdjacentHTML('beforeend',`<div class="answer-input-tools"><button data-answer-code="${i}">插入代码块</button><span data-answer-count="${i}">${(state.answers[questionKey(q)]||'').length} 字</span></div><details class="answer-question-record"><summary>查看本题已保存记录</summary><div class="markdown-body">${renderMD(answer.content.slice(q.start,q.end),answer.path)}</div></details>`);
     });
-    $('#answer-footer').innerHTML='<div class="answer-footer-status" id="answer-draft-status">输入会自动保留草稿</div><button class="primary" id="submit">保存本轮作答 <span>→</span></button><p>原答追加到学生文档，历史和导师评估保留。</p>';
+    $('#answer-footer').innerHTML='<div class="answer-footer-status" id="answer-draft-status">点击保存，写入回答文档</div><button class="primary" id="submit">保存本轮作答 <span>→</span></button><p>原答追加到学生文档，历史和导师评估保留。</p>';
     $('#submit').title='保存所有已填写的本轮答案。原答追加到学生文档，历史和导师评估保留。专注作答时可按 Ctrl S 保存。';
     $('#answer-question-nav').innerHTML='<span class="answer-question-position" aria-live="polite"></span>'+current.map((q,i)=>`<button data-answer-question="${i}" aria-controls="answer-${i}" aria-pressed="false" aria-label="问题 ${escape(q.number)}，${state.answers[questionKey(q)]?.trim()?'已填写':'未填写'}">问题 ${escape(q.number)} <span class="answer-question-check" aria-hidden="true">${state.answers[questionKey(q)]?.trim()?'✓':''}</span></button>`).join('');
     showAnswerQuestion(Math.max(0,current.findIndex(q=>questionKey(q)===activeQuestionKey)));
@@ -221,7 +226,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     $('.answer-question-position').textContent=`${index+1} / ${current.length}`;
     $('#answer-content').scrollTop=0;
   }
-  function updateAnswerStatus(){const el=$('#answer-draft-status');if(el)el.textContent=hasAnswers()||answerSourceDirty()?'有未提交内容 · 草稿自动保留':'学生文档已保存 · 可继续作答';}
+  function updateAnswerStatus(){const el=$('#answer-draft-status');if(el)el.textContent=hasAnswers()||answerSourceDirty()?'有修改 · 点击保存即可写入回答文档':'学生文档已保存 · 可继续作答';}
   function renderAnswerWorkspace(){
     const answer=state.answer,tab=state.answerTab;
     $('#answer-question-nav').classList.add('hidden');
@@ -236,60 +241,68 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
       if(!rounds.length&&!tutor.length)$('#answer-records').insertAdjacentHTML('beforeend','<div class="answer-empty"><p>尚未识别到轮次记录，完整文档中的内容仍全部保留。</p><button data-answer-tab="document">查看完整文档</button></div>');
       $('#answer-footer').innerHTML='<p>只展示已有记录，不自动生成评估或掌握结果。</p>';
     }else{
-      $('#answer-source-status').textContent=answerSourceDirty()?'本地草稿 · 未写入':'已保存版本';$('#answer-edit-source').textContent=state.answerEditing?'预览':'编辑';
+      $('#answer-source-status').textContent=answerSourceDirty()||hasAnswers()?'有修改 · 待保存':'已保存版本';$('#answer-edit-source').textContent=state.answerEditing?'预览':'编辑';
       $('#answer-document-preview').innerHTML=answer?renderMD(state.answerSource,answer.path):'';
+      if(answer&&hasAnswers())previewCurrentAnswers();
       $('#answer-document-preview').classList.toggle('hidden',state.answerEditing);$('#answer-source').classList.toggle('hidden',!state.answerEditing);
       if($('#answer-source').value!==state.answerSource)$('#answer-source').value=state.answerSource;
       $('#answer-footer').innerHTML=state.answerEditing?'<div class="answer-footer-status" id="answer-draft-status"></div><button class="primary" id="answer-save-source">保存回答文档 <span>Ctrl S</span></button><p>写入前校验版本并备份，原有轮次和评估完整保留。</p>':'<p>完整回答文档已在这里展示，可直接编辑或查看历史版本。</p>';
     }
     updateAnswerStatus();
   }
-  async function acceptAnswer(result){
-    state.answer=result;state.answerCache=null;state.answerSource=result.content;state.answerBaseContent=result.content;state.answerBaseVersion=result.version;state.answerRecords=await api.answerRecords(result.content);
-    if(state.doc?.path===result.path){state.doc=result;replaceSource(result.content);}
+  async function acceptAnswer(result,{savedSource}={}){
+    const pending=savedSource!==undefined&&state.answerSource!==savedSource?state.answerSource:result.content;
+    state.answer=result;state.answerCache=null;state.answerSource=pending;state.answerBaseContent=result.content;state.answerBaseVersion=result.version;
+    if(state.doc?.path===result.path){const displayed=text();state.doc=result;replaceSource(savedSource!==undefined&&displayed!==savedSource?displayed:result.content);}
+    state.answerRecords=await api.answerRecords(result.content);
     dirtyState();await flushDraft();renderAnswers();renderAnswerWorkspace();
   }
-  async function saveAnswerDocument(){
-    if(!state.answer||!answerSourceDirty())return;await flushDraft();
-    try{const result=await api.save(state.answer.path,state.answerSource,state.answerBaseVersion);await acceptAnswer(result);message('回答文档已保存，旧版本已备份。');}
-    catch(e){if(/修改|已变化/.test(cleanError(e)))await showAnswerSourceConflict();else throw e;}
+  function answerEntries(){
+    return (state.answer?.questions.current||[]).filter(q=>state.answers[questionKey(q)]?.trim()).map(q=>({...q,value:state.answers[questionKey(q)]}));
   }
-  async function showAnswerSourceConflict(){
-    const target=state.answer,disk=await api.read(target.path),local=state.answerSource;
-    modal('回答文档有外部更新',`<p class="modal-note">你的草稿已保留，核对两份内容后再保存。</p><div class="compare-grid"><section><h3>磁盘上的版本</h3><pre>${escape(disk.content)}</pre></section><section><h3>我的草稿 / 合并结果</h3><textarea id="answer-merge-content">${escape(local)}</textarea></section></div>`,[{label:'继续保留草稿',action:async()=>closeModal()},{label:'用外部版本作为合并起点',action:async()=>{$('#answer-merge-content').value=disk.content;}},{label:'保存核对后的合并结果',primary:true,action:async()=>{const result=await api.save(target.path,$('#answer-merge-content').value,disk.version);closeModal();await acceptAnswer(result);message('回答文档合并保存成功。');}}],'回答文档 · 版本保护');
+  async function previewCurrentAnswers(){
+    const path=state.answer.path,source=state.answerSource,entries=answerEntries();
+    try{
+      const content=await api.composeAnswers(source,entries);
+      if(state.answer?.path===path&&state.answerSource===source&&JSON.stringify(answerEntries())===JSON.stringify(entries)&&state.answerTab==='document'){
+        $('#answer-document-preview').innerHTML=renderMD(content,path);
+        // Editing the full document edits the underlying text; pending answers
+        // are included by the same save operation, without a second save step.
+      }
+    }catch(e){message(cleanError(e),true);}
   }
+  async function saveAnswerDocument(){return saveAll();}
   async function answerHistory(){
-    if(answerSourceDirty()){message('请先保存回答文档草稿，再恢复历史版本。',true);return;}
+    if(answerSourceDirty()||hasAnswers())await saveAll();
     const target=state.answer;if(!target)return;const backups=await api.backups(target.path);
     modal('回答文档历史版本',`<p class="modal-note">恢复前会备份当前版本；未提交的本轮答案继续保留。</p><div class="history-layout"><nav class="history-list">${backups.map(b=>`<button data-answer-backup="${escape(b.id)}">${new Date(b.date).toLocaleString('zh-CN')}</button>`).join('')||'<p>尚无历史版本。</p>'}</nav><pre id="answer-backup-preview" class="backup-preview">选择版本查看原文。</pre></div>`,[{label:'关闭',action:async()=>closeModal()}],'学生文档 · 本地备份');
     $('#modal-body').onclick=async e=>{const b=e.target.closest('[data-answer-backup]');if(!b)return;try{const content=await api.backupRead(target.path,b.dataset.answerBackup);$('#answer-backup-preview').textContent=content;$('#modal-actions').innerHTML='';const restore=document.createElement('button');restore.className='primary';restore.textContent='恢复这个版本';restore.onclick=()=>guarded(async()=>{const result=await api.backupRestore(target.path,b.dataset.answerBackup,target.version);closeModal();await acceptAnswer(result);message('回答文档历史版本已恢复。');});$('#modal-actions').append(restore);}catch(e){message(cleanError(e),true);}};
   }
-  async function saveDoc(){
-    if(!state.doc||!state.dirty)return;await flushDraft();
-    try{const result=await api.save(state.doc.path,text(),state.doc.version);state.doc=result;if(state.answer?.path===result.path)await acceptAnswer(result);else{dirtyState();await flushDraft();}message('文档已保存，旧版本已备份。');}
-    catch(e){if(/修改|已变化/.test(cleanError(e)))await showConflict();else throw e;}
+  async function saveAll(){
+    if(!state.doc)return;
+    await flushDraft();
+    const entries=answerEntries();
+    let changed=false;
+    // Save edits to the lesson as part of the same click as the answers.
+    if(state.dirty&&state.doc.path!==state.answer?.path){
+      const content=text(),result=await api.saveCurrent(state.doc.path,{content,baseContent:state.doc.content});
+      state.doc=result;
+      if(text()===content)replaceSource(result.content);
+      changed=true;
+    }
+    if(state.answer&&(entries.length||answerSourceDirty()||(state.dirty&&state.doc.path===state.answer.path))){
+      const content=state.answerSource,result=await api.saveCurrent(state.answer.path,{content,baseContent:state.answerBaseContent,answers:entries});
+      for(const q of entries)if(state.answers[questionKey(q)]===q.value)delete state.answers[questionKey(q)];
+      await acceptAnswer(result,{savedSource:content});
+      changed=true;
+    }
+    dirtyState();await flushDraft();$('#change-banner').classList.add('hidden');
+    message(changed?'现有修改已保存。':'已保存。');
   }
-  async function submitAnswers(){
-    if(answerSourceDirty()){message('请先保存完整回答文档的编辑草稿，再提交本轮答案。',true);return;}
-    if(state.dirty){message('请先保存当前文档，再提交答案。',true);return;}
-    if(state.answerCache&&state.answerCache.content!==state.answerCache.baseContent){message('回答文档还有未保存的源文档草稿，请先打开回答文档核对并保存。',true);return;}
-    const q=state.answer.questions.current;const submitted=q.filter(x=>state.answers[questionKey(x)]?.trim());
-    if(!submitted.length){message('请先填写至少一道题。');return;}
-    await flushDraft();const values=Object.fromEntries(submitted.map(x=>[x.id,state.answers[questionKey(x)]]));
-    try{const result=await api.submit(state.answer.path,values,state.answer.version);for(const x of submitted)delete state.answers[questionKey(x)];await acceptAnswer(result);if(!state.documentWindow){await api.dshVisible(true);await api.dshPrepareReview();}message(state.documentWindow?'作答已追加保存到学生文档。':'作答已追加保存。可在 DSH 中发送评估请求。');}
-    catch(e){if(/修改|已变化/.test(cleanError(e)))await showAnswerConflict();else throw e;}
-  }
+  async function saveDoc(){return saveAll();}
+  async function submitAnswers(){return saveAll();}
   function modal(title,body,actions,eyebrow='文档工作台'){const box=$('#modal');$('#modal-body').onclick=null;$('#modal-body').oninput=null;$('#modal-title').textContent=title;$('#modal-eyebrow').textContent=eyebrow;$('#modal-body').innerHTML=body;$('#modal-actions').innerHTML='';for(const a of actions){const b=document.createElement('button');b.textContent=a.label;if(a.primary)b.className='primary';b.onclick=()=>guarded(a.action);$('#modal-actions').append(b);}box.classList.remove('hidden');$('#modal-close').focus();}
   function closeModal(){$('#modal').classList.add('hidden');}
-  async function showConflict(){
-    const disk=await api.read(state.doc.path);const local=text();
-    modal('比较外部修改与我的草稿',`<p class="modal-note">外部修改已保留。选择并核对最终文本，才会写入原文档。</p><div class="compare-grid"><section><h3>磁盘上的版本</h3><pre>${escape(disk.content)}</pre></section><section><h3>我的草稿 / 合并结果</h3><textarea id="merge-content">${escape(local)}</textarea></section></div>`,[
-      {label:'继续保留草稿',action:async()=>{closeModal();await flushDraft();}},
-      {label:'用外部版本作为合并起点',action:async()=>{$('#merge-content').value=disk.content;}},
-      {label:'保存核对后的合并结果',primary:true,action:async()=>{const merged=$('#merge-content').value;const result=await api.save(state.doc.path,merged,disk.version);state.doc=result;replaceSource(result.content);if(state.answer?.path===result.path)await acceptAnswer(result);else renderAnswers();mountVisual();await flushDraft();closeModal();$('#change-banner').classList.add('hidden');message('合并结果已保存，覆盖前的磁盘版本已备份。');}}
-    ],'保存冲突 · 两份内容都在');
-  }
-  async function showAnswerConflict(){const disk=await api.read(state.answer.path);modal('回答文档有外部更新',`<p class="modal-note">你的答案草稿已保留。先重新载入题目，核对是否仍对应当前轮次，再提交。</p><pre class="backup-preview">${escape(disk.content)}</pre>`,[{label:'继续保留草稿',action:async()=>closeModal()},{label:'重新加载题目并保留草稿',primary:true,action:async()=>{closeModal();await selectFile(state.doc.path);}}],'答案保护');}
   function applyPreferences(){const p=state.preferences;document.documentElement.style.setProperty('--reading-font',p.fontSize+'px');document.documentElement.style.setProperty('--reading-line',p.lineHeight);document.documentElement.style.setProperty('--reading-width',p.readingWidth+'px');}
   function preferences(){const p=state.preferences;modal('阅读与备份设置',`<div class="preferences-form"><label>正文字号 <output id="font-output">${p.fontSize}px</output><input id="font-size" type="range" min="13" max="24" value="${p.fontSize}"></label><label>行距 <output id="line-output">${p.lineHeight}</output><input id="line-height" type="range" min="1.4" max="2.4" step=".1" value="${p.lineHeight}"></label><label>阅读宽度 <output id="width-output">${p.readingWidth}px</output><input id="reading-width" type="range" min="540" max="1200" step="20" value="${p.readingWidth}"></label><label>每份文档保留的备份数量<input id="retention" type="number" min="5" max="100" value="${p.backupRetention}"></label></div>`,[{label:'保存设置',primary:true,action:async()=>{state.preferences=await api.preferences(state.preferences);applyPreferences();closeModal();message('阅读与备份设置已保存。');}}],'按你的阅读习惯');
     $('#modal-body').oninput=()=>{state.preferences={fontSize:Number($('#font-size').value),lineHeight:Number($('#line-height').value),readingWidth:Number($('#reading-width').value),backupRetention:Number($('#retention').value)||20};$('#font-output').value=state.preferences.fontSize+'px';$('#line-output').value=state.preferences.lineHeight;$('#width-output').value=state.preferences.readingWidth+'px';applyPreferences();};
@@ -313,25 +326,20 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(b.id==='document-popout'){guarded(popout);return;}
     if(b.id==='answer-save-source'){guarded(saveAnswerDocument);return;}
     if(b.id==='answer-history'){guarded(answerHistory);return;}
-    const actions={'import':()=>importFolder(),'welcome-import':()=>importFolder(),'welcome-demo':()=>importFolder('__demo__'),'recent-open':()=>importFolder(b.dataset.root),save:saveDoc,submit:submitAnswers,preferences:async()=>preferences(),'choose-course':async()=>chooseCourse(),refresh:async()=>{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}},'load-changes':()=>state.doc&&selectFile(state.doc.path),'open-answer':()=>state.answer&&selectFile(state.answer.path),export:()=>state.doc&&api.exportDraft(text()),'continue-learning':()=>selectFile(state.learning.guidePath||state.learning.answerPath),'modal-close':async()=>closeModal()};
+    const actions={'import':()=>importFolder(),'welcome-import':()=>importFolder(),'welcome-demo':()=>importFolder('__demo__'),'recent-open':()=>importFolder(b.dataset.root),save:saveDoc,submit:submitAnswers,preferences:async()=>preferences(),'choose-course':async()=>chooseCourse(),refresh:async()=>{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}},'load-changes':()=>state.doc&&selectFile(state.doc.path),'open-answer':()=>state.answer&&selectFile(state.answer.path),'continue-learning':()=>selectFile(state.learning.guidePath||state.learning.answerPath),'modal-close':async()=>closeModal()};
     if(actions[b.id])guarded(actions[b.id]);
   });
   $('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();}});
   $('#answer-content').addEventListener('input',e=>{if(e.target.dataset.answerIndex!==undefined){const q=state.answer.questions.current[Number(e.target.dataset.answerIndex)];state.answers[questionKey(q)]=e.target.value;const count=document.querySelector(`[data-answer-count="${e.target.dataset.answerIndex}"]`);if(count)count.textContent=e.target.value.length+' 字';const button=document.querySelector(`[data-answer-question="${e.target.dataset.answerIndex}"]`);if(button){button.querySelector('.answer-question-check').textContent=e.target.value.trim()?'✓':'';button.setAttribute('aria-label',`问题 ${q.number}，${e.target.value.trim()?'已填写':'未填写'}`);}dirtyState();scheduleDraft();updateAnswerStatus();}});
-  $('#answer-source').addEventListener('input',e=>{state.answerSource=e.target.value;state.answerCache={...(state.answerCache||{}),content:state.answerSource,baseContent:state.answerBaseContent,baseVersion:state.answerBaseVersion};if(state.doc.path===state.answer.path)replaceSource(state.answerSource);dirtyState();scheduleDraft();$('#answer-source-status').textContent='本地草稿 · 未写入';updateAnswerStatus();});
+  $('#answer-source').addEventListener('input',e=>{state.answerSource=e.target.value;state.answerCache={...(state.answerCache||{}),content:state.answerSource,baseContent:state.answerBaseContent,baseVersion:state.answerBaseVersion};if(state.doc.path===state.answer.path)replaceSource(state.answerSource);dirtyState();scheduleDraft();$('#answer-source-status').textContent='有修改 · 待保存';updateAnswerStatus();});
   for(const selector of ['#answer-records','#answer-document-preview','#answer-content'])$(selector).addEventListener('click',e=>{const link=e.target.closest('a');if(!link)return;const href=link.getAttribute('href');e.preventDefault();if(/^https?:\/\//i.test(href)){api.external(href);return;}if(href&&!href.startsWith('#')){const path=resolveLink(state.answer.path,href);if(path)guarded(()=>selectFile(path));}});
   $('#editor').addEventListener('click',e=>{const link=e.target.closest('a');if(!link)return;e.preventDefault();if(!e.ctrlKey&&!e.metaKey)return;const href=link.getAttribute('href');if(!href)return;if(/^https?:\/\//i.test(href)){api?.external(href);return;}if(href.startsWith('#')){const title=decodeURIComponent(href.slice(1));const target=[...$('#editor').querySelectorAll('h1,h2,h3,h4,h5,h6')].find(h=>h.id===title||h.textContent.toLowerCase().replace(/\s+/g,'-')===title);target?.scrollIntoView();return;}const p=resolveLink(state.doc.path,href);if(p)guarded(()=>selectFile(p));});
   let dragCounter=0;document.addEventListener('dragenter',e=>{e.preventDefault();if(e.dataTransfer?.types.includes('Files')){dragCounter++;$('#drop-overlay').classList.remove('hidden');}});document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('dragleave',e=>{e.preventDefault();if(--dragCounter<=0){dragCounter=0;$('#drop-overlay').classList.add('hidden');}});document.addEventListener('drop',e=>{e.preventDefault();dragCounter=0;$('#drop-overlay').classList.add('hidden');const file=e.dataTransfer.files[0];if(file&&api)guarded(()=>importFolder(api.droppedPath(file)));});
   api?.onShortcut(name=>guarded(()=>{
     if(name==='import')return state.documentWindow?Promise.resolve():importFolder();
     if(page!=='document')return Promise.resolve();
-    if(document.body.classList.contains('answer-focused')){
-      if(state.answerTab==='current')return submitAnswers();
-      if(state.answerTab==='document'&&state.answerEditing)return saveAnswerDocument();
-      return Promise.resolve();
-    }
-    return !document.body.classList.contains('answer-document-active')&&state.answerTab==='document'&&state.answerEditing?saveAnswerDocument():saveDoc();
+    return saveAll();
   }));
   api?.onPrepareClose(async()=>{try{await flushDraft();await api.closeReady(true);}catch(e){await api.closeReady(false);message(cleanError(e),true);}});
   api?.onChange(async()=>{try{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}if(state.doc){const disk=await api.read(state.doc.path);const answer=state.answer&&state.answer.path!==state.doc.path?await api.read(state.answer.path):null;if(disk.version!==state.doc.version||(answer&&answer.version!==state.answer.version))$('#change-banner').classList.remove('hidden');}}catch{message('文档可能已移动或删除，请刷新当前文档。',true);}});

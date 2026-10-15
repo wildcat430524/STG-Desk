@@ -1,0 +1,76 @@
+const {app}=require('electron');
+const fs=require('node:fs/promises');
+const path=require('node:path');
+const os=require('node:os');
+const assert=require('node:assert/strict');
+process.argv.push('--smoke-test');
+const smokePath=require.resolve('../electron/smoke.cjs');
+require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:async win=>{
+  const root=await fs.mkdtemp(path.join(os.tmpdir(),'stg-simple-save-ui-'));
+  const output=path.join(__dirname,'artifacts/save-current');await fs.mkdir(output,{recursive:true});
+  await fs.cp(path.join(__dirname,'../demo/StepsToGreat'),root,{recursive:true});
+  const base='我的学习/学科/Python/01-认识变量/';
+  const guide=base+'01_教学引导.md',answer=base+'01_学生回答.md';
+  const questions='## 第二轮\n\n### 问题 3：Lambda\n启动线程。\n\n**我的回答**\n\n### 问题 4：Stream\n收集结果。\n\n**我的回答**\n\n## 最终复评结果\n导师填写\n';
+  const old='# 17-Lambda与Stream | 01_教学引导\n\n'+questions;
+  const latest='# Lambda 与 Stream：最新教学\n\n'+questions;
+  await fs.writeFile(path.join(root,guide),latest);
+  await fs.writeFile(path.join(root,answer),'# 回答\n\n'+questions);
+  const js=code=>win.webContents.executeJavaScript(code,true);
+  const wait=async expr=>{for(let i=0;i<160;i++){if(await js(`document.documentElement.dataset.busy!=='true'&&(${expr})`))return;await new Promise(r=>setTimeout(r,75));}throw Error('UI wait failed: '+expr);};
+  const open=async()=>{
+    await js(`document.querySelector('#recent').innerHTML='<button id="recent-open">打开验收工作区</button>';document.querySelector('#recent-open').dataset.root=${JSON.stringify(root)};document.querySelector('#recent-open').click()`);
+    await wait("document.querySelectorAll('.question-card').length===2");
+  };
+  const type=async value=>{
+    await js("document.querySelector('.tiptap').focus()");
+    win.webContents.sendInputEvent({type:'keyDown',keyCode:'End',modifiers:['control']});
+    win.webContents.sendInputEvent({type:'keyUp',keyCode:'End',modifiers:['control']});
+    await win.webContents.insertText(value);
+  };
+  const fill=async value=>js(`document.querySelector('#answer-0').value=${JSON.stringify(value)};document.querySelector('#answer-0').dispatchEvent(new Event('input',{bubbles:true}))`);
+  const evidence=[];
+  try{
+    win.setSize(1460,960);await wait("!!document.querySelector('#welcome-import')");await open();
+    // Reproduce the user's old cached title with only a serializer-added escape.
+    await js(`window.stg.draftPut(${JSON.stringify(guide)},{content:${JSON.stringify(old.replace('01_','01\\_'))},baseContent:${JSON.stringify(old)},baseVersion:'old-version',answers:{}})`);
+    win.webContents.reload();await wait("document.querySelector('#editor .tiptap')?.textContent.includes('最新教学')");
+    assert.equal(await js("document.querySelector('#save-status').textContent"),'已保存');
+    evidence.push('A stale snapshot differing only by an escaped underscore loads the latest teaching document as saved');
+    assert.equal(await js("!!document.querySelector('#export')"),false);
+    await type('\n本地教学修改');await fill('Runnable task = () -> System.out.println("保存验收");');
+    await fs.appendFile(path.join(root,answer),'\n导师的新评估');
+    await js("document.querySelector('[data-answer-tab=document]').click()");
+    await wait("document.querySelector('#answer-document-preview').textContent.includes('保存验收')");
+    evidence.push('Answer input appears in the complete document preview before saving');
+    await js("document.querySelector('#answer-edit-source').click();document.querySelector('#answer-source').value+='\\n完整文档的修改';document.querySelector('#answer-source').dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('[data-answer-tab=current]').click();document.querySelector('#submit').click()");
+    await wait("document.querySelector('#save-status').textContent==='已保存'");
+    const saved=await fs.readFile(path.join(root,answer),'utf8');
+    assert.ok(saved.includes('保存验收'));assert.ok(saved.includes('完整文档的修改'));assert.ok(saved.includes('导师的新评估'));
+    assert.ok((await fs.readFile(path.join(root,guide),'utf8')).includes('本地教学修改'));
+    assert.equal(await js("document.querySelector('#modal').classList.contains('hidden')"),true);
+    assert.equal(await js("document.querySelector('#draft-status').textContent"),'');
+    const backups=await js(`window.stg.backups(${JSON.stringify(answer)})`);
+    await js("document.querySelector('#submit').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");
+    assert.equal(await fs.readFile(path.join(root,answer),'utf8'),saved);
+    assert.equal((await js(`window.stg.backups(${JSON.stringify(answer)})`)).length,backups.length);
+    evidence.push('Save this round writes lesson edits, full answer edits, and question input together; repeated Save creates no duplicate answer');
+    await fill('底部保存按钮也保存答案');await js("document.querySelector('#save').click()");await wait("document.querySelector('#save-status').textContent==='已保存'");
+    assert.ok((await fs.readFile(path.join(root,answer),'utf8')).includes('底部保存按钮也保存答案'));
+    await fill('普通模式 Ctrl S 保存答案');
+    win.webContents.sendInputEvent({type:'keyDown',keyCode:'S',modifiers:['control']});win.webContents.sendInputEvent({type:'keyUp',keyCode:'S',modifiers:['control']});
+    await wait("document.querySelector('#save-status').textContent==='已保存'");assert.ok((await fs.readFile(path.join(root,answer),'utf8')).includes('普通模式 Ctrl S 保存答案'));
+    await fill('专注模式 Ctrl S 保存答案');await js("document.querySelector('#answer-focus').click()");
+    win.webContents.sendInputEvent({type:'keyDown',keyCode:'S',modifiers:['control']});win.webContents.sendInputEvent({type:'keyUp',keyCode:'S',modifiers:['control']});
+    await wait("document.querySelector('#save-status').textContent==='已保存'");assert.ok((await fs.readFile(path.join(root,answer),'utf8')).includes('专注模式 Ctrl S 保存答案'));
+    evidence.push('The bottom Save button and native Ctrl+S both save answer inputs in normal and focused modes');
+    await fs.writeFile(path.join(output,'saved.png'),(await win.webContents.capturePage()).toPNG());
+    await fs.writeFile(path.join(output,'result.json'),JSON.stringify({passed:true,evidence},null,2));
+    console.log(JSON.stringify({passed:true,evidence},null,2));app.exit(0);
+  }catch(error){
+    await fs.writeFile(path.join(output,'failure.png'),(await win.webContents.capturePage()).toPNG());
+    await fs.writeFile(path.join(output,'result.json'),JSON.stringify({passed:false,error:error.stack,toast:await js("document.querySelector('#toast').textContent")},null,2));
+    console.error(error);app.exit(1);
+  }finally{await fs.rm(root,{recursive:true,force:true}).catch(()=>{});}
+}};
+require('../electron/main.cjs');

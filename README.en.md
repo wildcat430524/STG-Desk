@@ -20,9 +20,9 @@ STG Desk is a Windows desktop workspace for [StepsToGreat](https://github.com/wi
 
 Reading, editing, and answering work independently; connect DSH when needed. Learning files stay in their original directory so a tutor or learning agent can read and update them.
 
-> This README covers [v0.3.9](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.9). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
+> This README covers [v0.3.10](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.10). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
 
-v0.3.9 gives the answer workspace more usable room with a compact heading and save bar, one question at a time, and expandable long prompts. The new focused answering mode enlarges the writing area and lets Ctrl+S save the whole round. Drafts survive question switches and reopening the app.
+v0.3.10 unifies saving: Save this round, Save, and Ctrl+S write current edits directly, without a prerequisite save or a draft-merge workflow. Old editor snapshots that differ only by Markdown escaping no longer restore an outdated lesson over the latest file.
 
 ## Preview
 
@@ -43,7 +43,7 @@ Screenshots use demo lessons and test drafts, with no real learning records or m
 - **Follow recorded progress**: read chapter progress, overall progress, handoff status, and mastery records from existing documents.
 - **Read your way**: detached teaching and answer windows, font size, line spacing, reading width, night theme, and focus mode.
 - **Use native DSH sessions**: live messages and model selection come from your local DSH. The panel and floating window share the conversation and input draft.
-- **Review and recover saves**: automatic drafts, backups before writes, version checks, external-change alerts, manual merging, and history restoration.
+- **Review and recover saves**: one-click saving of current edits, backups before writes, external-change alerts, and history restoration.
 
 The app displays existing records. Mastery decisions, tutor evaluations, and new lessons are supplied by the tutor or learning agent.
 
@@ -122,7 +122,7 @@ Headings, lists, tables, and formulas are organised by content level: `H1`/`H2`/
 To open it:
 
 - **Running from source**: import the `demo/EditorShowcase` directory.
-- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.9/STG-Desk-0.3.9-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
+- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.10/STG-Desk-0.3.10-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
 - After importing, 「选择课程」 (Choose lesson) lists this showcase lesson at `我的学习/学科/Markdown/01-复杂内容演示/`. The welcome screen's [bundled demo lessons](demo/StepsToGreat) open a separate workspace.
 
 > The Java example targets Java 17+ and was only reviewed, not compiled: this machine runs Java 11. The Python example was executed. The showcase demonstrates layout and editing behaviour; it is not a learning assessment.
@@ -137,15 +137,15 @@ The answer workspace beside the lesson has three entries:
 | 「作答记录」 (Answer records) | Review previous answers, tutor evaluations, and final reassessments |
 | 「完整文档」 (Full document) | Read and edit the entire answer file, including content outside the question interface |
 
-Question-based input supports ordinary and Feynman rounds with 1–3 recognized questions in the current round. For more questions or unrecognized formatting, edit the full answer document. Save pending full-document edits before submitting question-based answers.
+Question-based input supports ordinary and Feynman rounds with 1–3 recognized questions in the current round. For more questions or unrecognized formatting, edit the full answer document. One save writes question inputs, full-answer edits, and current lesson edits together.
 
 Click a question number to switch questions; filled-in questions show `✓`. Switching preserves input, and saving includes answers to questions that are currently hidden. Long prompts start collapsed. Click 「题干与示例」 to expand them; the column then scrolls as one area.
 
-Click 「专注作答」 to enlarge the answer area. Click 「返回对照」 or press `Esc` to restore the lesson beside your answers. In focused answering, `Ctrl+S` saves the whole round, or the answer document while editing the full-document tab. In the normal layout, `Ctrl+S` still saves the current document.
+Click 「专注作答」 to enlarge the answer area. Click 「返回对照」 or press `Esc` to restore the lesson beside your answers. Save this round, the bottom Save button, and `Ctrl+S` all save current edits in both normal and focused layouts.
 
 ![Answer workspace with question navigation, expandable prompts, and focused answering](docs/screenshots/answer-workspace.png)
 
-**Automatic drafts help recover input; saving the actual document still requires an explicit save.** Round submissions preserve previous answers and evaluations and do not update mastery tables or handoff status automatically.
+**Click Save to write current edits into the documents.** Input is retained in the background for recovery, without a separate draft workflow. Saving answers preserves previous answers and evaluations and does not update mastery tables or handoff status automatically.
 
 ![Saved answers appear in the student document](docs/screenshots/answer-saved.png)
 
@@ -206,7 +206,7 @@ Only local HTTP addresses are accepted. Desktop connection authorization is read
 | Recent workspace and reading settings | System app settings directory |
 | DSH sessions and model configuration | Managed by DSH |
 
-Before saving, the app checks the file version, backs up the old content, and replaces the file through a temporary file. External changes prompt a reload or manual merge. Restoring a history version also backs up the current content first.
+Before saving, the app checks the file version, backs up the old content, and replaces the file through a temporary file. Independent external changes are carried forward automatically. Overlapping changes use the current edit, with the replaced disk version backed up and no manual merge dialog. Changed questions keep their pending input and require review so an old answer cannot be attached to a different question. Restoring a history version also backs up the current content first.
 
 Drafts are written about 250 milliseconds after input pauses; restoring a draft does not automatically overwrite the original file. Local backups are not cloud synchronization. Keep separate backups of important learning files.
 

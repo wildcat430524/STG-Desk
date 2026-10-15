@@ -95,6 +95,8 @@ app.whenReady().then(async()=>{
   handle('tree',async()=>decorateTree(await workspace.tree()));
   handle('read',p=>workspace.read(p));
   handle('save',(p,c,v)=>workspace.save(p,c,v));
+  handle('save-current',(p,changes)=>workspace.saveCurrent(p,changes));
+  handle('compose-answers',(content,entries)=>require('../lib/save-current.cjs').composeAnswers(content,entries));
   handle('companion',p=>workspace.companion(p));
   handle('answer-records',content=>require('../lib/answer-records.cjs').analyzeAnswerRecords(content));
   handle('document-window-open',p=>documentWindows.open(p));
@@ -122,13 +124,13 @@ app.whenReady().then(async()=>{
   });
   handle('close-ready',async ok=>{
     closeRequested=false;
-    if(!ok){await dialog.showMessageBox(window,{type:'error',message:'草稿尚未成功保存，请继续编辑或另存文档草稿。'});return;}
+    if(!ok){await dialog.showMessageBox(window,{type:'error',message:'未保存内容尚未成功保留，请点击保存后重试。'});return;}
     await dsh.dispose();closing=true;window.close();
   });
   handle('last-root',async()=>(await settings()).lastRoot||null);
   handle('dirty',value=>{dirty=!!value;});
   handle('confirm-leave',async()=>{
-    const result=await dialog.showMessageBox(window,{type:'question',title:'保留未保存内容',message:'当前文档或答案草稿尚未保存。',buttons:['继续编辑','放弃本次修改'],defaultId:0,cancelId:0});
+    const result=await dialog.showMessageBox(window,{type:'question',title:'保留未保存内容',message:'当前文档或答案还有未保存的修改。',buttons:['继续编辑','放弃本次修改'],defaultId:0,cancelId:0});
     return result.response===1;
   });
   handle('external',async url=>{if(/^https?:\/\//i.test(url)) await shell.openExternal(url);});

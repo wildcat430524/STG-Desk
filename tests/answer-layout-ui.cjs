@@ -56,7 +56,7 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     await input('#answer-1','函数式接口只有一个抽象方法，Runnable 的抽象方法是 run。');
     await click('[data-answer-question="0"]');
     assert.ok(await js("document.querySelector('#answer-0').value.includes('Lambda 验收')"));
-    await wait("document.querySelector('#draft-status').textContent==='草稿已自动保存'");
+    await wait(`window.stg.draftGet(${JSON.stringify(answer)}).then(d=>Object.values(d?.answers||{}).length===2)`);
     const draft=await js(`window.stg.draftGet(${JSON.stringify(answer)})`);
     assert.equal(Object.values(draft.answers).length,2);
     win.webContents.reload();

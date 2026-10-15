@@ -3,7 +3,7 @@ const call=name=>(...args)=>ipcRenderer.invoke(name,...args);
 contextBridge.exposeInMainWorld('stg',{
   applyTheme:call('app-theme'),
   openDialog:call('open-dialog'),openRoot:call('open-root'),openDemo:call('open-demo'),tree:call('tree'),read:call('read'),save:call('save'),
-  companion:call('companion'),submit:call('submit'),lastRoot:call('last-root'),dirty:call('dirty'),confirmLeave:call('confirm-leave'),
+  companion:call('companion'),submit:call('submit'),saveCurrent:call('save-current'),composeAnswers:call('compose-answers'),lastRoot:call('last-root'),dirty:call('dirty'),confirmLeave:call('confirm-leave'),
   external:call('external'),reveal:call('reveal'),exportDraft:call('export-draft'),
   learning:call('learning'),describe:call('describe'),search:call('search'),
   documents:call('documents'),documentContext:call('document-context'),
