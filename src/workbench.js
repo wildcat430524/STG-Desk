@@ -3,6 +3,7 @@ import katex from 'katex';
 import {editorIcon} from './editor-icons';
 import {formulaBody,isDisplaySource,wrapFormula,renderFormula} from './editor-formula.mjs';
 import {copyText} from './editor-rich.js';
+import {mountAnswerEditor} from './answer-editor';
 import {mountFocusMode} from './focus-mode';
 import {renderProgressSummary} from './progress-view';
 import './progress-view.css';
@@ -26,6 +27,8 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
 
   mountFocusMode($('#document-focus'));
   let activeQuestionKey=null;
+  let answerEditors=[];
+  const answerLanguages=new Map();
   const setAnswerFocused=enabled=>{
     document.body.classList.toggle('answer-focused',enabled);
     $('#answer-focus').setAttribute('aria-pressed',String(enabled));
@@ -197,6 +200,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   }
   $('#insert-formula').onclick=()=>{if(visual)editFormula();};
   function renderAnswers(){
+    answerEditors.forEach(dispose=>dispose());answerEditors=[];
     const answer=state.answer,current=answer?.questions?.current||[];$('#answer-footer').innerHTML='';
     $('#answer-question-nav').classList.add('hidden');
     if(!answer){$('#answer-description').textContent='选择教学引导或学生回答文档。';$('#answer-content').innerHTML='<div class="answer-empty"><span>✎</span><strong>在这里专注作答</strong><p>教学引导关联同目录的学生回答。</p></div>';return;}
@@ -211,6 +215,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
       if(prompt!==q.prompt)card.querySelector('.question-prompt').innerHTML=renderMD(prompt,state.doc.path);
       card.querySelector('.answer-prompt').open=prompt.length<=260&&prompt.split('\n').length<=8;
       card.insertAdjacentHTML('beforeend',`<div class="answer-input-tools"><button data-answer-code="${i}">插入代码块</button><span data-answer-count="${i}">${(answerValue(q)).length} 字</span></div>`);
+      answerEditors.push(mountAnswerEditor(card.querySelector('[data-answer-index]'),{context:prompt+'\n'+state.doc.content,language:answerLanguages.get(questionKey(q))||'auto',onLanguage:language=>answerLanguages.set(questionKey(q),language)}));
     });
     $('#answer-footer').innerHTML='<div class="answer-footer-status" id="answer-draft-status">点击保存，写入回答文档</div><button class="primary" id="submit">保存本轮作答 <span>→</span></button><p>回答与学生文档同步，保存后可继续修改。</p>';
     $('#submit').title='保存所有已填写的本轮答案。回答与学生文档同步，保存后可继续修改。专注作答时可按 Ctrl S 保存。';

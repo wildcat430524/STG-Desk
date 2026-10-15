@@ -92,6 +92,7 @@ import './editor-design.css';
 import './editor-syntax.css';
 import './typography.css';
 import './answer-layout.css';
+import './answer-editor.css';
 import {mountEditorIcons} from './editor-icons';
 const dshOnly=new URLSearchParams(location.search).has('dsh');
 const documentOnly=new URLSearchParams(location.search).has('document');

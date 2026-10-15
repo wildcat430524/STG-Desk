@@ -1,0 +1,11 @@
+.answer-editor{position:relative;min-width:0;background:#fbfcfe;border-radius:13px}
+.answer-editor.answer-code{background:var(--editor-code-bg,#fff)}
+html #answers-panel .answer-editor>textarea{position:relative;display:block;margin:0;background:transparent!important;color:transparent!important;-webkit-text-fill-color:transparent;caret-color:var(--editor-ink,#383a42);tab-size:4}
+html .answers-panel .answer-editor>textarea::placeholder{-webkit-text-fill-color:#8191a6;color:#8191a6!important}
+html .answers-panel .answer-editor>textarea::selection{background:#759cce55}
+html .answers-panel .answer-editor.answer-code>textarea{font-family:"Cascadia Code",Consolas,monospace;font-size:calc(var(--reading-font,18px) * .9);line-height:1.7}
+.answer-input-highlight{position:absolute;box-sizing:border-box;margin:0;border:0;border-radius:inherit;overflow:hidden;white-space:pre-wrap;pointer-events:none;user-select:none;color:var(--editor-ink,#383a42);background:transparent}
+.answer-input-tools .answer-code-language{min-width:0;max-width:150px;border:1px solid #dfe5ee;border-radius:7px;background:transparent;color:inherit;font:inherit;padding:3px 5px}
+.answer-input-tools [data-answer-count]{margin-left:auto;white-space:nowrap}
+html[data-app-theme=dark] .answer-editor{background:#29323e}
+html[data-app-theme=dark] .answer-editor.answer-code{background:var(--editor-code-bg,#29323e)}
