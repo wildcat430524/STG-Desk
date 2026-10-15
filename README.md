@@ -20,9 +20,9 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 阅读、编辑和作答可以独立使用，DSH 对话按需连接。学习资料仍保存在原目录中，便于导师或学习 Agent 接着读取和更新。
 
-> 本文对应 [v0.3.10](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.10)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
+> 本文对应 [v0.3.11](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.11)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
 
-v0.3.10 统一保存行为：「保存本轮作答」、「保存」和 Ctrl+S 都直接保存现有修改，不再要求先保存另一份文档或处理草稿合并。修复旧编辑记录中仅有 Markdown 转义差异时恢复过期教学内容的问题。
+v0.3.11 让「你的回答」与回答文档同步：保存后答案留在输入框，重新打开会自动读回，修改后保存更新当前答案，清空后保存同步清空；不再需要展开已保存记录。
 
 ## 界面预览
 
@@ -38,7 +38,7 @@ v0.3.10 统一保存行为：「保存本轮作答」、「保存」和 Ctrl+S �
 - **接着上次学**：恢复最近工作区，从学习档案定位当前课，也可选择已有课程。
 - **直接编辑文档**：单栏所见即所得，支持代码、表格、清单、公式和本地图片；未修改区块保留原始 Markdown。
 - **代码与公式就地处理**：代码块带语法高亮、语言选择和复制按钮；行内与独立公式由 KaTeX 排版，可插入、预览并双击修改。
-- **教学旁边作答**：按题填写当前轮答案、插入代码块并追加保存；历轮原答、评估和复评可以随时核对。
+- **教学旁边作答**：按题编辑当前轮答案、插入代码块并同步保存；历轮原答、评估和复评可以随时核对。
 - **完整文档随时修改**：回答页直接编辑全文，也能在教学旁查看与修改完整学生文档。
 - **进度有据可查**：读取文档中的章节进度、总体进度、交接状态和掌握记录。
 - **按自己的习惯阅读**：独立教学与回答窗口、字号与行距设置、阅读宽度、夜间主题和专注模式。
@@ -122,7 +122,7 @@ C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
 导入方式：
 
 - **从源码运行**：导入 `demo/EditorShowcase` 目录。
-- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.10/STG-Desk-0.3.10-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
+- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.11/STG-Desk-0.3.11-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
 - 导入后「选择课程」会列出这门演示课程（路径为 `我的学习/学科/Markdown/01-复杂内容演示/`），与内置的 [示例课程](demo/StepsToGreat) 相互独立。
 
 > 演示中的 Java 示例按 Java 17+ 语法编写，仅经过审查，未在本机 Java 11 环境编译；Python 示例已实际运行。示例用于展示排版与编辑效果，不代表学习评估。
@@ -133,7 +133,7 @@ C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
 
 | 入口 | 用途 |
 | --- | --- |
-| 本轮作答 | 逐题填写最新已发布轮次，保存时一起追加所有已填写的原答 |
+| 本轮作答 | 逐题编辑最新已发布轮次的答案，保存后继续显示，并与回答文档同步 |
 | 作答记录 | 查看历轮答案、导师评估与最终复评 |
 | 完整文档 | 阅读和编辑整个学生回答，包括按题界面未覆盖的内容 |
 

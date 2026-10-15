@@ -10,7 +10,7 @@ import './workbench.css';
 
 export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,highlight,registry,documentOnly=false}) {
   const $=s=>document.querySelector(s);
-  const state={workspace:null,doc:null,answer:null,answerCache:null,answerTab:'current',answerEditing:false,answerSource:'',answerBaseContent:'',answerBaseVersion:null,answerRecords:null,documentWindow:null,dirty:false,answers:{},orphans:[],loading:false,busy:false,documents:[],learning:null,preferences:{fontSize:16,lineHeight:1.9,readingWidth:820,backupRetention:20}};
+  const state={workspace:null,doc:null,answer:null,answerCache:null,answerTab:'current',answerEditing:false,answerSource:'',answerBaseContent:'',answerBaseVersion:null,answerRecords:null,parsedAnswerSource:null,documentWindow:null,dirty:false,answers:{},orphans:[],loading:false,busy:false,documents:[],learning:null,preferences:{fontSize:16,lineHeight:1.9,readingWidth:820,backupRetention:20}};
   let visual,sourceContent=null,draftTimer,draftWrites=Promise.resolve(),loadEpoch=0,page='document',progress={},detachedWindows=[],windowEvents=[],handlingWindowEvents=false,returningPaths=new Set();
   $('#workspace-meta').insertAdjacentHTML('afterend','<button id="continue-learning" class="continue-learning hidden">继续学习 <span>→</span></button><small id="current-learning"></small>');
   $('.header-actions').insertAdjacentHTML('afterbegin','<button id="preferences" class="header-button">阅读设置</button>');
@@ -39,7 +39,8 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   async function guarded(task){if(state.busy)return;state.busy=true;document.documentElement.dataset.busy='true';try{await task();}catch(e){message(cleanError(e),true);}finally{state.busy=false;document.documentElement.dataset.busy='false';drainWindowEvents();}}
   function cleanError(e){return String(e.message||e).replace(/^Error invoking remote method '[^']+': (?:Error: )?/,'');}
   function questionKey(q){return JSON.stringify([q.round,q.number,q.title,q.prompt]);}
-  function hasAnswers(){return Object.values(state.answers).some(v=>v.length);}
+  function answerValue(q){return state.answers[questionKey(q)]??q.answer?.value??'';}
+  function hasAnswers(){const current=state.answer?.questions.current||[];return Object.entries(state.answers).some(([key,value])=>value!==(current.find(q=>questionKey(q)===key)?.answer?.value??''));}
   function text(){return sourceContent??state.doc?.content??'';}
   function sourceLineOffset(line){let offset=0;for(let n=1;n<line;n++){const next=text().indexOf('\n',offset);if(next<0)return text().length;offset=next+1;}return offset;}
   function answerSourceDirty(){return !!state.answer&&state.answerSource!==state.answer.content;}
@@ -51,8 +52,8 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   }
   async function persistInput(){
     if(!api||!state.doc)return;
-    const doc=state.doc,answer=state.answer,content=text(),answers={...state.answers};
-    const has=Object.values(answers).some(v=>v.length);
+    const doc=state.doc,answer=state.answer,content=text(),answers=Object.fromEntries(Object.entries(state.answers).filter(([key,value])=>value!==((answer?.questions.current||[]).find(q=>questionKey(q)===key)?.answer?.value??'')));
+    const has=Object.keys(answers).length>0;
     const docRecord={content,baseContent:doc.content,baseVersion:doc.version,mode:'edit',answers:doc.path===answer?.path?answers:{}};
     if(!isDetached(doc.path)&&!returningPaths.has(doc.path)){if(content!==doc.content||(has&&doc.path===answer?.path))await api.draftPut(doc.path,docRecord);else await api.draftRemove(doc.path);}
     if(answer&&answer.path!==doc.path&&!isDetached(answer.path)&&!returningPaths.has(answer.path)){
@@ -139,7 +140,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     state.answerSource=editedAnswer?state.answerCache.content:answer?.content??'';
     state.answerBaseContent=editedAnswer?state.answerCache.baseContent:answer?.content??'';
     state.answerBaseVersion=editedAnswer?state.answerCache.baseVersion:answer?.version??null;
-    state.answerEditing=false;state.answerRecords=answer?await api.answerRecords(answer.content):null;
+    state.answerEditing=false;state.answerRecords=answer?await api.answerRecords(state.answerSource):null;state.parsedAnswerSource=state.answerSource;if(answer)state.answer.questions=state.answerRecords.questions;
     if(epoch!==loadEpoch)return;
     sourceContent=content;visual?.destroy();visual=null;$('#editor').innerHTML='';
     $('#welcome').classList.add('hidden');$('#document').classList.remove('hidden');
@@ -203,17 +204,17 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(!current.length||current.length>3){$('#answer-content').innerHTML='<div class="answer-empty"><p>这份文档暂不支持按题作答，可以在这里编辑完整回答文档。</p><button id="answer-edit-fallback">编辑完整文档</button></div>';return;}
     const known=new Set(current.map(questionKey));
     const orphan=Object.entries(state.answers).filter(([k,v])=>v&& !known.has(k));
-    $('#answer-content').innerHTML=current.map((q,i)=>`<section class="question-card"><div class="question-number">问题 ${escape(q.number)} <span>${i+1} / ${current.length}</span></div><h3>${escape(q.title.replace(/.*(?:问题|题目|练习题)\s*\d+\s*[:：·]?/,''))||'当前问题'}</h3><details class="answer-prompt"><summary>题干与示例 <span class="answer-prompt-hint"></span></summary><div class="question-prompt markdown-body">${renderMD(q.prompt,answer.path)}</div></details><label for="answer-${i}">你的回答</label><textarea id="answer-${i}" data-answer-index="${i}" placeholder="写下你的理解，或粘贴代码…" spellcheck="false">${escape(state.answers[questionKey(q)]||'')}</textarea></section>`).join('')+orphan.map(([key,value])=>`<section class="orphan-draft"><strong>题目变化前的输入</strong><p>已保留，请核对后复制到当前题目。</p><textarea readonly>${escape(value)}</textarea><button data-discard-answer="${escape(key)}">移除此输入</button></section>`).join('');
+    $('#answer-content').innerHTML=current.map((q,i)=>`<section class="question-card"><div class="question-number">问题 ${escape(q.number)} <span>${i+1} / ${current.length}</span></div><h3>${escape(q.title.replace(/.*(?:问题|题目|练习题)\s*\d+\s*[:：·]?/,''))||'当前问题'}</h3><details class="answer-prompt"><summary>题干与示例 <span class="answer-prompt-hint"></span></summary><div class="question-prompt markdown-body">${renderMD(q.prompt,answer.path)}</div></details><label for="answer-${i}">你的回答</label><textarea id="answer-${i}" data-answer-index="${i}" placeholder="写下你的理解，或粘贴代码…" spellcheck="false">${escape(answerValue(q))}</textarea></section>`).join('')+orphan.map(([key,value])=>`<section class="orphan-draft"><strong>题目变化前的输入</strong><p>已保留，请核对后复制到当前题目。</p><textarea readonly>${escape(value)}</textarea><button data-discard-answer="${escape(key)}">移除此输入</button></section>`).join('');
     $('#answer-content').querySelectorAll('.question-card').forEach((card,i)=>{
       const q=current[i],guideQuestion=/教学引导\.md$/i.test(state.doc.path)?state.doc.questions?.questions?.find(g=>g.number===q.number&&g.round===q.round):null;
       const prompt=guideQuestion&&(!q.prompt.trim()||/^[\s<>→-]+$/.test(q.prompt))?guideQuestion.prompt:q.prompt;
       if(prompt!==q.prompt)card.querySelector('.question-prompt').innerHTML=renderMD(prompt,state.doc.path);
       card.querySelector('.answer-prompt').open=prompt.length<=260&&prompt.split('\n').length<=8;
-      card.insertAdjacentHTML('beforeend',`<div class="answer-input-tools"><button data-answer-code="${i}">插入代码块</button><span data-answer-count="${i}">${(state.answers[questionKey(q)]||'').length} 字</span></div><details class="answer-question-record"><summary>查看本题已保存记录</summary><div class="markdown-body">${renderMD(answer.content.slice(q.start,q.end),answer.path)}</div></details>`);
+      card.insertAdjacentHTML('beforeend',`<div class="answer-input-tools"><button data-answer-code="${i}">插入代码块</button><span data-answer-count="${i}">${(answerValue(q)).length} 字</span></div>`);
     });
-    $('#answer-footer').innerHTML='<div class="answer-footer-status" id="answer-draft-status">点击保存，写入回答文档</div><button class="primary" id="submit">保存本轮作答 <span>→</span></button><p>原答追加到学生文档，历史和导师评估保留。</p>';
-    $('#submit').title='保存所有已填写的本轮答案。原答追加到学生文档，历史和导师评估保留。专注作答时可按 Ctrl S 保存。';
-    $('#answer-question-nav').innerHTML='<span class="answer-question-position" aria-live="polite"></span>'+current.map((q,i)=>`<button data-answer-question="${i}" aria-controls="answer-${i}" aria-pressed="false" aria-label="问题 ${escape(q.number)}，${state.answers[questionKey(q)]?.trim()?'已填写':'未填写'}">问题 ${escape(q.number)} <span class="answer-question-check" aria-hidden="true">${state.answers[questionKey(q)]?.trim()?'✓':''}</span></button>`).join('');
+    $('#answer-footer').innerHTML='<div class="answer-footer-status" id="answer-draft-status">点击保存，写入回答文档</div><button class="primary" id="submit">保存本轮作答 <span>→</span></button><p>回答与学生文档同步，保存后可继续修改。</p>';
+    $('#submit').title='保存所有已填写的本轮答案。回答与学生文档同步，保存后可继续修改。专注作答时可按 Ctrl S 保存。';
+    $('#answer-question-nav').innerHTML='<span class="answer-question-position" aria-live="polite"></span>'+current.map((q,i)=>`<button data-answer-question="${i}" aria-controls="answer-${i}" aria-pressed="false" aria-label="问题 ${escape(q.number)}，${answerValue(q).trim()?'已填写':'未填写'}">问题 ${escape(q.number)} <span class="answer-question-check" aria-hidden="true">${answerValue(q).trim()?'✓':''}</span></button>`).join('');
     showAnswerQuestion(Math.max(0,current.findIndex(q=>questionKey(q)===activeQuestionKey)));
   }
   function showAnswerQuestion(index){
@@ -254,11 +255,15 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     const pending=savedSource!==undefined&&state.answerSource!==savedSource?state.answerSource:result.content;
     state.answer=result;state.answerCache=null;state.answerSource=pending;state.answerBaseContent=result.content;state.answerBaseVersion=result.version;
     if(state.doc?.path===result.path){const displayed=text();state.doc=result;replaceSource(savedSource!==undefined&&displayed!==savedSource?displayed:result.content);}
-    state.answerRecords=await api.answerRecords(result.content);
-    dirtyState();await flushDraft();renderAnswers();renderAnswerWorkspace();
+    state.answerRecords=await api.answerRecords(result.content);state.parsedAnswerSource=result.content;
+    dirtyState();await flushDraft();
+    const focused=document.activeElement,inputFocus=focused?.matches('#answer-source,[data-answer-index]')?{id:focused.id,start:focused.selectionStart,end:focused.selectionEnd,top:focused.scrollTop}:null;
+    const scrollTop=$('#answer-content').scrollTop;
+    renderAnswerWorkspace();
+    if(inputFocus){const input=document.getElementById(inputFocus.id);if(input){input.focus({preventScroll:true});input.setSelectionRange(inputFocus.start,inputFocus.end);input.scrollTop=inputFocus.top;$('#answer-content').scrollTop=scrollTop;}}
   }
   function answerEntries(){
-    return (state.answer?.questions.current||[]).filter(q=>state.answers[questionKey(q)]?.trim()).map(q=>({...q,value:state.answers[questionKey(q)]}));
+    return (state.answer?.questions.current||[]).filter(q=>Object.hasOwn(state.answers,questionKey(q))&&state.answers[questionKey(q)]!==(q.answer?.value??'')).map(q=>({...q,value:state.answers[questionKey(q)]}));
   }
   async function previewCurrentAnswers(){
     const path=state.answer.path,source=state.answerSource,entries=answerEntries();
@@ -270,6 +275,19 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
         // are included by the same save operation, without a second save step.
       }
     }catch(e){message(cleanError(e),true);}
+  }
+  async function materializeAnswers(){
+    if(!state.answer)return;
+    const entries=answerEntries(),source=state.answerSource;
+    if(entries.length){
+      const content=await api.composeAnswers(source,entries);
+      state.answerSource=content;
+      for(const q of entries)if(state.answers[questionKey(q)]===q.value)delete state.answers[questionKey(q)];
+      if(state.doc.path===state.answer.path)replaceSource(content);
+    }
+    const records=await api.answerRecords(state.answerSource);
+    state.answer.questions=records.questions;state.answerRecords=records;state.parsedAnswerSource=state.answerSource;
+    dirtyState();await flushDraft();
   }
   async function saveAnswerDocument(){return saveAll();}
   async function answerHistory(){
@@ -320,9 +338,9 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(b.dataset.file){guarded(()=>selectFile(b.dataset.file,{line:b.dataset.resultLine?Number(b.dataset.resultLine):null}));return;}
     if(b.dataset.discardAnswer){delete state.answers[b.dataset.discardAnswer];renderAnswers();scheduleDraft();return;}
     if(b.dataset.answerQuestion!==undefined){showAnswerQuestion(Number(b.dataset.answerQuestion));return;}
-    if(b.dataset.answerTab){state.answerTab=b.dataset.answerTab;renderAnswerWorkspace();return;}
+    if(b.dataset.answerTab){const show=()=>{state.answerTab=b.dataset.answerTab;renderAnswerWorkspace();};if(hasAnswers()||state.parsedAnswerSource!==state.answerSource)guarded(async()=>{await materializeAnswers();show();});else show();return;}
     if(b.dataset.answerCode!==undefined){const input=document.querySelector(`[data-answer-index="${b.dataset.answerCode}"]`);const from=input.selectionStart,to=input.selectionEnd;input.setRangeText('\n```\n'+input.value.slice(from,to)+'\n```\n',from,to,'end');input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();return;}
-    if(b.id==='answer-edit-source'||b.id==='answer-edit-fallback'){state.answerTab='document';state.answerEditing=b.id==='answer-edit-fallback'||!state.answerEditing;renderAnswerWorkspace();if(state.answerEditing)$('#answer-source').focus();return;}
+    if(b.id==='answer-edit-source'||b.id==='answer-edit-fallback'){const edit=()=>{state.answerTab='document';state.answerEditing=b.id==='answer-edit-fallback'||!state.answerEditing;renderAnswerWorkspace();if(state.answerEditing)$('#answer-source').focus();};if(hasAnswers()||state.parsedAnswerSource!==state.answerSource)guarded(async()=>{await materializeAnswers();edit();});else edit();return;}
     if(b.id==='document-popout'){guarded(popout);return;}
     if(b.id==='answer-save-source'){guarded(saveAnswerDocument);return;}
     if(b.id==='answer-history'){guarded(answerHistory);return;}
@@ -342,7 +360,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     return saveAll();
   }));
   api?.onPrepareClose(async()=>{try{await flushDraft();await api.closeReady(true);}catch(e){await api.closeReady(false);message(cleanError(e),true);}});
-  api?.onChange(async()=>{try{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}if(state.doc){const disk=await api.read(state.doc.path);const answer=state.answer&&state.answer.path!==state.doc.path?await api.read(state.answer.path):null;if(disk.version!==state.doc.version||(answer&&answer.version!==state.answer.version))$('#change-banner').classList.remove('hidden');}}catch{message('文档可能已移动或删除，请刷新当前文档。',true);}});
+  api?.onChange(async()=>{try{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}if(state.doc){const disk=await api.read(state.doc.path);const answer=state.answer&&state.answer.path!==state.doc.path?await api.read(state.answer.path):null;if(disk.version!==state.doc.version)$('#change-banner').classList.remove('hidden');const updated=answer||(state.answer?.path===disk.path?disk:null);if(updated&&updated.version!==state.answer.version){if(!hasAnswers()&&!answerSourceDirty()&&!(state.doc.path===updated.path&&state.dirty))await acceptAnswer(updated);else $('#change-banner').classList.remove('hidden');}}}catch{message('文档可能已移动或删除，请刷新当前文档。',true);}});
   api?.onWarning(text=>message('文件监测提示：'+text,true));
   if(!documentOnly)api?.onDocumentWindowsChange(event=>{if(event.root!==state.workspace?.root)return;if(event.type==='closed')returningPaths.add(event.path);detachedWindows=event.windows||[];drawTree();document.body.classList.toggle('answer-detached',!!state.answer&&isDetached(state.answer.path));windowEvents.push(event);drainWindowEvents();});
   if(api){api.preferences().then(p=>{state.preferences=p;applyPreferences();});if(documentOnly){api.documentWindowInfo().then(async info=>{state.documentWindow=info;document.body.classList.add(info.kind==='answer'?'answer-document-window':'guide-document-window');await guarded(()=>importFolder(info.root,info.path));});}else api.lastRoot().then(async root=>{if(root){$('#recent').innerHTML=`<button id="recent-open" data-root="${escape(root)}">最近打开：${escape(root)} <span>→</span></button>`;await guarded(()=>importFolder(root));}});}else $('#recent').textContent='网页界面预览；本地文件功能请使用桌面应用。';

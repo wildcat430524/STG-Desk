@@ -5,6 +5,7 @@ const os=require('node:os');
 const path=require('node:path');
 const {Workspace}=require('../lib/workspace.cjs');
 const {mergeCurrent}=require('../lib/save-current.cjs');
+const {parseQuestions,appendAnswers}=require('../lib/stg.cjs');
 const source='# 回答\n\n## 第二轮\n\n### 问题 3：Lambda\n启动线程。\n\n**我的回答**\n\n### 问题 4：Stream\n收集结果。\n\n**我的回答**\n\n## 最终复评结果\n导师填写\n';
 async function fixture(t){
   const root=await fs.mkdtemp(path.join(os.tmpdir(),'stg-save-current-'));
@@ -69,4 +70,56 @@ test('serializer-only escaping cannot restore an outdated lesson over the tutor 
   const snapshot=old.replace('01_','01\\_');
   const disk='# Lambda 与 Stream\r\n\r\n导师的新教学内容。\r\n';
   assert.equal(mergeCurrent(old,snapshot,disk),disk);
+});
+test('saved answers are read as editable values, including nested fences and trailing newlines',()=>{
+  const values=['Runnable task = () -> run();\n```java\nstart();\n```\n','**学生作答 · 伪标记**\n\n~~~text\n原文\n~~~'];
+  const qs=parseQuestions(source).current;
+  const saved=appendAnswers(source,Object.fromEntries(qs.map((q,i)=>[q.id,values[i]])));
+  assert.deepEqual(parseQuestions(saved).current.map(q=>q.answer.value),values);
+});
+test('editing a saved answer replaces its latest block and preserves other questions and tutor feedback',async t=>{
+  const {w,file}=await fixture(t);const qs=parseQuestions(source).current;
+  const first=await w.saveCurrent(file,{content:source,baseContent:source,answers:qs.map(q=>({...q,value:'原答案'+q.number}))});
+  const q=first.questions.current[0];
+  const second=await w.saveCurrent(file,{content:first.content,baseContent:first.content,answers:[{...q,value:'修改后的答案'}]});
+  assert.equal(second.questions.current[0].answer.value,'修改后的答案');
+  assert.equal(second.questions.current[1].answer.value,'原答案4');
+  assert.equal((second.content.match(/\*\*学生作答 ·/g)||[]).length,2);
+  assert.ok(!second.content.includes('原答案3'));
+  assert.ok(second.content.endsWith('## 最终复评结果\n导师填写\n'));
+  assert.ok((await w.readBackup(file,(await w.backups(file))[0].id)).includes('原答案3'));
+});
+test('saving the displayed value again leaves document bytes and backups unchanged',async t=>{
+  const {w,file}=await fixture(t);const q=parseQuestions(source).current[0];
+  const first=await w.saveCurrent(file,{content:source,baseContent:source,answers:[{...q,value:'已保存答案'}]});
+  const second=await w.saveCurrent(file,{content:first.content,baseContent:first.content,answers:[{...first.questions.current[0],value:'已保存答案'}]});
+  assert.equal(second.content,first.content);assert.equal((await w.backups(file)).length,1);
+});
+test('clearing and saving an answer stays empty on reload without exposing earlier records',async t=>{
+  const {root,w,file}=await fixture(t),q=parseQuestions(source).current[0];
+  let content=appendAnswers(source,{[q.id]:'较早的历史答案'});
+  content=appendAnswers(content,{[parseQuestions(content).current[0].id]:'最近的答案'});
+  await fs.writeFile(path.join(root,file),content);
+  const result=await w.saveCurrent(file,{content,baseContent:content,answers:[{...parseQuestions(content).current[0],value:''}]});
+  assert.equal((await w.read(file)).questions.current[0].answer.value,'');
+  assert.ok(result.content.includes('较早的历史答案'));assert.ok(!result.content.includes('最近的答案'));
+});
+test('legacy plain text and fenced code display as answer values while placeholders remain empty',()=>{
+  for(const [body,expected] of [['我的解释。','我的解释。'],['```java\nrun();\n```','run();'],['```java\n// 在这里写出完整代码\n```',''],['```python\n```','']]){
+    const text='## 第二轮\n### 问题 3\n题干\n\n**你的代码：**\n\n'+body+'\n\n---\n\n<!-- 后续题 -->\n';
+    assert.equal(parseQuestions(text).current[0].answer.value,expected);
+  }
+});
+test('answer markers inside code or comments never become saved answers',()=>{
+  const text='## 第二轮\n### 问题 3\n题干\n\n**我的回答**\n\n<!--\n**学生作答 · 隐藏**\n\n```text\n隐藏答案\n```\n-->\n';
+  assert.equal(parseQuestions(text).current[0].answer.value,'');
+});
+test('updating current answers preserves CRLF and earlier round answers',()=>{
+  const old='## 第一轮\r\n### 问题 1\r\n原题\r\n**我的回答**\r\n原答案\r\n\r\n';
+  const text=old+source.replace(/\n/g,'\r\n');
+  const {composeAnswers}=require('../lib/save-current.cjs');
+  let updated=composeAnswers(text,[{...parseQuestions(text).current[0],value:'第一行\n第二行'}]);
+  updated=composeAnswers(updated,[{...parseQuestions(updated).current[0],value:'已修改\n第二行'}]);
+  assert.ok(updated.startsWith(old));assert.ok(!/(?<!\r)\n/.test(updated));
+  assert.equal(parseQuestions(updated).current[0].answer.value,'已修改\n第二行');
 });

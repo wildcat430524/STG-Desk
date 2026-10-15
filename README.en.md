@@ -20,9 +20,9 @@ STG Desk is a Windows desktop workspace for [StepsToGreat](https://github.com/wi
 
 Reading, editing, and answering work independently; connect DSH when needed. Learning files stay in their original directory so a tutor or learning agent can read and update them.
 
-> This README covers [v0.3.10](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.10). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
+> This README covers [v0.3.11](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.11). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
 
-v0.3.10 unifies saving: Save this round, Save, and Ctrl+S write current edits directly, without a prerequisite save or a draft-merge workflow. Old editor snapshots that differ only by Markdown escaping no longer restore an outdated lesson over the latest file.
+v0.3.11 keeps saved answers in the answer inputs and restores them from the document on reopening. Editing and saving updates the current answer; clearing and saving clears it. The separate saved-record disclosure is removed.
 
 ## Preview
 
@@ -122,7 +122,7 @@ Headings, lists, tables, and formulas are organised by content level: `H1`/`H2`/
 To open it:
 
 - **Running from source**: import the `demo/EditorShowcase` directory.
-- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.10/STG-Desk-0.3.10-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
+- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.11/STG-Desk-0.3.11-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
 - After importing, 「选择课程」 (Choose lesson) lists this showcase lesson at `我的学习/学科/Markdown/01-复杂内容演示/`. The welcome screen's [bundled demo lessons](demo/StepsToGreat) open a separate workspace.
 
 > The Java example targets Java 17+ and was only reviewed, not compiled: this machine runs Java 11. The Python example was executed. The showcase demonstrates layout and editing behaviour; it is not a learning assessment.
@@ -133,7 +133,7 @@ The answer workspace beside the lesson has three entries:
 
 | Entry | Purpose |
 | --- | --- |
-| 「本轮作答」 (Current round) | Answer the latest published round one question at a time; saving appends all filled-in answers |
+| 「本轮作答」 (Current round) | Answer the latest published round one question at a time; saving updates the document and keeps the saved answers visible |
 | 「作答记录」 (Answer records) | Review previous answers, tutor evaluations, and final reassessments |
 | 「完整文档」 (Full document) | Read and edit the entire answer file, including content outside the question interface |
 

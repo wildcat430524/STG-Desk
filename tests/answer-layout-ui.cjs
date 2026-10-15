@@ -77,8 +77,9 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     assert.equal(await js("document.documentElement.scrollWidth>innerWidth"),false);
     assert.equal(await js("(()=>{const input=document.querySelector('#answer-0').getBoundingClientRect(),footer=document.querySelector('#answer-footer').getBoundingClientRect();return input.bottom<=footer.top})()"),true,'Focused input should remain visible in a short window');
     await capture('focus-narrow.png');
+    win.show();win.focus();win.webContents.focus();
     win.webContents.sendInputEvent({type:'keyDown',keyCode:'Escape'});win.webContents.sendInputEvent({type:'keyUp',keyCode:'Escape'});
-    assert.equal(await js("document.body.classList.contains('answer-focused')"),false);
+    await wait("!document.body.classList.contains('answer-focused')");
     assert.equal(await js("getComputedStyle(document.querySelector('#answers-panel')).display"),'none');
     win.setSize(1460,960);await new Promise(r=>setTimeout(r,200));
     await click('#app-theme-toggle');await capture('dark.png');await click('#app-theme-toggle');
@@ -86,11 +87,14 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     await click('#answer-focus');
     win.webContents.sendInputEvent({type:'keyDown',keyCode:'S',modifiers:['control']});
     win.webContents.sendInputEvent({type:'keyUp',keyCode:'S',modifiers:['control']});
-    await wait("document.querySelector('#answer-0').value===''");
+    await wait("document.querySelector('#save-status').textContent==='已保存'");
+    assert.ok(await js("document.querySelector('#answer-0').value.includes('Lambda 验收')"));
+    assert.ok(await js("document.querySelector('#answer-1').value.includes('函数式接口只有一个抽象方法')"));
+    assert.equal(await js("!!document.querySelector('.answer-question-record')"),false);
     const saved=await fs.readFile(path.join(root,answer),'utf8');
     assert.ok(saved.includes('Lambda 验收'));assert.ok(saved.includes('函数式接口只有一个抽象方法'));
     assert.ok(saved.includes('（由导师填写）'));
-    evidence.push('Saving the round appends both answers including the hidden question and retains existing final review text');
+    evidence.push('Saving keeps both answers visible and synchronized with the document, including the hidden question, while retaining final review text');
     await fs.writeFile(path.join(out,'result.json'),JSON.stringify({passed:true,evidence,root},null,2));
     console.log(JSON.stringify({passed:true,out,evidence}));app.exit(0);
   }catch(error){await fs.writeFile(path.join(out,'result.json'),JSON.stringify({passed:false,error:error.stack,evidence,root},null,2));console.error(error);app.exit(1);}
