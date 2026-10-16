@@ -22,6 +22,8 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
   const capture=async name=>{await new Promise(r=>setTimeout(r,220));await fs.writeFile(path.join(output,name),(await window.webContents.capturePage({x:20,y:100,width:660,height:460})).toPNG());};
   try{
     await fs.cp(path.join(__dirname,'../demo/StepsToGreat'),root,{recursive:true});
+    const profile=path.join(root,'我的学习/00-学习档案.md');
+    await fs.writeFile(profile,(await fs.readFile(profile,'utf8')).replace('| 当前轮次 | 第一轮 |','| 当前轮次 | 第二轮 |'));
     await fs.writeFile(path.join(root,index),'# 本章教学总入口\n\n- [第一轮](第1轮_教学引导.md)\n- [第二轮](第2轮_教学引导.md)\n');
     await fs.writeFile(path.join(root,first),'# 第一轮教学\n\n旧轮完整讲解。\n');
     await fs.writeFile(path.join(root,second),'# 第二轮教学\n\n当前轮完整讲解。\n');
@@ -29,6 +31,9 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     await wait("!!document.querySelector('#welcome-import')");
     await js(`document.querySelector('#recent').innerHTML='<button id="recent-open">打开测试文件夹</button>';document.querySelector('#recent-open').dataset.root=${JSON.stringify(root)};document.querySelector('#recent-open').click()`);
     await wait("document.querySelector('#round-menu [data-round-file]')&&!document.querySelector('#round-switch').classList.contains('hidden')");
+    assert.equal(await js("document.querySelector('#status-left').textContent"),second);
+    assert.equal(await js("!!document.querySelector('.round-menu-heading')"),false);
+    assert.equal(await js("document.querySelector('#round-menu [aria-checked=true]').dataset.roundFile"),second);
     assert.equal(await js("!!document.querySelector('#round-select')"),false);
     assert.deepEqual(await js("[...document.querySelectorAll('#round-menu .round-menu-label')].map(o=>o.textContent)"),['教学总入口','第 1 轮','第 2 轮']);
     assert.equal(await js("document.querySelectorAll('#tree [data-file]').length"),2);
@@ -44,6 +49,8 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     await click('#round-switch');await wait("document.querySelector('#round-switch').getAttribute('aria-expanded')==='true'");
     window.webContents.focus();
     await wait("document.querySelector('#round-menu').contains(document.activeElement)");
+    window.webContents.sendInputEvent({type:'keyDown',keyCode:'Home'});window.webContents.sendInputEvent({type:'keyUp',keyCode:'Home'});
+    await wait("document.activeElement.textContent.includes('教学总入口')");
     window.webContents.sendInputEvent({type:'keyDown',keyCode:'End'});window.webContents.sendInputEvent({type:'keyUp',keyCode:'End'});
     await wait("document.activeElement.textContent.includes('第 2 轮')");
     window.webContents.sendInputEvent({type:'keyDown',keyCode:'Escape'});window.webContents.sendInputEvent({type:'keyUp',keyCode:'Escape'});
@@ -64,6 +71,12 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(second)}`);
     assert.ok(await js("document.querySelector('#editor').textContent.includes('当前轮完整讲解')"));
     assert.equal(await js("document.querySelector('[data-answer-tab=current]').getAttribute('aria-pressed')"),'true');
+    await click('#round-switch');await wait("document.querySelector('#round-menu').matches(':popover-open')");
+    await click(`[data-round-file="${first}"]`);await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(first)}`);
+    await click('#continue-learning');await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(second)}`);
+    await click('#round-switch');await wait("document.querySelector('#round-menu').matches(':popover-open')");
+    await click(`[data-round-file="${index}"]`);await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(index)}`);
+    window.webContents.reload();await wait(`document.querySelector('#status-left').textContent===${JSON.stringify(second)}`);
     await fs.writeFile(path.join(output,'result.json'),JSON.stringify({passed:true},null,2));
     app.exit(0);
   }catch(error){await fs.writeFile(path.join(output,'result.json'),JSON.stringify({passed:false,error:error.stack},null,2));console.error(error);app.exit(1);}

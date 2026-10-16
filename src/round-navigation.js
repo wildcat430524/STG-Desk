@@ -42,6 +42,6 @@ export function mountRoundNavigation({escape,icon,onSelect}){
       const selected=file.path===activePath,detached=isDetached(file.path);
       return `<button type="button" role="menuitemradio" aria-checked="${selected}" tabindex="-1" data-round-file="${escape(file.path)}" ${detached?'disabled':''}><span class="round-menu-mark" aria-hidden="true">${mark}</span><span class="round-menu-label">${label}</span>${detached?'<span class="round-menu-status">窗口中</span>':selected?`<span class="round-menu-check" aria-hidden="true">${check}</span>`:''}</button>`;
     };
-    menu.innerHTML=`<div class="round-menu-heading" role="presentation"><span>本章教学</span><span>${rounds.length} 轮</span></div>${index?row(index,'教学总入口',book)+'<div class="round-menu-divider" role="separator"></div>':''}<div class="round-menu-rounds" role="group" aria-label="已留存轮次">${rounds.map(file=>row(file,`第 ${file.number} 轮`,String(file.number).padStart(2,'0'))).join('')}</div>`;
+    menu.innerHTML=`${index?row(index,'教学总入口',book)+'<div class="round-menu-divider" role="separator"></div>':''}<div class="round-menu-rounds" role="group" aria-label="已留存轮次">${rounds.map(file=>row(file,`第 ${file.number} 轮`,String(file.number).padStart(2,'0'))).join('')}</div>`;
   }};
 }

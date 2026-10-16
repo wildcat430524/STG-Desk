@@ -16,8 +16,6 @@
   box-shadow:0 14px 42px #24304720,0 3px 10px #24304708; font:12px/1.5 "Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",sans-serif;
 }
 .round-menu:popover-open { animation:round-menu-enter 140ms ease-out; }
-.round-menu-heading { display:flex; align-items:center; justify-content:space-between; padding:8px 10px 10px; color:#8b96a5; font-size:10px; letter-spacing:.3px; }
-.round-menu-heading span:last-child { font-variant-numeric:tabular-nums; }
 .round-menu button {
   display:flex; align-items:center; gap:11px; width:100%; min-height:44px; padding:7px 10px;
   border:0; border-radius:9px; background:transparent; color:#526074; text-align:left; box-shadow:none; font:inherit;

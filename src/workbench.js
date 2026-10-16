@@ -74,12 +74,22 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     return {kind,label:({guide:'教学',answer:'回答',route:'路线',profile:'档案',rules:'规则',material:'资料',document:'文档'})[kind]};
   }
   const roundNumber=value=>{
-    const token=String(value||'').match(/第([一二三四五六七八九十\d]+)轮/)?.[1];
+    const token=String(value||'').replace(/\s+/g,'').match(/第([一二三四五六七八九十\d]+)轮/)?.[1];
     if(!token)return null;
     if(/^\d+$/.test(token))return Number(token);
     const digit={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
     return token.includes('十')?(token.startsWith('十')?1:digit[token[0]]||0)*10+(digit[token.split('十')[1]]||0):digit[token]||null;
   };
+  async function defaultTeachingPath(path=state.learning?.guidePath||state.learning?.answerPath){
+    if(!path||!/(?:^|\/)01_教学引导\.md$/i.test(path))return path;
+    const dir=path.split('/').slice(0,-1).join('/');
+    const learningPath=state.learning?.guidePath||state.learning?.answerPath;
+    const sameLesson=learningPath?.split('/').slice(0,-1).join('/')===dir;
+    const round=sameLesson&&state.learning?.round?state.learning.round:(await api.companion(path))?.questions?.round;
+    const number=roundNumber(round);
+    if(!number)return path;
+    return allFiles().find(file=>file.readable&&file.path.split('/').slice(0,-1).join('/')===dir&&/(?:^|\/)第[一二三四五六七八九十\d]+轮_教学引导\.md$/i.test(file.path)&&roundNumber(file.path.split('/').at(-1))===number)?.path||path;
+  }
   const roundNavigation=mountRoundNavigation({escape,icon,onSelect:path=>guarded(()=>selectFile(path))});
   function drawRoundSwitch(){
     const active=state.doc?.path;if(!active){roundNavigation.update({rounds:[]});return;}
@@ -142,7 +152,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     $('#workspace-meta').textContent=info.stg?'StepsToGreat 工作区':'学习文档工作区';
     await updateLearning();await updateDocuments();$('#status-left').textContent=info.root;
     const drafts=await api.draftList();const recover=drafts.find(d=>allFiles().some(f=>f.path===d.path));
-    const first=initialPath||state.learning?.guidePath||state.learning?.answerPath||state.documents?.find(d=>d.kind==='profile')?.path||recover?.path||state.documents?.[0]?.path;
+    const first=initialPath||await defaultTeachingPath()||state.documents?.find(d=>d.kind==='profile')?.path||recover?.path||state.documents?.[0]?.path;
     if(first&&!isDetached(first))await selectFile(first,{approved:true});else if(first){const other=state.documents.find(d=>['guide','answer'].includes(d.kind)&&!isDetached(d.path));if(other)await selectFile(other.path,{approved:true});else await showProgress('chapter');}else{$('#document').classList.add('hidden');$('#welcome').classList.remove('hidden');message('文件夹已导入，但未找到文档。');}
     if(info.warnings?.length)message(info.warnings[0]);
   }
@@ -365,7 +375,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     const b=e.target.closest('button');if(!b)return;
     if(b.disabled)return;
     if(b.dataset.progress){guarded(()=>showProgress(b.dataset.progress));return;}
-    if(b.dataset.file){guarded(()=>selectFile(b.dataset.file,{line:b.dataset.resultLine?Number(b.dataset.resultLine):null}));return;}
+    if(b.dataset.file){guarded(async()=>selectFile(b.closest('#tree,.course-list')?await defaultTeachingPath(b.dataset.file):b.dataset.file,{line:b.dataset.resultLine?Number(b.dataset.resultLine):null}));return;}
     if(b.dataset.discardAnswer){delete state.answers[b.dataset.discardAnswer];renderAnswers();scheduleDraft();return;}
     if(b.dataset.answerQuestion!==undefined){showAnswerQuestion(Number(b.dataset.answerQuestion));return;}
     if(b.dataset.answerTab){const show=()=>{state.answerTab=b.dataset.answerTab;renderAnswerWorkspace();};if(hasAnswers()||state.parsedAnswerSource!==state.answerSource)guarded(async()=>{await materializeAnswers();show();});else show();return;}
@@ -374,7 +384,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(b.id==='document-popout'){guarded(popout);return;}
     if(b.id==='answer-save-source'){guarded(saveAnswerDocument);return;}
     if(b.id==='answer-history'){guarded(answerHistory);return;}
-    const actions={'import':()=>importFolder(),'welcome-import':()=>importFolder(),'welcome-demo':()=>importFolder('__demo__'),'recent-open':()=>importFolder(b.dataset.root),save:saveDoc,submit:submitAnswers,preferences:async()=>preferences(),'choose-course':async()=>chooseCourse(),refresh:async()=>{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}},'load-changes':()=>state.doc&&selectFile(state.doc.path),'open-answer':()=>state.answer&&selectFile(state.answer.path),'continue-learning':()=>selectFile(state.learning.guidePath||state.learning.answerPath),'modal-close':async()=>closeModal()};
+    const actions={'import':()=>importFolder(),'welcome-import':()=>importFolder(),'welcome-demo':()=>importFolder('__demo__'),'recent-open':()=>importFolder(b.dataset.root),save:saveDoc,submit:submitAnswers,preferences:async()=>preferences(),'choose-course':async()=>chooseCourse(),refresh:async()=>{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}},'load-changes':()=>state.doc&&selectFile(state.doc.path),'open-answer':()=>state.answer&&selectFile(state.answer.path),'continue-learning':async()=>selectFile(await defaultTeachingPath()),'modal-close':async()=>closeModal()};
     if(actions[b.id])guarded(actions[b.id]);
   });
   $('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal();});
