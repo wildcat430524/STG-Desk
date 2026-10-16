@@ -20,9 +20,9 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 阅读、编辑和作答可以独立使用，DSH 对话按需连接。学习资料仍保存在原目录中，便于导师或学习 Agent 接着读取和更新。
 
-> 本文对应 [v0.3.13](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.13)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
+> 本文对应 [v0.3.14](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.14)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
 
-v0.3.13 修复「你的回答」输入区的 Tab：按 Tab 插入四个空格，选中多行时统一缩进；Shift+Tab 减少缩进，焦点留在输入框，并支持撤销。代码高亮和题干保持原样。
+v0.3.14 在文档卡片左上角标题处加入本章轮次切换。选择已留存的旧轮教学文档时，可同时回看对应原答与导师反馈；顶部保留教学引导、学生回答、当前章节进度和总体进度四个入口。
 
 ## 界面预览
 
@@ -122,12 +122,14 @@ C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
 导入方式：
 
 - **从源码运行**：导入 `demo/EditorShowcase` 目录。
-- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.13/STG-Desk-0.3.13-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
+- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.14/STG-Desk-0.3.14-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
 - 导入后「选择课程」会列出这门演示课程（路径为 `我的学习/学科/Markdown/01-复杂内容演示/`），与内置的 [示例课程](demo/StepsToGreat) 相互独立。
 
 > 演示中的 Java 示例按 Java 17+ 语法编写，仅经过审查，未在本机 Java 11 环境编译；Python 示例已实际运行。示例用于展示排版与编辑效果，不代表学习评估。
 
 ### 按题作答
+
+课程采用 `第N轮_教学引导.md` 分轮留档时，点击文档卡片左上角标题旁的箭头即可切换本章教学轮次。打开旧轮会自动展开对应的作答记录；各轮文件不再重复占用顶部标签。
 
 教学旁的作答区提供三个入口：
 

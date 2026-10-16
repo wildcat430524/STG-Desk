@@ -20,3 +20,16 @@ test('document navigation contains the active lesson and explicit local referenc
   assert(result.documents.some(d=>d.path==='引用资料.md'));
   assert(!result.documents.some(d=>d.path==='无关文件.md'||d.path.includes('outside')));
 });
+
+test('a saved teaching round keeps the chapter answer document beside it',async t=>{
+  const root=await fs.mkdtemp(path.join(os.tmpdir(),'stg-round-documents-'));
+  t.after(()=>fs.rm(root,{recursive:true,force:true}));
+  await fs.cp(path.join(__dirname,'../demo/StepsToGreat'),root,{recursive:true});
+  const dir='我的学习/学科/Python/01-认识变量/';
+  const round=dir+'第1轮_教学引导.md',answer=dir+'01_学生回答.md';
+  await fs.writeFile(path.join(root,round),'# Python · 认识变量｜第一轮教学引导\n\n本轮完整讲解');
+  const ws=new Workspace();await ws.open(root);
+  assert.equal((await ws.companion(round)).path,answer);
+  const result=await relevantDocuments(ws,{currentPath:round});
+  assert.deepEqual(result.documents.filter(d=>d.kind==='guide'||d.kind==='answer').map(d=>d.path),[round,answer]);
+});

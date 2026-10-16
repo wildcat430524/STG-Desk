@@ -72,8 +72,29 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     const name=path.split('/').at(-1);const kind=/教学引导/.test(name)?'guide':/学生回答/.test(name)?'answer':/课程路线/.test(name)?'route':/学习档案/.test(name)?'profile':/我的规则/.test(name)?'rules':path.startsWith('资料/')?'material':'document';
     return {kind,label:({guide:'教学',answer:'回答',route:'路线',profile:'档案',rules:'规则',material:'资料',document:'文档'})[kind]};
   }
+  const roundNumber=value=>{
+    const token=String(value||'').match(/第([一二三四五六七八九十\d]+)轮/)?.[1];
+    if(!token)return null;
+    if(/^\d+$/.test(token))return Number(token);
+    const digit={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
+    return token.includes('十')?(token.startsWith('十')?1:digit[token[0]]||0)*10+(digit[token.split('十')[1]]||0):digit[token]||null;
+  };
+  function drawRoundSwitch(){
+    const active=state.doc?.path;if(!active){$('#round-switch').classList.add('hidden');return;}
+    const dir=active.split('/').slice(0,-1).join('/');
+    const files=allFiles().filter(f=>f.readable&&f.path.split('/').slice(0,-1).join('/')===dir);
+    const rounds=files.map(f=>({path:f.path,number:roundNumber(f.path.split('/').at(-1))})).filter(f=>f.number&&/(?:^|\/)第[一二三四五六七八九十\d]+轮_教学引导\.md$/i.test(f.path)).sort((a,b)=>a.number-b.number);
+    const index=files.find(f=>/(?:^|\/)01_教学引导\.md$/i.test(f.path));
+    $('#round-switch').classList.toggle('hidden',!rounds.length);
+    if(!rounds.length)return;
+    const selected=rounds.some(f=>f.path===active)||index?.path===active?active:'';
+    $('#round-select').innerHTML=`<option value="">选择教学轮次</option>${index?`<option value="${escape(index.path)}">教学总入口</option>`:''}${rounds.map(f=>`<option value="${escape(f.path)}">第${f.number}轮教学</option>`).join('')}`;
+    $('#round-select').value=selected;
+  }
   function drawTree(){
-    $('#tree').innerHTML=(state.documents||[]).filter(d=>['guide','answer'].includes(d.kind)).map(d=>`<button class="file ${page==='document'&&state.doc?.path===d.path?'selected':''}" data-file="${escape(d.path)}" ${isDetached(d.path)?'disabled':''} title="${escape(isDetached(d.path)?'已在独立窗口打开，关闭窗口后返回':d.path)}"><span>${escape(d.label)}</span>${isDetached(d.path)?'<small>窗口中</small>':''}</button>`).join('')+['chapter','overall'].map(kind=>`<button class="file ${page===kind?'selected':''}" data-progress="${kind}">${kind==='chapter'?'当前章节进度':'总体进度'}</button>`).join('');
+    const teaching=state.documents.find(d=>d.kind==='guide'&&d.path===state.doc?.path)||state.documents.find(d=>d.kind==='guide');
+    $('#tree').innerHTML=(state.documents||[]).filter(d=>d===teaching||d.kind==='answer').map(d=>`<button class="file ${page==='document'&&state.doc?.path===d.path?'selected':''}" data-file="${escape(d.path)}" ${isDetached(d.path)?'disabled':''} title="${escape(isDetached(d.path)?'已在独立窗口打开，关闭窗口后返回':d.path)}"><span>${escape(d===teaching?'教学引导':d.label)}</span>${isDetached(d.path)?'<small>窗口中</small>':''}</button>`).join('')+['chapter','overall'].map(kind=>`<button class="file ${page===kind?'selected':''}" data-progress="${kind}">${kind==='chapter'?'当前章节进度':'总体进度'}</button>`).join('');
+    drawRoundSwitch();
   }
   function isDetached(path){return !documentOnly&&detachedWindows.some(w=>w.root===state.workspace?.root&&w.path===path);}
   async function updateDocuments(){if(!api||!state.workspace)return;const result=await api.documents({currentPath:state.doc?.path||null});state.documents=result.documents;progress=result.progress||{};drawTree();document.body.classList.toggle('answer-detached',!!state.answer&&isDetached(state.answer.path));if(page!=='document')await renderProgress();}
@@ -144,10 +165,12 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     state.answerBaseContent=editedAnswer?state.answerCache.baseContent:answer?.content??'';
     state.answerBaseVersion=editedAnswer?state.answerCache.baseVersion:answer?.version??null;
     state.answerEditing=false;state.answerRecords=answer?await api.answerRecords(state.answerSource):null;state.parsedAnswerSource=state.answerSource;if(answer)state.answer.questions=state.answerRecords.questions;
+    const viewedRound=roundNumber(path.split('/').at(-1));
+    state.answerTab=viewedRound&&viewedRound!==roundNumber(answer?.questions?.round)?'records':'current';
     if(epoch!==loadEpoch)return;
     sourceContent=content;visual?.destroy();visual=null;$('#editor').innerHTML='';
     $('#welcome').classList.add('hidden');$('#document').classList.remove('hidden');
-    $('#document-title').textContent=description.lesson?`${description.lesson} · ${description.label}`:path.split('/').at(-1).replace(/\.(md|markdown|txt)$/i,'');
+    $('#document-title').textContent=viewedRound&&description.kind==='guide'?`${description.lesson||path.split('/').at(-2)} · 第${viewedRound}轮教学引导`:description.lesson?`${description.lesson} · ${description.label}`:path.split('/').at(-1).replace(/\.(md|markdown|txt)$/i,'');
     $('#document-kind').textContent=`${description.label} · ${description.kind==='guide'?'TEACHING GUIDE':description.kind==='answer'?'YOUR ANSWERS':'MARKDOWN'}`;
     if(state.documentWindow){$('.native-titlebar span').textContent=description.lesson||description.label;if(state.documentWindow.kind==='answer')$('.answer-heading h2').textContent=description.lesson||'学生作答';}
     $('#breadcrumb').innerHTML=`${escape(state.workspace.name)} <span>/</span> ${escape(path)}`;
@@ -243,7 +266,9 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(tab==='current'){renderAnswers();}
     else if(tab==='records'){
       const records=state.answerRecords,rounds=records?.rounds||[],tutor=records?.finalSections||[];
-      $('#answer-records').innerHTML='<p class="answer-record-note">历史原答与导师反馈按文档原文显示。</p>'+(records?.blocks||[]).filter(r=>r.kind!=='preamble').map((r,i)=>`<details class="answer-record" ${i===rounds.length-1?'open':''}><summary>${escape(r.title)}</summary><div class="markdown-body">${renderMD(r.content,answer.path)}</div></details>`).join('');
+      const viewedRound=roundNumber(state.doc?.path.split('/').at(-1));
+      if(viewedRound)$('#answer-description').textContent=`第${viewedRound}轮 · 历史作答`;
+      $('#answer-records').innerHTML='<p class="answer-record-note">历史原答与导师反馈按文档原文显示。</p>'+(records?.blocks||[]).filter(r=>r.kind!=='preamble').map((r,i)=>`<details class="answer-record" ${(viewedRound?roundNumber(r.title)===viewedRound:i===rounds.length-1)?'open':''}><summary>${escape(r.title)}</summary><div class="markdown-body">${renderMD(r.content,answer.path)}</div></details>`).join('');
       if(!rounds.length&&!tutor.length)$('#answer-records').insertAdjacentHTML('beforeend','<div class="answer-empty"><p>尚未识别到轮次记录，完整文档中的内容仍全部保留。</p><button data-answer-tab="document">查看完整文档</button></div>');
       $('#answer-footer').innerHTML='<p>只展示已有记录，不自动生成评估或掌握结果。</p>';
     }else{
@@ -331,7 +356,8 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     $('#modal-body').oninput=()=>{state.preferences={fontSize:Number($('#font-size').value),lineHeight:Number($('#line-height').value),readingWidth:Number($('#reading-width').value),backupRetention:Number($('#retention').value)||20};$('#font-output').value=state.preferences.fontSize+'px';$('#line-output').value=state.preferences.lineHeight;$('#width-output').value=state.preferences.readingWidth+'px';applyPreferences();};
   }
   function chooseCourse(){
-    const guides=allFiles().filter(f=>f.readable&&!/^(?:tests|模板|示例|docs|research|tools|_\w+)(?:\/|$)/.test(f.path)&&(f.description||describe(f.path)).kind==='guide');
+    const files=allFiles();
+    const guides=files.filter(f=>f.readable&&!/^(?:tests|模板|示例|docs|research|tools|_\w+)(?:\/|$)/.test(f.path)&&(f.description||describe(f.path)).kind==='guide'&&!(roundNumber(f.path.split('/').at(-1))&&files.some(index=>index.path===f.path.replace(/[^/]+$/,'01_教学引导.md'))));
     const related=state.documents.filter(d=>!['guide','answer'].includes(d.kind));
     modal('课程与文档',`<p class="modal-note">选择课程后，顶部显示该课的教学、回答和学习进度。</p><div class="course-list">${guides.map(f=>`<button data-file="${escape(f.path)}"><strong>${escape(f.description?.lesson||f.path.split('/').slice(-2,-1)[0])}</strong><small>${escape(f.path)}</small></button>`).join('')||'<p>当前没有已发布课程，请在 DSH 中开始学习。</p>'}</div>${related.length?`<h3>相关文档</h3><div class="course-list">${related.map(d=>`<button data-file="${escape(d.path)}"><strong>${escape(d.label)}</strong><small>${escape(d.path)}</small></button>`).join('')}</div>`:''}`,[{label:'关闭',action:async()=>closeModal()}],'当前课程');
     $('#modal-body').onclick=e=>{if(e.target.closest('[data-file]'))closeModal();};
@@ -352,6 +378,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     const actions={'import':()=>importFolder(),'welcome-import':()=>importFolder(),'welcome-demo':()=>importFolder('__demo__'),'recent-open':()=>importFolder(b.dataset.root),save:saveDoc,submit:submitAnswers,preferences:async()=>preferences(),'choose-course':async()=>chooseCourse(),refresh:async()=>{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}},'load-changes':()=>state.doc&&selectFile(state.doc.path),'open-answer':()=>state.answer&&selectFile(state.answer.path),'continue-learning':()=>selectFile(state.learning.guidePath||state.learning.answerPath),'modal-close':async()=>closeModal()};
     if(actions[b.id])guarded(actions[b.id]);
   });
+  $('#round-select').addEventListener('change',e=>{if(e.target.value)guarded(()=>selectFile(e.target.value));});
   $('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();}});
   $('#answer-content').addEventListener('input',e=>{if(e.target.dataset.answerIndex!==undefined){const q=state.answer.questions.current[Number(e.target.dataset.answerIndex)];state.answers[questionKey(q)]=e.target.value;const count=document.querySelector(`[data-answer-count="${e.target.dataset.answerIndex}"]`);if(count)count.textContent=e.target.value.length+' 字';const button=document.querySelector(`[data-answer-question="${e.target.dataset.answerIndex}"]`);if(button){button.querySelector('.answer-question-check').textContent=e.target.value.trim()?'✓':'';button.setAttribute('aria-label',`问题 ${q.number}，${e.target.value.trim()?'已填写':'未填写'}`);}dirtyState();scheduleDraft();updateAnswerStatus();}});
