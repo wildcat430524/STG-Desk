@@ -1,0 +1,47 @@
+#document .document-title-wrap:has(.round-switch:not(.hidden)) { padding-right:30px; }
+#document .document-title-wrap:has(.round-switch:not(.hidden)):hover,
+#document .document-title-wrap:has(.round-switch[aria-expanded=true]) { background:#e9edf2; }
+#document .round-switch {
+  position:absolute; inset:0; width:100%; height:100%; display:flex; align-items:center; justify-content:flex-end;
+  padding:0 5px; margin:0; border:0; border-radius:8px; background:transparent; box-shadow:none;
+  color:#84909f; cursor:pointer;
+}
+#document .round-switch:focus-visible { outline:2px solid #a4b2c4; outline-offset:3px; }
+.round-switch-chevron { display:grid; place-items:center; width:21px; height:21px; border-radius:6px; transition:transform 160ms ease; }
+.round-switch[aria-expanded=true] .round-switch-chevron { transform:rotate(180deg); }
+.round-menu {
+  position:fixed; inset:auto; margin:0; padding:6px; box-sizing:border-box;
+  width:264px; max-width:calc(100vw - 24px); max-height:min(420px,calc(100vh - 24px)); overflow:auto;
+  border:1px solid #e2e6ec; border-radius:14px; background:#fff; color:#354153;
+  box-shadow:0 14px 42px #24304720,0 3px 10px #24304708; font:12px/1.5 "Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",sans-serif;
+}
+.round-menu:popover-open { animation:round-menu-enter 140ms ease-out; }
+.round-menu-heading { display:flex; align-items:center; justify-content:space-between; padding:8px 10px 10px; color:#8b96a5; font-size:10px; letter-spacing:.3px; }
+.round-menu-heading span:last-child { font-variant-numeric:tabular-nums; }
+.round-menu button {
+  display:flex; align-items:center; gap:11px; width:100%; min-height:44px; padding:7px 10px;
+  border:0; border-radius:9px; background:transparent; color:#526074; text-align:left; box-shadow:none; font:inherit;
+}
+.round-menu button:hover,.round-menu button:focus-visible { background:#f3f5f8; outline:none; }
+.round-menu button[aria-checked=true] { background:#eef2f6; color:#26354b; }
+.round-menu-mark { display:grid; place-items:center; width:28px; height:28px; flex:0 0 28px; border:1px solid #e9edf2; border-radius:8px; background:#f8f9fb; color:#8793a3; font-size:10px; font-weight:500; font-variant-numeric:tabular-nums; }
+.round-menu button[aria-checked=true] .round-menu-mark { background:#fff; border-color:#dde4ed; color:#50627c; }
+.round-menu-label { flex:1; min-width:0; font-size:12px; font-weight:500; }
+.round-menu-check { display:flex; align-items:center; color:#637c9b; }
+.round-menu-status { font-size:10px; color:#98a3b1; }
+.round-menu-divider { height:1px; margin:6px 10px; background:#edf0f4; }
+.round-menu-rounds { display:flex; flex-direction:column; gap:2px; }
+.round-menu button:disabled { opacity:.45; cursor:default; }
+html[data-app-theme=dark] #document .round-switch { background:transparent!important; color:#9aabc0!important; }
+html[data-app-theme=dark] #document .document-title-wrap:has(.round-switch:not(.hidden)):hover,
+html[data-app-theme=dark] #document .document-title-wrap:has(.round-switch[aria-expanded=true]) { background:#2d3745; }
+html[data-app-theme=dark] .round-menu { background:#242d39; color:#d6e0ed; border-color:#3d4959; box-shadow:0 14px 42px #0005; }
+html[data-app-theme=dark] #round-menu button { background:transparent!important; color:#c1cedf!important; }
+html[data-app-theme=dark] #round-menu button:hover,html[data-app-theme=dark] #round-menu button:focus-visible { background:#303c4d!important; }
+html[data-app-theme=dark] #round-menu button[aria-checked=true] { background:#344356!important; color:#f0f5fc!important; }
+html[data-app-theme=dark] .round-menu-mark { background:#293443; border-color:#3c4a5d; color:#9fb1c9; }
+html[data-app-theme=dark] .round-menu button[aria-checked=true] .round-menu-mark { background:#283547; border-color:#4b5e77; color:#c8d9ef; }
+html[data-app-theme=dark] .round-menu-check { color:#b2cae9; }
+html[data-app-theme=dark] .round-menu-divider { background:#3a4656; }
+@keyframes round-menu-enter { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+@media(prefers-reduced-motion:reduce) { .round-menu:popover-open { animation:none; }.round-switch-chevron { transition:none; } }

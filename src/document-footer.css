@@ -43,15 +43,8 @@
   margin-left:auto;
 }
 #document .document-title-wrap {
-  position:relative; display:inline-flex; align-items:center; gap:7px;
-  min-width:0; padding:2px 4px; margin:-2px -4px; border-radius:6px;
-}
-#document .document-title-wrap:has(.round-switch:not(.hidden)):hover { background:var(--line, #e7e8e9); }
-#document .document-title-wrap:has(select:focus-visible) { outline:2px solid var(--accent, #397b77); outline-offset:3px; }
-#document .round-switch { display:flex; align-items:center; color:var(--muted, #858a91); }
-#document .round-switch select {
-  position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer;
-  font:inherit;
+  position:relative; display:inline-flex; align-items:center;
+  min-width:0; padding:4px 6px; margin:-4px -6px; border-radius:8px;
 }
 #document .document-footer .doc-actions {
   display:flex; align-items:center; justify-content:flex-end;

@@ -6,6 +6,7 @@ import {copyText} from './editor-rich.js';
 import {mountAnswerEditor} from './answer-editor';
 import {mountFocusMode} from './focus-mode';
 import {renderProgressSummary} from './progress-view';
+import {mountRoundNavigation} from './round-navigation';
 import './progress-view.css';
 import './workbench.css';
 
@@ -79,17 +80,15 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     const digit={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
     return token.includes('十')?(token.startsWith('十')?1:digit[token[0]]||0)*10+(digit[token.split('十')[1]]||0):digit[token]||null;
   };
+  const roundNavigation=mountRoundNavigation({escape,icon,onSelect:path=>guarded(()=>selectFile(path))});
   function drawRoundSwitch(){
-    const active=state.doc?.path;if(!active){$('#round-switch').classList.add('hidden');return;}
+    const active=state.doc?.path;if(!active){roundNavigation.update({rounds:[]});return;}
     const dir=active.split('/').slice(0,-1).join('/');
     const files=allFiles().filter(f=>f.readable&&f.path.split('/').slice(0,-1).join('/')===dir);
     const rounds=files.map(f=>({path:f.path,number:roundNumber(f.path.split('/').at(-1))})).filter(f=>f.number&&/(?:^|\/)第[一二三四五六七八九十\d]+轮_教学引导\.md$/i.test(f.path)).sort((a,b)=>a.number-b.number);
     const index=files.find(f=>/(?:^|\/)01_教学引导\.md$/i.test(f.path));
-    $('#round-switch').classList.toggle('hidden',!rounds.length);
-    if(!rounds.length)return;
-    const selected=rounds.some(f=>f.path===active)||index?.path===active?active:'';
-    $('#round-select').innerHTML=`<option value="">选择教学轮次</option>${index?`<option value="${escape(index.path)}">教学总入口</option>`:''}${rounds.map(f=>`<option value="${escape(f.path)}">第${f.number}轮教学</option>`).join('')}`;
-    $('#round-select').value=selected;
+    if(rounds.length&&index?.path===active)$('#document-title').textContent='教学总入口';
+    roundNavigation.update({rounds,index,activePath:active,title:$('#document-title').textContent,isDetached});
   }
   function drawTree(){
     const teaching=state.documents.find(d=>d.kind==='guide'&&d.path===state.doc?.path)||state.documents.find(d=>d.kind==='guide');
@@ -170,7 +169,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(epoch!==loadEpoch)return;
     sourceContent=content;visual?.destroy();visual=null;$('#editor').innerHTML='';
     $('#welcome').classList.add('hidden');$('#document').classList.remove('hidden');
-    $('#document-title').textContent=viewedRound&&description.kind==='guide'?`${description.lesson||path.split('/').at(-2)} · 第${viewedRound}轮教学引导`:description.lesson?`${description.lesson} · ${description.label}`:path.split('/').at(-1).replace(/\.(md|markdown|txt)$/i,'');
+    $('#document-title').textContent=viewedRound&&description.kind==='guide'?`第 ${viewedRound} 轮 · 教学引导`:description.lesson?`${description.lesson} · ${description.label}`:path.split('/').at(-1).replace(/\.(md|markdown|txt)$/i,'');
     $('#document-kind').textContent=`${description.label} · ${description.kind==='guide'?'TEACHING GUIDE':description.kind==='answer'?'YOUR ANSWERS':'MARKDOWN'}`;
     if(state.documentWindow){$('.native-titlebar span').textContent=description.lesson||description.label;if(state.documentWindow.kind==='answer')$('.answer-heading h2').textContent=description.lesson||'学生作答';}
     $('#breadcrumb').innerHTML=`${escape(state.workspace.name)} <span>/</span> ${escape(path)}`;
@@ -378,7 +377,6 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     const actions={'import':()=>importFolder(),'welcome-import':()=>importFolder(),'welcome-demo':()=>importFolder('__demo__'),'recent-open':()=>importFolder(b.dataset.root),save:saveDoc,submit:submitAnswers,preferences:async()=>preferences(),'choose-course':async()=>chooseCourse(),refresh:async()=>{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}},'load-changes':()=>state.doc&&selectFile(state.doc.path),'open-answer':()=>state.answer&&selectFile(state.answer.path),'continue-learning':()=>selectFile(state.learning.guidePath||state.learning.answerPath),'modal-close':async()=>closeModal()};
     if(actions[b.id])guarded(actions[b.id]);
   });
-  $('#round-select').addEventListener('change',e=>{if(e.target.value)guarded(()=>selectFile(e.target.value));});
   $('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();}});
   $('#answer-content').addEventListener('input',e=>{if(e.target.dataset.answerIndex!==undefined){const q=state.answer.questions.current[Number(e.target.dataset.answerIndex)];state.answers[questionKey(q)]=e.target.value;const count=document.querySelector(`[data-answer-count="${e.target.dataset.answerIndex}"]`);if(count)count.textContent=e.target.value.length+' 字';const button=document.querySelector(`[data-answer-question="${e.target.dataset.answerIndex}"]`);if(button){button.querySelector('.answer-question-check').textContent=e.target.value.trim()?'✓':'';button.setAttribute('aria-label',`问题 ${q.number}，${e.target.value.trim()?'已填写':'未填写'}`);}dirtyState();scheduleDraft();updateAnswerStatus();}});
