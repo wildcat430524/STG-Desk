@@ -1,0 +1,132 @@
+const {app,ipcMain,BrowserWindow,clipboard}=require('electron');
+const fs=require('node:fs/promises');
+const path=require('node:path');
+const os=require('node:os');
+const assert=require('node:assert/strict');
+process.argv.push('--smoke-test');
+const smokePath=require.resolve('../electron/smoke.cjs');
+require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:async win=>{
+  const out=path.join(__dirname,'artifacts/ui-system');await fs.mkdir(out,{recursive:true});
+  const root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'stg-ui-system-')));
+  await fs.cp(path.join(__dirname,'../demo/StepsToGreat'),root,{recursive:true});
+  const answer='我的学习/学科/Python/01-认识变量/01_学生回答.md';
+  const js=code=>win.webContents.executeJavaScript(code,true);
+  const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+  const wait=async code=>{for(let i=0;i<160;i++){if(await js(`document.documentElement.dataset.busy!=='true'&&(${code})`))return;await pause(70);}throw Error('UI wait failed: '+code);};
+  const shot=async name=>{await js("document.querySelector('#toast').classList.add('hidden');document.activeElement?.blur()");await pause(240);await fs.writeFile(path.join(out,name),(await win.webContents.capturePage()).toPNG());};
+  const click=selector=>js(`document.querySelector(${JSON.stringify(selector)}).click()`);
+  const key=async(name,modifiers=[])=>{win.webContents.sendInputEvent({type:'keyDown',keyCode:name,modifiers});if(name==='Enter')win.webContents.sendInputEvent({type:'char',keyCode:'\r',modifiers});win.webContents.sendInputEvent({type:'keyUp',keyCode:name,modifiers});await pause(50);};
+  const rect=selector=>js(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return {x:Math.round(r.x+r.width/2),y:Math.round(r.y+r.height/2),width:r.width}})()`);
+  const drag=async(selector,delta,cancel=false)=>{
+    const p=await rect(selector);win.webContents.sendInputEvent({type:'mouseDown',button:'left',clickCount:1,x:p.x,y:p.y});
+    win.webContents.sendInputEvent({type:'mouseMove',x:p.x+delta,y:p.y,movementX:delta,movementY:0});await pause(100);
+    if(cancel)await key('Escape');
+    win.webContents.sendInputEvent({type:'mouseUp',button:'left',clickCount:1,x:p.x+delta,y:p.y});await pause(140);
+  };
+  const evidence=[],errors=[];win.webContents.on('console-message',event=>{if(event.level==='error'||event.level===3)errors.push(event.message);});
+  const previousClipboard={text:clipboard.readText(),html:clipboard.readHTML(),rtf:clipboard.readRTF(),image:clipboard.readImage()};
+  let feed;
+  const sendFeed=async(messages,extra={})=>{feed={visible:true,mode:'docked',connected:true,root,sessionId:'ui-demo',title:'演示会话 · 界面验收',status:'演示回复 · 界面验收',draft:'',models:[],messages,...extra};win.webContents.send('dsh-state',feed);await pause(90);};
+  try{
+    win.setMinimumSize(640,600);win.setSize(1460,960);win.show();win.focus();
+    await wait("!!document.querySelector('#welcome-import')");
+    await js(`document.querySelector('#recent').innerHTML='<button id="recent-open">打开验收工作区</button>';document.querySelector('#recent-open').dataset.root=${JSON.stringify(root)};document.querySelector('#recent-open').click()`);
+    await wait("!!document.querySelector('#answer-0')&&document.querySelector('#document').dataset.paneNarrow==='false'");
+    await shot('workspace-light.png');
+    const original=(await rect('#answers-panel')).width;await drag('#answer-resizer',-70);
+    assert.ok((await rect('#answers-panel')).width>original+45,'Pointer drag expands the answer pane');
+    const resized=(await rect('#answers-panel')).width;
+    await drag('#answer-resizer',60,true);assert.ok(Math.abs((await rect('#answers-panel')).width-resized)<3,'Escape restores the drag without saving');
+    await js("document.querySelector('#answer-resizer').focus()");await key('Right');
+    assert.ok((await rect('#answers-panel')).width<resized-10,'Keyboard adjusts the split');
+    const stored=await js(`localStorage.getItem('stg-pane-layout:'+${JSON.stringify(root)})`);assert.ok(JSON.parse(stored).answerRatio>0);
+    const expectedWidth=(await rect('#answers-panel')).width;
+    win.webContents.reload();await wait("!!document.querySelector('#answer-0')&&document.querySelector('#document').dataset.paneNarrow==='false'");
+    assert.ok(Math.abs((await rect('#answers-panel')).width-expectedWidth)<3,'Workspace split survives reload');
+    evidence.push('Native pointer drag, Escape cancellation, keyboard adjustment and workspace persistence');
+
+    await js("document.querySelector('#answer-0').focus()");await win.webContents.insertText('界面验收：变量名是 age，变量值是 18。');
+    const typed=await js("document.querySelector('#answer-0').value");
+    for(const width of [1280,1100,960,760]){
+      win.setSize(width,800);await pause(180);
+      assert.equal(await js('document.documentElement.scrollWidth>innerWidth'),false,'No page overflow at '+width);
+      if(await js("document.querySelector('#document').dataset.paneNarrow==='true'")){
+        await click('[data-pane="answer"]');await pause(80);
+        assert.notEqual(await js("getComputedStyle(document.querySelector('#answers-panel')).display"),'none');
+        assert.equal(await js("document.querySelector('#answer-0').value"),typed);
+        await click('[data-pane="reading"]');
+      }
+    }
+    assert.equal(await js("document.querySelector('#document').dataset.paneNarrow"),'true');
+    await click('[data-pane="answer"]');await shot('workspace-narrow-answer.png');
+    await click('#submit');await wait("document.querySelector('#save-status').textContent==='已保存'");
+    assert.ok((await fs.readFile(path.join(root,answer),'utf8')).includes('界面验收：变量名是 age'));
+    evidence.push('1280/1100/960/760px layouts retain answers; narrow view switches and saves through native IPC');
+
+    win.setSize(1460,960);await pause(180);await click('#document-focus');
+    await js("document.querySelector('#preferences').focus()");await click('#preferences');
+    assert.equal(await js("document.querySelector('#app').inert"),true);
+    await js("document.querySelector('#modal-actions button:last-child').focus()");await key('Tab');
+    assert.equal(await js("document.activeElement.id"),'modal-close');
+    await key('Tab',['shift']);assert.equal(await js("document.activeElement.closest('#modal-actions')!==null"),true);
+    await key('Escape');assert.equal(await js("document.querySelector('#app').inert"),false);
+    assert.equal(await js("document.activeElement.id"),'preferences');
+    assert.equal(await js("document.body.classList.contains('document-focused')"),true,'One Escape closes only the dialog');
+    await js("document.querySelector('#editor').dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true}));document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}))");
+    assert.equal(await js("document.body.classList.contains('document-focused')"),true,'IME Escape does not leave focus mode');
+    await js("document.querySelector('#editor').dispatchEvent(new CompositionEvent('compositionend',{bubbles:true}))");await pause(110);await key('Escape');
+    assert.equal(await js("document.body.classList.contains('document-focused')"),false);
+    await js("document.querySelector('[data-answer-tab=current]').focus()");await key('Right');
+    assert.equal(await js("document.activeElement.dataset.answerTab"),'records');await key('Enter');await wait("document.querySelector('[data-answer-tab=records]').getAttribute('aria-pressed')==='true'");
+    await click('[data-answer-tab=current]');
+    evidence.push('Modal focus trap/restore, one-layer Escape, IME guard and answer-tab keyboard navigation');
+
+    const preview=[{id:'user',role:'user',text:'这是一组界面验收用的演示消息。请解释变量，并给一个简短示例。'},{id:'reply',role:'assistant',text:'变量名用来引用一个值。\n\n```python\nage = 18\nprint(age)\n```\n\n这里的 `age` 是变量名，`18` 是变量值。'}];
+    await sendFeed(preview);await shot('workspace-dsh.png');
+    const dshBefore=(await rect('#dsh-host')).width;await drag('#dsh-resizer',-50);assert.ok((await rect('#dsh-host')).width>dshBefore+30);
+    await click('#app-theme-toggle');await shot('workspace-dark.png');await click('#app-theme-toggle');
+    win.webContents.setZoomFactor(1.25);await pause(160);
+    assert.equal(await js('document.documentElement.scrollWidth>innerWidth'),false);await shot('workspace-125-percent.png');
+    win.webContents.setZoomFactor(1);await pause(160);
+    const long=Array.from({length:22},(_,i)=>({id:'message-'+i,role:'assistant',text:`界面验收演示段落 ${i}：`+'这是用于检查滚动位置的演示内容。'.repeat(9)}));
+    long[0].text+='\n\n```python\n'+('long_variable_name = '+JSON.stringify('x'.repeat(140)))+'\n```';
+    await sendFeed(long,{busy:true});
+    await js("window.firstMessage=document.querySelector('.dsh-message');window.firstText=firstMessage.querySelector('.dsh-message-text p').firstChild;const s=getSelection();s.setBaseAndExtent(firstText,0,firstText,6);document.querySelector('#dsh-conversation').scrollTop=0;window.codePre=firstMessage.querySelector('pre');codePre.scrollLeft=80");
+    await pause(80);const selection=await js('getSelection().toString()');long.at(-1).text+='\n\n继续生成的演示内容。';await sendFeed(long,{busy:true});
+    assert.equal(await js("window.firstMessage===document.querySelector('.dsh-message')"),true);
+    assert.equal(await js('getSelection().toString()'),selection);
+    assert.ok(await js('window.codePre.scrollLeft>50'));
+    assert.ok(await js("document.querySelector('#dsh-conversation').scrollTop<10"));
+    assert.equal(await js("document.querySelector('#dsh-jump-latest').classList.contains('hidden')"),false);
+    await click('#dsh-jump-latest');await pause(100);
+    assert.ok(await js("(()=>{const e=document.querySelector('#dsh-conversation');return e.scrollHeight-e.clientHeight-e.scrollTop<3})()"));
+    long.at(-1).text+='\n\n新的内容继续出现在底部。';await sendFeed(long,{busy:true});
+    assert.ok(await js("(()=>{const e=document.querySelector('#dsh-conversation');return e.scrollHeight-e.clientHeight-e.scrollTop<3})()"));
+    await js("document.querySelector('#dsh-conversation').scrollTop=0");await pause(60);await click('.dsh-code-tools button');
+    await wait("document.querySelector('.dsh-code-tools button').dataset.copyState==='copied'");
+    assert.ok(clipboard.readText().startsWith('long_variable_name = '));
+    assert.equal(await js("document.querySelector('.dsh-code-tools button').textContent"),'已复制 ✓');
+    await click('.dsh-message-actions button');await wait("document.querySelector('.dsh-message-actions button').dataset.copyState==='copied'");assert.equal(clipboard.readText().replace(/\r\n/g,'\n'),long[0].text);
+    evidence.push('DSH history node/selection/code scroll preserved during streaming; manual reading stays put; jump restores following; native clipboard verified');
+
+    await sendFeed(preview);await click('#dsh-more');await key('Escape');
+    assert.equal(await js("document.activeElement.id"),'dsh-more');
+    let sends=0,cancels=0;ipcMain.removeHandler('dsh-send');ipcMain.handle('dsh-send',()=>{sends++;});ipcMain.removeHandler('dsh-cancel');ipcMain.handle('dsh-cancel',()=>{cancels++;});
+    await js("document.querySelector('#dsh-input').focus();document.querySelector('#dsh-input').value='中文输入验收';document.querySelector('#dsh-input').dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true}));document.querySelector('#dsh-input').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}))");
+    await pause(100);assert.equal(sends,0);
+    await js("document.querySelector('#dsh-input').dispatchEvent(new CompositionEvent('compositionend',{bubbles:true}));document.querySelector('#dsh-input').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',keyCode:229,bubbles:true,cancelable:true}))");
+    await pause(100);assert.equal(sends,0);await sendFeed(preview,{busy:true});await click('#dsh-send');assert.equal(cancels,1);
+    await sendFeed(preview,{busy:false});
+    await click('#dsh-detach');await pause(550);
+    const floating=BrowserWindow.getAllWindows().find(w=>w!==win&&w.webContents.getURL().includes('dsh'));
+    assert.ok(floating);floating.webContents.send('dsh-state',{...feed,mode:'floating'});await pause(180);
+    assert.equal(await floating.webContents.executeJavaScript("!!document.querySelector('[data-copy-code]')"),true);
+    await fs.writeFile(path.join(out,'dsh-floating.png'),(await floating.webContents.capturePage()).toPNG());
+    await js("window.stg.dshMode('docked')");await sendFeed(preview);
+    evidence.push('DSH menu focus, composition Enter protection, stop action and floating-window message controls');
+    assert.deepEqual(errors,[],'No renderer errors');
+    await fs.writeFile(path.join(out,'result.json'),JSON.stringify({passed:true,evidence,root,errors},null,2));
+    clipboard.write(previousClipboard);console.log(JSON.stringify({passed:true,out,evidence}));app.exit(0);
+  }catch(error){clipboard.write(previousClipboard);await shot('failure.png').catch(()=>{});await fs.writeFile(path.join(out,'result.json'),JSON.stringify({passed:false,error:error.stack,evidence,root,errors},null,2));console.error(error);app.exit(1);}
+}};
+require('../electron/main.cjs');

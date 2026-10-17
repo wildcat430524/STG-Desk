@@ -1,4 +1,5 @@
 import {editorIcon} from './editor-icons';
+import {onEscape} from './ui-interactions';
 export function mountFocusMode(button){
   const setFocused=enabled=>{
     document.body.classList.toggle('document-focused',enabled);
@@ -6,5 +7,5 @@ export function mountFocusMode(button){
     button.innerHTML=editorIcon('focus')+(enabled?'退出专注':'专注');
   };
   button.addEventListener('click',()=>setFocused(!document.body.classList.contains('document-focused')));
-  document.addEventListener('keydown',event=>{if(event.key==='Escape')setFocused(false);});
+  onEscape(()=>document.body.classList.contains('document-focused'),()=>{setFocused(false);button.focus({preventScroll:true});},100);
 }

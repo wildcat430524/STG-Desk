@@ -1,4 +1,5 @@
 import './round-navigation.css';
+import {onEscape,isComposing} from './ui-interactions';
 
 export function mountRoundNavigation({escape,icon,onSelect}){
   const trigger=document.querySelector('#round-switch'),menu=document.querySelector('#round-menu');
@@ -8,6 +9,7 @@ export function mountRoundNavigation({escape,icon,onSelect}){
   const isOpen=()=>menu.matches(':popover-open');
   let initialEdge;
   function close(restoreFocus=false){if(isOpen())menu.hidePopover();if(restoreFocus)trigger.focus({preventScroll:true});}
+  onEscape(isOpen,()=>close(true),500);
   function placeAndFocus(edge){
     const anchor=trigger.getBoundingClientRect(),bounds=menu.getBoundingClientRect();
     menu.style.left=Math.max(12,Math.min(anchor.left,innerWidth-bounds.width-12))+'px';
@@ -26,7 +28,7 @@ export function mountRoundNavigation({escape,icon,onSelect}){
   });
   menu.addEventListener('click',event=>{const item=event.target.closest('[data-round-file]');if(!item||item.disabled)return;close(true);onSelect(item.dataset.roundFile);});
   menu.addEventListener('keydown',event=>{
-    if(event.key==='Escape'){event.preventDefault();event.stopPropagation();close(true);return;}
+    if(isComposing(event))return;
     if(event.key==='Tab'){close();return;}
     const choices=items(),index=choices.indexOf(document.activeElement);
     const next=event.key==='Home'?0:event.key==='End'?choices.length-1:event.key==='ArrowDown'?(index+1)%choices.length:event.key==='ArrowUp'?(index-1+choices.length)%choices.length:null;

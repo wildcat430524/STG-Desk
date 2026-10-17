@@ -7,6 +7,7 @@ import {mountAnswerEditor} from './answer-editor';
 import {mountFocusMode} from './focus-mode';
 import {renderProgressSummary} from './progress-view';
 import {mountRoundNavigation} from './round-navigation';
+import {mountModalFocus,mountRovingGroup,onEscape} from './ui-interactions';
 import './progress-view.css';
 import './workbench.css';
 
@@ -20,6 +21,10 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   $('.doc-actions').insertAdjacentHTML('beforeend','<button id="document-popout" class="hidden" title="移到独立窗口，主应用切换到另一份文档">开窗口 ↗</button>');
   $('.doc-actions').insertAdjacentHTML('beforeend',`<button id="insert-formula" title="插入数学公式">${editorIcon('math')}公式</button>`);
   $('#app').insertAdjacentHTML('afterend','<div id="modal" class="modal-overlay hidden" role="dialog" aria-modal="true"><section class="modal-card"><header><div><span id="modal-eyebrow" class="eyebrow"></span><h2 id="modal-title"></h2></div><button id="modal-close" aria-label="关闭">×</button></header><div id="modal-body"></div><footer id="modal-actions"></footer></section></div>');
+  const modalFocus=mountModalFocus($('#modal'),()=>closeModal());
+  mountRovingGroup($('#tree'));
+  mountRovingGroup($('.answer-tabs'));
+  mountRovingGroup($('#answer-question-nav'));
   const smallIcons={preferences:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="white"/><circle cx="15" cy="17" r="2" fill="white"/>',save:'<path d="M5 3h12l4 4v14H3V3Z"/><path d="M7 3v6h10V3M7 21v-8h10v8"/>'};
   for(const [id,path] of Object.entries(smallIcons)){const button=$('#'+id);button.insertAdjacentHTML('afterbegin',icon(path,14)+' ');}
   $('#import>span').innerHTML=icon('<path d="M12 5v14M5 12h14"/>',17);
@@ -37,7 +42,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   };
   $('#answer-focus').addEventListener('click',()=>setAnswerFocused(!document.body.classList.contains('answer-focused')));
   $('#document-focus').addEventListener('click',()=>setAnswerFocused(false));
-  document.addEventListener('keydown',event=>{if(event.key==='Escape')setAnswerFocused(false);});
+  onEscape(()=>document.body.classList.contains('answer-focused'),()=>{setAnswerFocused(false);$('#answer-focus').focus({preventScroll:true});},100);
 
   function message(text,error=false){const box=$('#toast');box.textContent=text;box.className=`toast ${error?'error':''}`;clearTimeout(message.timer);message.timer=setTimeout(()=>box.classList.add('hidden'),5000);}
   async function guarded(task){if(state.busy)return;state.busy=true;document.documentElement.dataset.busy='true';try{await task();}catch(e){message(cleanError(e),true);}finally{state.busy=false;document.documentElement.dataset.busy='false';drainWindowEvents();}}
@@ -190,6 +195,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     $('#document-popout').classList.toggle('hidden',!/(教学引导|学生回答)\.md$/i.test(path)||!!state.documentWindow);
     $('#draft-status').textContent='';
     $('#status-left').textContent=path;
+    document.dispatchEvent(new CustomEvent('stg-document-changed',{detail:{root:state.workspace.root,path}}));
     if(line)visual?.jumpToSource(sourceLineOffset(line));
   }
   function updateDocumentText(){
@@ -358,8 +364,8 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   }
   async function saveDoc(){return saveAll();}
   async function submitAnswers(){return saveAll();}
-  function modal(title,body,actions,eyebrow='文档工作台'){const box=$('#modal');$('#modal-body').onclick=null;$('#modal-body').oninput=null;$('#modal-title').textContent=title;$('#modal-eyebrow').textContent=eyebrow;$('#modal-body').innerHTML=body;$('#modal-actions').innerHTML='';for(const a of actions){const b=document.createElement('button');b.textContent=a.label;if(a.primary)b.className='primary';b.onclick=()=>guarded(a.action);$('#modal-actions').append(b);}box.classList.remove('hidden');$('#modal-close').focus();}
-  function closeModal(){$('#modal').classList.add('hidden');}
+  function modal(title,body,actions,eyebrow='文档工作台'){$('#modal-body').onclick=null;$('#modal-body').oninput=null;$('#modal-title').textContent=title;$('#modal-eyebrow').textContent=eyebrow;$('#modal-body').innerHTML=body;$('#modal-actions').innerHTML='';for(const a of actions){const b=document.createElement('button');b.textContent=a.label;if(a.primary)b.className='primary';b.onclick=()=>guarded(a.action);$('#modal-actions').append(b);}modalFocus.open();}
+  function closeModal(){modalFocus.close();}
   function applyPreferences(){const p=state.preferences;document.documentElement.style.setProperty('--reading-font',p.fontSize+'px');document.documentElement.style.setProperty('--reading-line',p.lineHeight);document.documentElement.style.setProperty('--reading-width',p.readingWidth+'px');}
   function preferences(){const p=state.preferences;modal('阅读与备份设置',`<div class="preferences-form"><label>正文字号 <output id="font-output">${p.fontSize}px</output><input id="font-size" type="range" min="13" max="24" value="${p.fontSize}"></label><label>行距 <output id="line-output">${p.lineHeight}</output><input id="line-height" type="range" min="1.4" max="2.4" step=".1" value="${p.lineHeight}"></label><label>阅读宽度 <output id="width-output">${p.readingWidth}px</output><input id="reading-width" type="range" min="540" max="1200" step="20" value="${p.readingWidth}"></label><label>每份文档保留的备份数量<input id="retention" type="number" min="5" max="100" value="${p.backupRetention}"></label></div>`,[{label:'保存设置',primary:true,action:async()=>{state.preferences=await api.preferences(state.preferences);applyPreferences();closeModal();message('阅读与备份设置已保存。');}}],'按你的阅读习惯');
     $('#modal-body').oninput=()=>{state.preferences={fontSize:Number($('#font-size').value),lineHeight:Number($('#line-height').value),readingWidth:Number($('#reading-width').value),backupRetention:Number($('#retention').value)||20};$('#font-output').value=state.preferences.fontSize+'px';$('#line-output').value=state.preferences.lineHeight;$('#width-output').value=state.preferences.readingWidth+'px';applyPreferences();};
@@ -388,7 +394,6 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     if(actions[b.id])guarded(actions[b.id]);
   });
   $('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();}});
   $('#answer-content').addEventListener('input',e=>{if(e.target.dataset.answerIndex!==undefined){const q=state.answer.questions.current[Number(e.target.dataset.answerIndex)];state.answers[questionKey(q)]=e.target.value;const count=document.querySelector(`[data-answer-count="${e.target.dataset.answerIndex}"]`);if(count)count.textContent=e.target.value.length+' 字';const button=document.querySelector(`[data-answer-question="${e.target.dataset.answerIndex}"]`);if(button){button.querySelector('.answer-question-check').textContent=e.target.value.trim()?'✓':'';button.setAttribute('aria-label',`问题 ${q.number}，${e.target.value.trim()?'已填写':'未填写'}`);}dirtyState();scheduleDraft();updateAnswerStatus();}});
   $('#answer-source').addEventListener('input',e=>{state.answerSource=e.target.value;state.answerCache={...(state.answerCache||{}),content:state.answerSource,baseContent:state.answerBaseContent,baseVersion:state.answerBaseVersion};if(state.doc.path===state.answer.path)replaceSource(state.answerSource);dirtyState();scheduleDraft();$('#answer-source-status').textContent='有修改 · 待保存';updateAnswerStatus();});
   for(const selector of ['#answer-records','#answer-document-preview','#answer-content'])$(selector).addEventListener('click',e=>{const link=e.target.closest('a');if(!link)return;const href=link.getAttribute('href');e.preventDefault();if(/^https?:\/\//i.test(href)){api.external(href);return;}if(href&&!href.startsWith('#')){const path=resolveLink(state.answer.path,href);if(path)guarded(()=>selectFile(path));}});

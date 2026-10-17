@@ -1,4 +1,8 @@
 import './dsh-panel.css';
+import {mountConversation} from './dsh-conversation';
+import {onEscape,isComposing} from './ui-interactions';
+import {mountModelPicker} from './model-picker';
+import './model-picker.css';
 
 export function mountDsh({api,renderMD,escape,icon,dshOnly=false}){
   const host=document.querySelector('#dsh-host');
@@ -22,10 +26,15 @@ export function mountDsh({api,renderMD,escape,icon,dshOnly=false}){
   const openDesktop=document.createElement('button');openDesktop.id='dsh-open-desktop';openDesktop.textContent='打开 DSH 桌面应用';$('dsh-more-menu').prepend(openDesktop);
   const connectBar=document.createElement('div');connectBar.className='dsh-connect-bar';connectBar.innerHTML='<span>打开 DSH，与桌面端共用会话</span><button id="dsh-launch-desktop">打开 DSH</button><button id="dsh-connect-now">连接</button>';host.querySelector('.dsh-composer').before(connectBar);
   const input=$('dsh-input'),select=$('dsh-model'),messages=$('dsh-messages'),conversation=$('dsh-conversation');
-  let current={},lastMessages='',lastModels='',composing=false,preparing=false;
+  const feed=mountConversation({conversation,messages,renderMD,escape});
+  $('dsh-status').setAttribute('role','status');
+  $('dsh-more').setAttribute('aria-expanded','false');$('dsh-more').setAttribute('aria-controls','dsh-more-menu');
+  let current={},lastModels='',composing=false,preparing=false;
+  const fitInput=()=>{input.style.height='auto';input.style.height=Math.min(148,input.scrollHeight)+'px';};
   const readableError=e=>String(e?.message||e).replace(/^Error invoking remote method '[^']+': (?:Error: )?/,'');
   const showError=e=>{$('dsh-status').textContent=readableError(e);};
-  function controls(){const busy=current.busy||preparing,button=$('dsh-send');button.disabled=!busy&&(!input.value.trim()||!current.root||!current.connected);const key=String(!!busy);if(button.dataset.busy!==key){button.dataset.busy=key;button.innerHTML=busy?icon('<rect x="7" y="7" width="10" height="10" rx="2"/>',18):icon('<path d="M12 19V5m-6 6 6-6 6 6"/>',19);button.title=busy?'停止回复':'发送消息';button.setAttribute('aria-label',button.title);}host.dataset.busy=key;select.disabled=busy||!current.connected||!(current.models?.length);input.disabled=preparing;sessionSelect.disabled=busy||!current.connected;connectBar.classList.toggle('hidden',!!current.connected);}
+  const modelPicker=mountModelPicker({select,icon,onChange:model=>api.dshModel(model),onError:showError});
+  function controls(){const busy=current.busy||preparing,button=$('dsh-send');button.disabled=!busy&&(!input.value.trim()||!current.root||!current.connected);const key=String(!!busy);if(button.dataset.busy!==key){button.dataset.busy=key;button.innerHTML=busy?icon('<rect x="7" y="7" width="10" height="10" rx="2"/>',18):icon('<path d="M12 19V5m-6 6 6-6 6 6"/>',19);button.title=busy?'停止回复':'发送消息';button.setAttribute('aria-label',button.title);}host.dataset.busy=key;select.disabled=busy||!current.connected||!(current.models?.length);modelPicker.sync((current.root||'')+'\0'+(current.sessionId||''));input.disabled=preparing;sessionSelect.disabled=busy||!current.connected;connectBar.classList.toggle('hidden',!!current.connected);}
   function show(state){
     current=state;
     workspaceLabel.textContent=state.root?'工作区：'+state.root:'请先导入学习文件夹';workspaceLabel.title=state.root||'';
@@ -41,32 +50,41 @@ export function mountDsh({api,renderMD,escape,icon,dshOnly=false}){
     $('dsh-detach').innerHTML=dshOnly?dockIcon:floatIcon;$('dsh-detach').title=dshOnly?'停靠回主窗口':'独立小窗';$('dsh-detach').setAttribute('aria-label',$('dsh-detach').title);
     $('dsh-pin').classList.toggle('active',!!state.pinned);
     $('dsh-pin').setAttribute('aria-pressed',String(!!state.pinned));
-    if(input.value!==(state.draft||'')&&(document.activeElement!==input||preparing))input.value=state.draft||'';
+    if(input.value!==(state.draft||'')&&(document.activeElement!==input||preparing)){input.value=state.draft||'';fitInput();}
     const modelKey=JSON.stringify(state.models||[]);
     if(modelKey!==lastModels){lastModels=modelKey;select.innerHTML='';const groups=new Map();for(const model of state.models||[]){const provider=model.provider||'DSH';let group=groups.get(provider);if(!group){group=document.createElement('optgroup');group.label=provider;groups.set(provider,group);select.append(group);}const option=document.createElement('option');option.value=model.id;option.textContent=model.label||model.id;group.append(option);}if(!select.options.length){const option=document.createElement('option');option.textContent='连接后选择模型';option.value='';select.append(option);}}
     if(state.model&&[...select.options].some(o=>o.value===state.model))select.value=state.model;
     const context=$('dsh-context');context.classList.toggle('hidden',!state.contextLabel);context.textContent=state.contextLabel?'引用：'+state.contextLabel:'';
-    const contentKey=JSON.stringify({messages:state.messages||[],root:state.root});
-    if(contentKey!==lastMessages){const atBottom=conversation.scrollHeight-conversation.scrollTop-conversation.clientHeight<45;lastMessages=contentKey;messages.innerHTML=state.messages?.length?state.messages.map(m=>`<section class="dsh-message ${m.role==='user'?'user':m.role==='error'?'error':'assistant'}"><small>${m.role==='user'?'你':m.role==='error'?'连接提示':'DSH'}</small><div class="dsh-message-text ${m.role==='user'?'':'markdown-body'}">${m.role==='user'?escape(m.text).replace(/\n/g,'<br>'):renderMD(m.text,state.contextPath||'')}</div></section>`).join(''):`<div class="dsh-empty"><span>DSH</span><h3>在这里继续学习</h3><p>${state.root?'可以询问当前课程，或告诉导师你的学习目标。':'先导入学习文件夹，DSH 会关联当前所需文档。'}</p></div>`;if(atBottom)conversation.scrollTop=conversation.scrollHeight;}
+    feed.show(state);
     controls();
   }
   async function send(){if(composing)return;if(current.busy){await api.dshCancel();return;}if(preparing||!input.value.trim()||!current.root)return;const text=input.value;preparing=true;controls();try{await api.dshDraft(text);await api.dshSend({text,model:select.value||null});}catch(e){showError(e);}finally{preparing=false;controls();}}
   input.addEventListener('compositionstart',()=>composing=true);input.addEventListener('compositionend',()=>composing=false);
   input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229&&!composing){e.preventDefault();send().catch(showError);}});
-  input.addEventListener('input',()=>{controls();api?.dshDraft(input.value).catch(showError);input.style.height='auto';input.style.height=Math.min(148,input.scrollHeight)+'px';});
+  input.addEventListener('input',()=>{controls();api?.dshDraft(input.value).catch(showError);fitInput();});
   $('dsh-send').onclick=()=>send().catch(showError);
-  select.onchange=()=>api.dshModel(select.value).catch(showError);
   sessionSelect.onchange=()=>api.dshSession(sessionSelect.value).catch(showError);
   const launchDesktop=()=>api.dshOpenDesktop().then(()=>{setTimeout(()=>api.dshConnect().catch(showError),1800);}).catch(showError);
   openDesktop.onclick=launchDesktop;$('dsh-launch-desktop').onclick=launchDesktop;$('dsh-connect-now').onclick=()=>api.dshConnect().catch(showError);
   $('dsh-detach').onclick=()=>api.dshMode(dshOnly?'docked':'floating').catch(showError);
   $('dsh-close').onclick=()=>api.dshVisible(false).catch(showError);
   $('dsh-pin').onclick=()=>api.dshPin(!current.pinned).catch(showError);
-  $('dsh-more').onclick=()=> $('dsh-more-menu').classList.toggle('hidden');
-  $('dsh-reconnect').onclick=()=>{ $('dsh-more-menu').classList.add('hidden');api.dshConnect().catch(showError);};
-  $('dsh-new').onclick=()=>{ $('dsh-more-menu').classList.add('hidden');if(!current.busy&&window.confirm('在 DSH 中开始新会话？当前对话仍保留在 DSH 历史中。'))api.dshNew().catch(showError);};
+  const menu=$('dsh-more-menu'),more=$('dsh-more');
+  function closeMenu(restore=false){menu.classList.add('hidden');more.setAttribute('aria-expanded','false');if(restore)more.focus({preventScroll:true});}
+  more.onclick=()=>{const open=menu.classList.contains('hidden');menu.classList.toggle('hidden',!open);more.setAttribute('aria-expanded',String(open));if(open)menu.querySelector('button:not(:disabled),select:not(:disabled)')?.focus({preventScroll:true});};
+  more.addEventListener('keydown',event=>{if(event.key==='ArrowDown'&&!isComposing(event)){event.preventDefault();if(menu.classList.contains('hidden'))more.click();}});
+  menu.addEventListener('keydown',event=>{
+    if(isComposing(event)||event.target.tagName==='SELECT')return;
+    if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+    const items=[...menu.querySelectorAll('button:not(:disabled),select:not(:disabled)')],index=items.indexOf(document.activeElement);
+    event.preventDefault();items[event.key==='Home'?0:event.key==='End'?items.length-1:(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length]?.focus();
+  });
+  onEscape(()=>!menu.classList.contains('hidden'),()=>closeMenu(true),300);
+  document.addEventListener('pointerdown',event=>{if(!menu.contains(event.target)&&!more.contains(event.target))closeMenu();});
+  host.addEventListener('focusout',()=>queueMicrotask(()=>{if(!menu.contains(document.activeElement)&&document.activeElement!==more)closeMenu();}));
+  $('dsh-reconnect').onclick=()=>{closeMenu();api.dshConnect().catch(showError);};
+  $('dsh-new').onclick=()=>{closeMenu();if(!current.busy&&window.confirm('在 DSH 中开始新会话？当前对话仍保留在 DSH 历史中。'))api.dshNew().catch(showError);};
   $('dsh-quote').onclick=()=>api.dshQuote().catch(showError);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')$('dsh-more-menu').classList.add('hidden');});
   document.querySelector('#open-dsh')?.addEventListener('click',()=>api?.dshVisible(true).catch(showError));
   api?.onDshState(show);api?.dshState().then(show).catch(showError);
   if(!api)show({status:'请使用桌面应用连接 DSH',messages:[],models:[]});

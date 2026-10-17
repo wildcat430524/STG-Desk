@@ -20,9 +20,9 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 阅读、编辑和作答可以独立使用，DSH 对话按需连接。学习资料仍保存在原目录中，便于导师或学习 Agent 接着读取和更新。
 
-> 本文对应 [v0.3.16](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.16)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
+> 本文对应 [v0.3.17](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.17)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
 
-v0.3.16 打开课程和继续学习时默认进入当前轮教学文档；轮次菜单去掉多余的标题与轮数行。总入口和旧轮仍可手动选择，顶部两个进度入口继续保留。
+v0.3.17 带来可搜索、按服务商分组的模型选择面板，清楚标出价格和当前模型；同时统一工作台控件，支持调整面板宽度，并改善窄窗口、对话阅读与键盘操作。
 
 ## 界面预览
 
@@ -32,6 +32,10 @@ v0.3.16 打开课程和继续学习时默认进入当前轮教学文档；轮次
 <sub><strong>学习工作台。</strong>左边读教学，右边按题作答；需要评估或讨论时，从右上角展开 DSH 面板。</sub>
 
 截图使用演示课程与测试草稿，不包含真实学习记录或模型回复。
+
+![模型选择：搜索名称或服务商，查看价格与当前模型](docs/screenshots/model-picker.png)
+
+模型选择面板支持服务商分组、搜索和键盘操作；此图使用演示模型列表。
 
 ## 功能特性
 
@@ -122,7 +126,7 @@ C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
 导入方式：
 
 - **从源码运行**：导入 `demo/EditorShowcase` 目录。
-- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.16/STG-Desk-0.3.16-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
+- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.17/STG-Desk-0.3.17-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
 - 导入后「选择课程」会列出这门演示课程（路径为 `我的学习/学科/Markdown/01-复杂内容演示/`），与内置的 [示例课程](demo/StepsToGreat) 相互独立。
 
 > 演示中的 Java 示例按 Java 17+ 语法编写，仅经过审查，未在本机 Java 11 环境编译；Python 示例已实际运行。示例用于展示排版与编辑效果，不代表学习评估。

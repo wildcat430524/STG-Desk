@@ -93,6 +93,8 @@ import './editor-syntax.css';
 import './typography.css';
 import './answer-layout.css';
 import './answer-editor.css';
+import './ui-system.css';
+import {mountPaneLayout} from './pane-layout';
 import {mountEditorIcons} from './editor-icons';
 const dshOnly=new URLSearchParams(location.search).has('dsh');
 const documentOnly=new URLSearchParams(location.search).has('document');
@@ -103,3 +105,4 @@ if(!documentOnly)mountDsh({api,renderMD:(text,path)=>renderMD(text,path,true),es
 mountApplicationTheme({dshOnly});
 if(!dshOnly)mountDocumentFooter();
 if(!dshOnly)mountEditorIcons();
+if(!dshOnly)mountPaneLayout();

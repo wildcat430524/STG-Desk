@@ -80,7 +80,7 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     win.show();win.focus();win.webContents.focus();
     win.webContents.sendInputEvent({type:'keyDown',keyCode:'Escape'});win.webContents.sendInputEvent({type:'keyUp',keyCode:'Escape'});
     await wait("!document.body.classList.contains('answer-focused')");
-    assert.equal(await js("getComputedStyle(document.querySelector('#answers-panel')).display"),'none');
+    assert.notEqual(await js("getComputedStyle(document.querySelector('#answers-panel')).display"),'none','The adaptive layout keeps answers available when both panes still fit');
     win.setSize(1460,960);await new Promise(r=>setTimeout(r,200));
     await click('#app-theme-toggle');await capture('dark.png');await click('#app-theme-toggle');
     evidence.push('Focused answer mode expands at normal and narrow widths, exits with Escape, and supports dark theme');

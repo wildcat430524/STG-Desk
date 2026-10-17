@@ -20,13 +20,17 @@ STG Desk is a Windows desktop workspace for [StepsToGreat](https://github.com/wi
 
 Reading, editing, and answering work independently; connect DSH when needed. Learning files stay in their original directory so a tutor or learning agent can read and update them.
 
-> This README covers [v0.3.16](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.16). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
+> This README covers [v0.3.17](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.17). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
 
-v0.3.16 opens the current teaching round by default when opening a lesson or continuing study. The round menu drops its extra heading and round-count row. The chapter entry and earlier rounds remain available, alongside both progress entries.
+v0.3.17 adds a searchable model picker with provider groups, price badges, and a clear current selection. It also unifies workspace controls, adds adjustable pane widths, and improves narrow layouts, conversation reading, and keyboard navigation.
 
 ## Preview
 
 Teaching, answers, current chapter progress, and overall progress have separate entries. Documents can open in detached windows, and DSH offers a side panel or a floating window.
+
+![Model picker with provider search, price badges, and current selection](docs/screenshots/model-picker.png)
+
+The model picker supports provider groups, search, and keyboard navigation. This screenshot uses a demonstration model catalog.
 
 ![Teaching and answers in one workspace, with DSH available on demand](docs/screenshots/workspace.png)<br>
 <sub><strong>The workspace.</strong> Read the lesson on the left and answer question by question on the right. Open the DSH panel from the top-right corner when you need evaluation or discussion.</sub>
@@ -122,7 +126,7 @@ Headings, lists, tables, and formulas are organised by content level: `H1`/`H2`/
 To open it:
 
 - **Running from source**: import the `demo/EditorShowcase` directory.
-- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.16/STG-Desk-0.3.16-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
+- **Using the portable build**: download the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.17/STG-Desk-0.3.17-EditorShowcase.zip), extract it, and import the `EditorShowcase` root folder. You can also read the [demo source](demo/EditorShowcase) and [showcase lesson](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md) directly.
 - After importing, 「选择课程」 (Choose lesson) lists this showcase lesson at `我的学习/学科/Markdown/01-复杂内容演示/`. The welcome screen's [bundled demo lessons](demo/StepsToGreat) open a separate workspace.
 
 > The Java example targets Java 17+ and was only reviewed, not compiled: this machine runs Java 11. The Python example was executed. The showcase demonstrates layout and editing behaviour; it is not a learning assessment.
