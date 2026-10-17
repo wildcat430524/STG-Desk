@@ -22,20 +22,20 @@ Reading, editing, and answering work independently; connect DSH when needed. Lea
 
 > This README covers [v0.3.18](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.18). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
 
-v0.3.18 removes the redundant plus button and divider from the composer, and balances the spacing between model selection and send. Course context remains automatic; searchable model selection, adjustable panes, and keyboard navigation remain available.
+v0.3.18 provides a simpler composer with aligned model and send controls and automatic course context. Search models and providers, resize panes, and switch between the lesson and answers when space is limited.
 
 ## Preview
 
 Teaching, answers, current chapter progress, and overall progress have separate entries. Documents can open in detached windows, and DSH offers a side panel or a floating window.
 
-![Model picker with provider search, price badges, and current selection](docs/screenshots/model-picker.png)
-
-The model picker supports provider groups, search, and keyboard navigation. This screenshot uses a demonstration model catalog.
-
 ![Teaching and answers in one workspace, with DSH available on demand](docs/screenshots/workspace.png)<br>
 <sub><strong>The workspace.</strong> Read the lesson on the left and answer question by question on the right. Open the DSH panel from the top-right corner when you need evaluation or discussion.</sub>
 
 Screenshots use demo lessons and test drafts, with no real learning records or model responses.
+
+![Model picker with provider search, price badges, and current selection](docs/screenshots/model-picker.png)
+
+The model picker supports provider groups, search, and keyboard navigation. This screenshot uses a demonstration model catalog.
 
 ## Features
 
@@ -46,7 +46,9 @@ Screenshots use demo lessons and test drafts, with no real learning records or m
 - **Edit the full answer document**: open the answer page directly or view and edit the complete student document beside the lesson.
 - **Follow recorded progress**: read chapter progress, overall progress, handoff status, and mastery records from existing documents.
 - **Read your way**: detached teaching and answer windows, font size, line spacing, reading width, night theme, and focus mode.
-- **Use native DSH sessions**: live messages and model selection come from your local DSH. The panel and floating window share the conversation and input draft.
+- **Adjust the workspace layout**: drag separators to allocate space to the lesson, answers, and DSH. Layout is remembered per workspace; switch between the lesson and answers in narrow areas.
+- **Use native DSH sessions**: search models grouped by provider, with price badges and a clear current selection. The panel and floating window share the conversation and input draft.
+- **Ask with course context**: messages automatically include relevant saved course documents. Copy messages or code separately, and jump back to the latest reply.
 - **Review and recover saves**: one-click saving of current edits, backups before writes, external-change alerts, and history restoration.
 
 The app displays existing records. Mastery decisions, tutor evaluations, and new lessons are supplied by the tutor or learning agent.
@@ -91,6 +93,12 @@ Teaching and answer documents share a filename prefix and directory so the app c
 Click headings, text, checklists, or tables to edit directly; double-click inline math to edit it. Document information and controls sit at the bottom, with reading settings, a night theme, and 「专注」 (Focus). Press `Esc` or use the exit control to leave focus mode.
 
 ![Edit headings, checklists, tables, math, and code directly](docs/screenshots/visual-editor.png)
+
+### Adjusting the pane layout
+
+Drag the separator between the lesson and answers, or between the workspace and DSH, to resize the panes. Double-click a separator to restore its default width. Layout is remembered for each learning workspace and restored when you reopen that directory.
+
+When the lesson and answer area becomes narrow, the title bar offers 「教学 / 本轮作答」 (Lesson / Current answers) controls. Switching views preserves typed answers. You can also focus a separator with `Tab` and adjust it with the left and right arrow keys.
 
 ### Code blocks
 
@@ -181,11 +189,19 @@ Start **DeepSeek Harness Desktop**, configure an available model, and keep its m
 
 Your local DSH manages the model catalog, accounts, and quotas. Save your answers before sending an evaluation request so the learning agent can read the document.
 
+**Choosing a model.** Click the model name below the message field to search model or provider names. Results are grouped by provider, show price badges supplied by DSH, and mark the current model with a check. Use arrow keys to navigate, `Enter` to confirm, and `Esc` to close. Switching is disabled while a reply is being generated; a failed switch keeps the previous model.
+
+**Automatic course context.** Each message includes relevant saved course documents, such as the teaching guide, student answers, learning profile, and learning rules. No extra quote button is needed. Unsaved edits are not included as document context, so save question-based answers before requesting evaluation.
+
+<img src="docs/screenshots/composer.png" alt="Simplified DSH composer with model selection and send; course context is automatic" width="420">
+
+**Reading and sending.** `Enter` sends; `Shift+Enter` inserts a new line. During generation, the send button becomes a stop button. Scrolling up preserves your reading position; click 「回到最新 ↓」 to follow new replies again. Copy an entire message below its content, or copy an individual code block, with visible copy feedback.
+
 [dsh-stg-learning](https://github.com/wildcat430524/dsh-stg-learning) is a separate DSH learning-management plugin for organizing workspaces and sessions. It is not required to connect STG Desk to DSH.
 
-Switch the panel to a floating window that can stay on top, keeping the same session, model, and input draft. The screenshot shows the window before connection.
+Switch the panel to a floating window that can stay on top, keeping the same session, model, and input draft. The screenshot uses a demonstration session and model catalog to show model selection in the floating window.
 
-<img src="docs/screenshots/dsh-floating.png" alt="DSH floating window before connection" width="420">
+<img src="docs/screenshots/dsh-floating.png" alt="DSH floating window and model picker using demonstration data" width="420">
 
 <details>
 <summary><strong>DSH version and connection settings</strong></summary>
@@ -261,6 +277,8 @@ npm start
 | `npm test` | Run parsing, navigation, file-saving, draft, DSH protocol, and editor highlighting/math tests |
 | `npm run test:desktop` | Build and run the Electron desktop smoke checks |
 | `npx electron tests/answer-layout-ui.cjs` | After building, verify question switching, draft recovery, focused answering, and round saving |
+| `npx electron tests/model-picker-ui.cjs` | After building, check model search, failed-switch recovery, keyboard controls, and floating-window zoom |
+| `npx electron tests/ui-system-ui.cjs` | After building, check pane resizing, narrow-area switching, conversation reading, and popup focus |
 | `npm run pack` | Create a Windows directory build; keep the entire `release/win-unpacked/` directory when running it |
 | `npm run dist` | Create `release/STG-Desk-<version>-Windows.exe` |
 
