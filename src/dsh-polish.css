@@ -21,10 +21,8 @@
 .dsh-input-box:focus-within{background:#fff;border-color:#aac6f1;box-shadow:0 0 0 3px #a8c9ff0d,0 7px 23px #719bd520}
 .dsh-input-box textarea{min-height:61px;padding:4px 6px 10px;font-size:14px;color:#4d5765;line-height:1.75;font-weight:400}
 .dsh-input-box textarea::placeholder{color:#a0a5af;font-weight:500}
-.dsh-input-tools{gap:6px;min-height:35px}
-.dsh-input-tools #dsh-quote{display:grid;place-items:center;width:31px;height:32px;flex-shrink:0;font-size:23px;color:#58616d;border-radius:10px;transition:background-color 160ms,transform 160ms}
-.dsh-input-tools #dsh-quote:hover{background:#f2f4f7;transform:translateY(-1px)}
-.dsh-model-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:27px;height:18px;border-left:1px solid #e3e7ec;padding-left:7px;color:#727b89;pointer-events:none}
+.dsh-input-tools{gap:6px;min-height:35px;padding-left:6px}
+.dsh-model-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:18px;height:18px;color:#727b89;pointer-events:none}
 .dsh-input-tools select{width:0;max-width:none;flex:1;color:#707887;font-weight:500;font-size:11px;padding-left:0;height:32px;cursor:pointer}
 .dsh-input-tools #dsh-send{width:35px;height:35px;border-radius:50%;padding:0;display:grid;place-items:center;flex-shrink:0;color:#fff;background:#414955;box-shadow:0 2px 5px #303c5412;transition:background-color 160ms,transform 160ms,box-shadow 160ms}
 .dsh-input-tools #dsh-send:not(:disabled):hover{background:#303b4b;transform:translateY(-1px);box-shadow:0 4px 9px #303c5420}
