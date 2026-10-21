@@ -1,14 +1,16 @@
 import {onEscape,isComposing} from './ui-interactions';
+import {i18n} from './i18n.js';
 
 // Keep the native value as the bridge to DSH; render the menu outside the dock
 // so neither the conversation scroll area nor a narrow window can clip it.
 export function mountModelPicker({select,icon,onChange,onError}){
+  const t=(key,params)=>i18n.t(key,params);
   select.hidden=true;select.tabIndex=-1;select.setAttribute('aria-hidden','true');
   const trigger=document.createElement('button');trigger.id='dsh-model-trigger';trigger.type='button';
   trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls','dsh-model-picker');
   trigger.innerHTML='<span class="model-trigger-label"></span>'+icon('<path d="m7 10 5 5 5-5"/>',14);select.after(trigger);
-  const panel=document.createElement('div');panel.id='dsh-model-picker';panel.hidden=true;panel.className='model-picker';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','选择模型');
-  panel.innerHTML=`<header class="model-picker-heading"><strong>选择模型</strong><span class="model-picker-count"></span></header><div class="model-search-wrap">${icon('<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',17)}<input id="dsh-model-search" type="search" placeholder="搜索模型或服务商" aria-label="搜索模型或服务商" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="dsh-model-list" autocomplete="off" spellcheck="false"></div><div id="dsh-model-list" role="listbox" aria-label="可用模型"></div><div class="model-picker-empty" hidden>没有匹配的模型<small>试试模型名称或服务商</small></div><footer class="model-picker-footer"><span>↑ ↓ 选择 <span class="model-key">Enter</span> 确认</span><span><span class="model-key">Esc</span> 关闭</span></footer><div class="model-picker-feedback" role="status"></div>`;
+  const panel=document.createElement('div');panel.id='dsh-model-picker';panel.hidden=true;panel.className='model-picker';panel.setAttribute('role','dialog');panel.setAttribute('aria-label',t('picker.title'));
+  panel.innerHTML=`<header class="model-picker-heading"><strong>${t('picker.title')}</strong><span class="model-picker-count"></span></header><div class="model-search-wrap">${icon('<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',17)}<input id="dsh-model-search" type="search" placeholder="${escapeAttr(t('picker.search'))}" aria-label="${escapeAttr(t('picker.search'))}" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="dsh-model-list" autocomplete="off" spellcheck="false"></div><div id="dsh-model-list" role="listbox" aria-label="${escapeAttr(t('picker.listAria'))}"></div><div class="model-picker-empty" hidden>${t('picker.empty')}<small>${t('picker.emptyHint')}</small></div><footer class="model-picker-footer"><span>${t('picker.footerSelect')} <span class="model-key">Enter</span> ${t('picker.footerConfirm')}</span><span><span class="model-key">Esc</span> ${t('picker.footerClose')}</span></footer><div class="model-picker-feedback" role="status"></div>`;
   document.body.append(panel);
   const search=panel.querySelector('input'),list=panel.querySelector('[role=listbox]'),empty=panel.querySelector('.model-picker-empty'),feedback=panel.querySelector('.model-picker-feedback');
   let models=[],filtered=[],active=-1,lastKey='',pending=false,open=false,scope='';
@@ -48,7 +50,7 @@ export function mountModelPicker({select,icon,onChange,onError}){
       row.addEventListener('click',()=>choose(model));group.append(row);
     }
     empty.hidden=!!filtered.length;list.hidden=!filtered.length;
-    panel.querySelector('.model-picker-count').textContent=query?`${filtered.length} / ${models.length}`:`${models.length} 个可用`;
+    panel.querySelector('.model-picker-count').textContent=query?t('picker.countFiltered',{shown:filtered.length,total:models.length}):t('picker.count',{n:models.length});
     const selected=filtered.findIndex(model=>model.id===select.value);activate(selected>=0?selected:filtered.length?0:-1);
   }
   function close(restore=false){
@@ -62,15 +64,16 @@ export function mountModelPicker({select,icon,onChange,onError}){
     if(pending||select.disabled)return;
     if(model.id===select.value){close(true);return;}
     const previous=select.value,requestScope=scope;let restore=false;
-    pending=true;search.disabled=true;panel.setAttribute('aria-busy','true');feedback.textContent='正在切换模型…';
+    pending=true;search.disabled=true;panel.setAttribute('aria-busy','true');feedback.textContent=t('picker.switching');
     try{await onChange(model.id);if(scope===requestScope){select.value=model.id;restore=open;close();}}
-    catch(error){if(scope===requestScope){select.value=previous;feedback.textContent='切换失败，请重试';onError(error);}}
+    catch(error){if(scope===requestScope){select.value=previous;feedback.textContent=t('picker.switchFailed');onError(error);}}
     finally{pending=false;search.disabled=false;panel.removeAttribute('aria-busy');sync();if(open)search.focus({preventScroll:true});else if(restore&&!trigger.disabled)trigger.focus({preventScroll:true});}
   }
   function sync(nextScope=scope){
     if(nextScope!==scope){scope=nextScope;close();}
     trigger.disabled=select.disabled||pending;const selected=select.selectedOptions[0];
-    trigger.querySelector('.model-trigger-label').textContent=selected?.textContent||'连接后选择模型';trigger.title=selected?.textContent||'切换模型';trigger.setAttribute('aria-label','切换模型，当前：'+trigger.title);
+    const label=selected?.textContent||t('picker.triggerFallback');
+    trigger.querySelector('.model-trigger-label').textContent=label;trigger.title=label;trigger.setAttribute('aria-label',t('picker.triggerAria',{model:label}));
     const key=select.innerHTML+'\0'+select.value;
     if(key!==lastKey){lastKey=key;models=[...select.options].filter(o=>o.value).map(o=>({id:o.value,label:o.textContent,provider:o.parentElement.label||'DSH'}));if(open)render();}
     if(select.disabled||!trigger.getClientRects().length)close();else if(open)position();
@@ -94,5 +97,22 @@ export function mountModelPicker({select,icon,onChange,onError}){
   window.addEventListener('resize',position);window.addEventListener('blur',()=>close());
   const observer=new ResizeObserver(position);observer.observe(trigger);
   select.addEventListener('change',()=>onChange(select.value).catch(onError));
+  // Repaint labels only. The picker stays open, the search text and the currently
+  // highlighted option are preserved so a language switch cannot drop a choice.
+  i18n.subscribe(()=>{
+    panel.setAttribute('aria-label',t('picker.title'));
+    panel.querySelector('.model-picker-heading strong').textContent=t('picker.title');
+    search.placeholder=t('picker.search');search.setAttribute('aria-label',t('picker.search'));
+    list.setAttribute('aria-label',t('picker.listAria'));
+    panel.querySelector('.model-picker-empty').firstChild.textContent=t('picker.empty');
+    panel.querySelector('.model-picker-empty small').textContent=t('picker.emptyHint');
+    panel.querySelector('.model-picker-footer').innerHTML=`<span>${t('picker.footerSelect')} <span class="model-key">Enter</span> ${t('picker.footerConfirm')}</span><span><span class="model-key">Esc</span> ${t('picker.footerClose')}</span>`;
+    if(pending)feedback.textContent=t('picker.switching');
+    sync();
+  });
   return {sync,close};
+}
+
+function escapeAttr(value){
+  return String(value).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }

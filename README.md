@@ -20,9 +20,15 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 阅读、编辑和作答可以独立使用，DSH 对话按需连接。学习资料仍保存在原目录中，便于导师或学习 Agent 接着读取和更新。
 
-> 本文对应 [v0.3.18](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.18)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
+> 本文对应 [v0.3.18](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.18)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面可切换简体中文（默认）或英文。
 
 v0.3.18 使用精简的对话输入区，模型选择与发送按钮保持对齐；课程资料自动关联。支持搜索模型与服务商、调整面板宽度，以及在窄区域切换教学和作答。
+
+### 界面语言
+
+顶栏提供 **中文 / English** 切换，导入文件夹前后都可以使用。选择会保存在本机，下次打开应用时自动恢复；独立文档窗口与 DSH 小窗使用同一语言。切换语言会立即更新按钮、对话框、提示文字和状态信息，不会刷新页面，也不会改动已输入的草稿答案、当前文档或 DSH 会话。未选择英文时仍保持中文界面。
+
+只有应用界面会被翻译。课程正文、题目、Markdown、文件名与目录名、代码、解析规则和学习记录都保持原文，包括 `01_教学引导.md` 这类中文目录约定。
 
 ## 界面预览
 
@@ -280,6 +286,7 @@ npm start
 | `npx electron tests/answer-layout-ui.cjs` | 构建后验证切题、草稿恢复、专注作答与整轮保存 |
 | `npx electron tests/model-picker-ui.cjs` | 构建后验证模型搜索、切换失败恢复、键盘操作及小窗缩放 |
 | `npx electron tests/ui-system-ui.cjs` | 构建后验证面板宽度、窄区域切换、对话阅读与弹层焦点 |
+| `npx electron tests/english-ui.cjs` | 构建后验证中英文切换、偏好恢复、独立窗口同步与英文界面文案 |
 | `npm run pack` | 生成 Windows 目录版，使用时保留整个 `release/win-unpacked/` |
 | `npm run dist` | 生成 `release/STG-Desk-<版本号>-Windows.exe` |
 

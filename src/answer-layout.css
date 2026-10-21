@@ -263,8 +263,8 @@
   font-weight: 500;
 }
 
-.answer-prompt-hint::after { content: '展开'; }
-.answers-panel .answer-prompt[open] .answer-prompt-hint::after { content: '收起'; }
+.answer-prompt-hint::after { content: var(--answer-expand-label, '展开'); }
+.answers-panel .answer-prompt[open] .answer-prompt-hint::after { content: var(--answer-collapse-label, '收起'); }
 
 /* The prompt itself: full height, no nested viewport, no height cap. */
 .answers-panel .answer-prompt > .question-prompt {

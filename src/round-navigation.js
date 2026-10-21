@@ -1,5 +1,6 @@
 import './round-navigation.css';
 import {onEscape,isComposing} from './ui-interactions';
+import {i18n} from './i18n.js';
 
 export function mountRoundNavigation({escape,icon,onSelect}){
   const trigger=document.querySelector('#round-switch'),menu=document.querySelector('#round-menu');
@@ -7,7 +8,8 @@ export function mountRoundNavigation({escape,icon,onSelect}){
   const book=icon('<path d="M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4Z"/><path d="M13 7a3 3 0 0 1 3-3h4v15h-4a4 4 0 0 0-3 2"/>',17);
   const items=()=>[...menu.querySelectorAll('[role=menuitemradio]:not(:disabled)')];
   const isOpen=()=>menu.matches(':popover-open');
-  let initialEdge;
+  const t=(key,params)=>i18n.t(key,params);
+  let initialEdge,last={rounds:[],index:null,activePath:'',isDetached:()=>false};
   function close(restoreFocus=false){if(isOpen())menu.hidePopover();if(restoreFocus)trigger.focus({preventScroll:true});}
   onEscape(isOpen,()=>close(true),500);
   function placeAndFocus(edge){
@@ -36,14 +38,24 @@ export function mountRoundNavigation({escape,icon,onSelect}){
   });
   window.addEventListener('resize',()=>close());
   document.addEventListener('scroll',event=>{if(!menu.contains(event.target))close();},true);
-  return {update({rounds=[],index,activePath,title='',isDetached=()=>false}){
-    close();trigger.classList.toggle('hidden',!rounds.length);
-    trigger.setAttribute('aria-expanded','false');
-    trigger.setAttribute('aria-label',`切换本章教学轮次，当前：${title}`);
+  function render(){
+    const {rounds,index,activePath,isDetached}=last;
+    trigger.classList.toggle('hidden',!rounds.length);
+    trigger.setAttribute('aria-expanded',String(isOpen()));
+    trigger.setAttribute('aria-label',t('round.switchAria',{title:last.title||''}));
+    menu.setAttribute('aria-label',t('round.menuAria'));
     const row=(file,label,mark)=>{
       const selected=file.path===activePath,detached=isDetached(file.path);
-      return `<button type="button" role="menuitemradio" aria-checked="${selected}" tabindex="-1" data-round-file="${escape(file.path)}" ${detached?'disabled':''}><span class="round-menu-mark" aria-hidden="true">${mark}</span><span class="round-menu-label">${label}</span>${detached?'<span class="round-menu-status">窗口中</span>':selected?`<span class="round-menu-check" aria-hidden="true">${check}</span>`:''}</button>`;
+      return `<button type="button" role="menuitemradio" aria-checked="${selected}" tabindex="-1" data-round-file="${escape(file.path)}" ${detached?'disabled':''}><span class="round-menu-mark" aria-hidden="true">${mark}</span><span class="round-menu-label">${label}</span>${detached?`<span class="round-menu-status">${t('round.inWindow')}</span>`:selected?`<span class="round-menu-check" aria-hidden="true">${check}</span>`:''}</button>`;
     };
-    menu.innerHTML=`${index?row(index,'教学总入口',book)+'<div class="round-menu-divider" role="separator"></div>':''}<div class="round-menu-rounds" role="group" aria-label="已留存轮次">${rounds.map(file=>row(file,`第 ${file.number} 轮`,String(file.number).padStart(2,'0'))).join('')}</div>`;
-  }};
+    menu.innerHTML=`${index?row(index,t('round.index'),book)+'<div class="round-menu-divider" role="separator"></div>':''}<div class="round-menu-rounds" role="group" aria-label="${t('round.group')}">${rounds.map(file=>row(file,t('round.item',{n:file.number}),String(file.number).padStart(2,'0'))).join('')}</div>`;
+  }
+  function update(next){
+    if(next)last={...last,...next};
+    close();render();
+  }
+  // Relabel the menu in place on a language switch; the selected document and any
+  // open popover state stay as they are.
+  i18n.subscribe(()=>{if(isOpen())close(true);render();});
+  return {update};
 }

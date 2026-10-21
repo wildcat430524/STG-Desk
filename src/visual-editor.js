@@ -13,6 +13,7 @@ import {splitSource,assembleSource,withoutOrigins} from './visual-source.mjs';
 import {isDisplayMathBlock,renderFormula,formulaBody,normalizeFormula,replaceMathOutsideCode} from './editor-formula.mjs';
 import {createRichPlugin,installRichStyles,richPluginKey} from './editor-rich.js';
 import {highlightCode,languageRegistry} from './editor-highlight.mjs';
+import {i18n,localizeFormulaError} from './i18n.js';
 import './live-editor.css';
 
 const parser=new MarkdownIt({html:true});
@@ -28,6 +29,11 @@ const formulaSanitize={ADD_TAGS:['annotation','semantics'],ADD_ATTR:['encoding']
 
 export function createVisualEditor(element,content,onChange,options={}){
   let visual,initialJSON;
+  const t=(key,params)=>i18n.t(key,params);
+  const richLabels=()=>({
+    copy:t('editor.copyCode'),copied:t('editor.copied'),copyFailed:t('editor.copyFailed'),
+    language:t('editor.codeLanguage'),tools:t('editor.codeTools'),
+  });
   const ledger=new Map(),eol=content.includes('\r\n')?'\r\n':'\n';
   const renderEnv={path:options.path};options.renderer?.parse(content,renderEnv);
   const render=source=>options.renderer?options.renderer.render(source,{...renderEnv}):options.renderMD?options.renderMD(source,options.path):semanticParser.render(source);
@@ -42,7 +48,7 @@ export function createVisualEditor(element,content,onChange,options={}){
     const {html,error}=renderFormula(source,katex,{display:displayMode});
     if(error){
       host.textContent='';host.dataset.mathError=error;host.classList.add('edh-math-error');
-      host.textContent=`公式错误：${error}`;host.title=`${formulaBody(source)}\n${error}`;
+      host.textContent=t('editor.formulaError',{error:localizeFormulaError(error,t)});host.title=`${formulaBody(source)}\n${error}`;
       return error;
     }
     delete host.dataset.mathError;host.classList.remove('edh-math-error');
@@ -52,8 +58,8 @@ export function createVisualEditor(element,content,onChange,options={}){
   };
   const Preserved=Node.create({
     name:'preservedBlock',group:'block',atom:true,selectable:true,
-    addAttributes(){return {source:{default:''},label:{default:'特殊内容'},preview:{default:''}};},
-    parseHTML(){return [{tag:'div[data-preserved-block]',getAttrs:el=>{const source=el.getAttribute('data-preserved-source')||'';return {source,label:'保留的 Markdown 内容',preview:render(source)};}}];},
+    addAttributes(){return {source:{default:''},label:{default:''},preview:{default:''}};},
+    parseHTML(){return [{tag:'div[data-preserved-block]',getAttrs:el=>{const source=el.getAttribute('data-preserved-source')||'';return {source,label:t('editor.preserved'),preview:render(source)};}}];},
     renderHTML({node}){return ['div',{'data-preserved-block':'','data-preserved-source':node.attrs.source,class:'visual-preserved'},node.attrs.source];},
     renderText({node}){return node.attrs.source;},
     renderMarkdown(node){return node.attrs.source;},
@@ -74,7 +80,7 @@ export function createVisualEditor(element,content,onChange,options={}){
     renderText({node}){return node.attrs.source;},
     renderMarkdown(node){return node.attrs.source;},
     addNodeView(){return ({node,getPos,editor})=>{
-      const dom=document.createElement('span');dom.className='visual-math';dom.contentEditable='false';dom.title='双击编辑公式';
+      const dom=document.createElement('span');dom.className='visual-math';dom.contentEditable='false';dom.title=t('formula.editInlineTitle');
       paintFormula(dom,node.attrs.source,false);
       dom.addEventListener('dblclick',event=>{event.preventDefault();options.onMath?.({source:node.attrs.source,display:false,apply:value=>{
         const pos=getPos();if(typeof pos==='number')editor.commands.command(({tr,dispatch})=>{if(dispatch)tr.setNodeMarkup(pos,undefined,{...node.attrs,source:normalizeFormula(value,false)});return true;});
@@ -93,7 +99,7 @@ export function createVisualEditor(element,content,onChange,options={}){
     renderText({node}){return node.attrs.source;},
     renderMarkdown(node){return node.attrs.source;},
     addNodeView(){return ({node,getPos,editor})=>{
-      const dom=document.createElement('div');dom.className='visual-math-block edh-math-block';dom.contentEditable='false';dom.title='双击编辑公式块';
+      const dom=document.createElement('div');dom.className='visual-math-block edh-math-block';dom.contentEditable='false';dom.title=t('formula.editBlockTitle');
       paintFormula(dom,node.attrs.source,true);
       dom.addEventListener('dblclick',event=>{event.preventDefault();options.onMath?.({source:node.attrs.source,display:true,apply:value=>{
         const pos=getPos();if(typeof pos==='number')editor.commands.command(({tr,dispatch})=>{if(dispatch)tr.setNodeMarkup(pos,undefined,{...node.attrs,source:normalizeFormula(value,true)});return true;});
@@ -107,6 +113,7 @@ export function createVisualEditor(element,content,onChange,options={}){
     addProseMirrorPlugins(){return [createRichPlugin({
       highlight,
       registry,
+      labels:richLabels(),
       onLanguage:({pos,language,view})=>{
         const node=view.state.doc.nodeAt(pos);if(!node)return;
         view.dispatch(view.state.tr.setNodeMarkup(pos,undefined,{...node.attrs,language}));
@@ -164,7 +171,7 @@ export function createVisualEditor(element,content,onChange,options={}){
       if(semantic(manager.serialize({type:'doc',content:[json]}))!==semantic(source))throw Error('unsupported round trip');
       }
     }catch{
-      const label=part.kind==='html_block'&&/^\s*<!--/.test(source)?'文档标记':part.special?'文档元数据':/\$/.test(source)?'公式与特殊内容':'保留的 Markdown 内容';
+      const label=part.kind==='html_block'&&/^\s*<!--/.test(source)?t('editor.preservedDoc'):part.special?t('editor.preservedMeta'):/\$/.test(source)?t('editor.preservedMath'):t('editor.preserved');
       json={type:'preservedBlock',attrs:{source,label,preview:/^\s*<!--[\s\S]*?-->\s*$/.test(source)?'':render(source)}};
     }
     json.attrs={...json.attrs,sourceKey};nodes.push(json);ledger.set(sourceKey,{...part,json:null});
@@ -173,13 +180,19 @@ export function createVisualEditor(element,content,onChange,options={}){
     const json=visual.getJSON();if(JSON.stringify(json)===initialJSON)return content;
     return assembleSource(json.content||[],ledger,parts.tail,eol,node=>manager.serialize({type:'doc',content:[node]}));
   };
-  visual=new Editor({element,extensions,content:{type:'doc',content:nodes.length?nodes:[{type:'paragraph'}]},editorProps:{attributes:{class:'visual-document markdown-body','aria-label':'学习文档，所见即所得编辑',spellcheck:'false'}},onUpdate:()=>onChange(getSource()),onSelectionUpdate:()=>options.onSelection?.(visual)});
+  visual=new Editor({element,extensions,content:{type:'doc',content:nodes.length?nodes:[{type:'paragraph'}]},editorProps:{attributes:{class:'visual-document markdown-body','aria-label':t('doc.editorAria'),spellcheck:'false'}},onUpdate:()=>onChange(getSource()),onSelectionUpdate:()=>options.onSelection?.(visual)});
   initialJSON=JSON.stringify(visual.getJSON());
   for(const node of visual.getJSON().content||[]){const entry=ledger.get(node.attrs?.sourceKey);if(entry)entry.json=JSON.stringify(withoutOrigins(node));}
   visual.getSource=getSource;
   // Force a decoration rebuild after the decorations are first mounted, so the
   // code toolbar and colours exist without waiting for the first edit.
   visual.view.dispatch(visual.state.tr.setMeta(richPluginKey,{rebuild:true}));
+  // Rebuild only the non-document toolbar decorations after a language switch.
+  // Formatting and saved Markdown are unaffected; only the widget labels change.
+  i18n.subscribe(()=>{
+    element.setAttribute('aria-label',t('doc.editorAria'));
+    visual.view.dispatch(visual.state.tr.setMeta(richPluginKey,{rebuild:true,labels:richLabels()}));
+  });
   visual.jumpToSource=offset=>{
     let index=0,target=0;
     assembleSource(visual.getJSON().content||[],ledger,parts.tail,eol,node=>manager.serialize({type:'doc',content:[node]}),range=>{if(range.from<=offset)index=range.index;});

@@ -1,11 +1,14 @@
 import {onEscape,isComposing,mountRovingGroup} from './ui-interactions';
+import {i18n} from './i18n.js';
 
 export function mountPaneLayout(){
   if(document.body.matches('.dsh-only,.document-only'))return;
   const panel=document.querySelector('#document'),row=panel.querySelector('.doc-body'),answer=document.querySelector('#answers-panel');
   const application=document.querySelector('.application-body'),dsh=document.querySelector('#dsh-host');
-  const switcher=document.createElement('div');switcher.className='document-pane-switch';switcher.setAttribute('role','group');switcher.setAttribute('aria-label','切换教学与作答');
-  switcher.innerHTML='<button type="button" data-pane="reading" aria-pressed="true" aria-controls="content-area">教学</button><button type="button" data-pane="answer" aria-pressed="false" aria-controls="answers-panel">本轮作答</button>';
+  const t=(key,params)=>i18n.t(key,params);
+  const switcher=document.createElement('div');switcher.className='document-pane-switch';switcher.setAttribute('role','group');
+  switcher.setAttribute('aria-label',t('doc.readingAria'));
+  switcher.innerHTML=`<button type="button" data-pane="reading" aria-pressed="true" aria-controls="content-area">${t('doc.readingPane')}</button><button type="button" data-pane="answer" aria-pressed="false" aria-controls="answers-panel">${t('doc.answerPane')}</button>`;
   panel.querySelector('.document-heading').append(switcher);
   mountRovingGroup(switcher);
   let root='',preferences={},view='reading',drag=null,frame=0;
@@ -14,11 +17,11 @@ export function mountPaneLayout(){
   const clamp=(value,min,max)=>Math.max(min,Math.min(Math.max(min,max),value));
   function separator(id,label,before,parent){
     const element=document.createElement('div');element.id=id;element.className='pane-separator';element.tabIndex=0;
-    element.setAttribute('role','separator');element.setAttribute('aria-orientation','vertical');element.setAttribute('aria-label',label);element.setAttribute('aria-valuemin','0');element.setAttribute('aria-valuemax','100');element.title='拖动调整宽度；双击恢复默认；方向键微调';
+    element.setAttribute('role','separator');element.setAttribute('aria-orientation','vertical');element.setAttribute('aria-label',label);element.setAttribute('aria-valuemin','0');element.setAttribute('aria-valuemax','100');element.title=t('doc.separatorTitle');
     parent.insertBefore(element,before);return element;
   }
-  const answerHandle=separator('answer-resizer','调整教学与作答宽度',answer,row);
-  const dshHandle=separator('dsh-resizer','调整工作台与 DSH 宽度',dsh,application);
+  const answerHandle=separator('answer-resizer',t('doc.answerPanelResize'),answer,row);
+  const dshHandle=separator('dsh-resizer',t('doc.dshPanelResize'),dsh,application);
   const hasAnswer=()=>!document.querySelector('#answer-focus').disabled&&!document.body.matches('.answer-detached,.answer-document-active');
   function update(){
     frame=0;
@@ -33,7 +36,8 @@ export function mountPaneLayout(){
     switcher.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.pane===view)));
     for(const [handle,total,rightWidth] of [[answerHandle,width,answerWidth],[dshHandle,available,dshWidth]]){
       const left=Math.round(100*(1-rightWidth/Math.max(1,total)));
-      handle.setAttribute('aria-valuenow',String(left));handle.setAttribute('aria-valuetext',`${handle===answerHandle?'教学':'工作台'} ${left}%，${handle===answerHandle?'作答':'DSH'} ${100-left}%`);
+      handle.setAttribute('aria-valuenow',String(left));
+      handle.setAttribute('aria-valuetext',t('doc.separatorValue',{leftLabel:handle===answerHandle?t('doc.readingPane'):t('breadcrumb.workspace'),left,rightLabel:handle===answerHandle?t('doc.answerPane'):'DSH',right:100-left}));
     }
   }
   const schedule=()=>{if(!frame)frame=requestAnimationFrame(update);};
@@ -97,5 +101,14 @@ export function mountPaneLayout(){
   new MutationObserver(schedule).observe(document.body,{attributes:true,attributeFilter:['class']});
   new MutationObserver(schedule).observe(document.querySelector('#answer-focus'),{attributes:true,attributeFilter:['disabled']});
   new MutationObserver(schedule).observe(panel,{attributes:true,attributeFilter:['class']});
+  i18n.subscribe(()=>{
+    switcher.setAttribute('aria-label',t('doc.readingAria'));
+    switcher.querySelector('[data-pane="reading"]').textContent=t('doc.readingPane');
+    switcher.querySelector('[data-pane="answer"]').textContent=t('doc.answerPane');
+    answerHandle.setAttribute('aria-label',t('doc.answerPanelResize'));
+    dshHandle.setAttribute('aria-label',t('doc.dshPanelResize'));
+    for(const handle of [answerHandle,dshHandle])handle.title=t('doc.separatorTitle');
+    update();
+  });
   schedule();
 }
