@@ -1,4 +1,14 @@
 // DOM-free source ledger. Native editing never rewrites untouched blocks.
+//
+// Tiptap's Markdown serializer always writes one line break inside a fence, so an
+// empty fence (`\`\`\`python\n\`\`\``, the answer template's placeholder) comes back
+// as a fence holding a single blank line. That blank line is not content: collapse
+// it so the placeholder stays a real, editable code block instead of falling back
+// to an opaque preserved block. Only empty code blocks are ever relaxed.
+export function normalizeEmptyFence(text){
+  return String(text??'').replace(/^([ \t]*(?:`{3,}|~{3,})[^\n]*)\r?\n\r?\n([ \t]*(?:`{3,}|~{3,})[ \t]*)$/,'$1\n$2');
+}
+export const isEmptyCodeBlock=node=>node?.type==='codeBlock'&&!node.content?.length;
 export function withoutOrigins(node){
   const copy={...node};
   if(copy.attrs){copy.attrs={...copy.attrs};delete copy.attrs.sourceKey;if(!Object.keys(copy.attrs).length)delete copy.attrs;}

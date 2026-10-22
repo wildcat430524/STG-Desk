@@ -20,9 +20,9 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 阅读、编辑和作答可以独立使用，DSH 对话按需连接。学习资料仍保存在原目录中，便于导师或学习 Agent 接着读取和更新。
 
-> 本文对应 [v0.3.18](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.18)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
+> 本文对应 [v0.3.19](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.19)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。应用界面目前为中文。
 
-v0.3.18 使用精简的对话输入区，模型选择与发送按钮保持对齐；课程资料自动关联。支持搜索模型与服务商、调整面板宽度，以及在窄区域切换教学和作答。
+v0.3.19 修复学生回答里空代码块占位无法编辑的问题，并校正切换题目时作答框的对齐。此前版本已支持精简对话输入区、模型与服务商搜索、面板宽度调整和窄区域切换教学与作答。
 
 ## 界面预览
 
@@ -134,7 +134,7 @@ C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
 导入方式：
 
 - **从源码运行**：导入 `demo/EditorShowcase` 目录。
-- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.18/STG-Desk-0.3.18-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
+- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.19/STG-Desk-0.3.19-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
 - 导入后「选择课程」会列出这门演示课程（路径为 `我的学习/学科/Markdown/01-复杂内容演示/`），与内置的 [示例课程](demo/StepsToGreat) 相互独立。
 
 > 演示中的 Java 示例按 Java 17+ 语法编写，仅经过审查，未在本机 Java 11 环境编译；Python 示例已实际运行。示例用于展示排版与编辑效果，不代表学习评估。
@@ -278,6 +278,7 @@ npm start
 | `npm run test:desktop` | 构建并运行 Electron 桌面冒烟验收 |
 | `npx electron tests/save-current-ui.cjs` | 构建后验证一键保存、旧内容恢复、全文预览与 Ctrl+S |
 | `npx electron tests/answer-layout-ui.cjs` | 构建后验证切题、草稿恢复、专注作答与整轮保存 |
+| `npx electron tests/answer-placeholder-ui.cjs` | 构建后验证模板空代码围栏（```python）仍可编辑、清空后保持原文且作答框有尺寸 |
 | `npx electron tests/model-picker-ui.cjs` | 构建后验证模型搜索、切换失败恢复、键盘操作及小窗缩放 |
 | `npx electron tests/ui-system-ui.cjs` | 构建后验证面板宽度、窄区域切换、对话阅读与弹层焦点 |
 | `npm run pack` | 生成 Windows 目录版，使用时保留整个 `release/win-unpacked/` |

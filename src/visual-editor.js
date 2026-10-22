@@ -9,7 +9,7 @@ import {TextSelection} from '@tiptap/pm/state';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import katex from 'katex';
-import {splitSource,assembleSource,withoutOrigins} from './visual-source.mjs';
+import {splitSource,assembleSource,withoutOrigins,normalizeEmptyFence,isEmptyCodeBlock} from './visual-source.mjs';
 import {isDisplayMathBlock,renderFormula,formulaBody,normalizeFormula,replaceMathOutsideCode} from './editor-formula.mjs';
 import {createRichPlugin,installRichStyles,richPluginKey} from './editor-rich.js';
 import {highlightCode,languageRegistry} from './editor-highlight.mjs';
@@ -161,7 +161,14 @@ export function createVisualEditor(element,content,onChange,options={}){
       if(special)throw Error('preserve');
       const parsed=manager.parse(input);if(parsed.content?.length!==1)throw Error('multiple blocks');
       json=parsed.content[0];restoreMath(json,formulas);
-      if(semantic(manager.serialize({type:'doc',content:[json]}))!==semantic(source))throw Error('unsupported round trip');
+      // An EMPTY fence is the answer template's placeholder (`\`\`\`python\n\`\`\``),
+      // but the serializer always writes one line break inside a fence. Accept the
+      // collapsed form so the placeholder stays a real, editable code block instead
+      // of degrading to an opaque preserved block (which renders as a bare dashed
+      // marker with no code surface). Non-empty code blocks keep the strict check.
+      const roundTrip=manager.serialize({type:'doc',content:[json]});
+      const exact=semantic(roundTrip)===semantic(source);
+      if(!exact&&!(isEmptyCodeBlock(json)&&semantic(normalizeEmptyFence(roundTrip))===semantic(source)))throw Error('unsupported round trip');
       }
     }catch{
       const label=part.kind==='html_block'&&/^\s*<!--/.test(source)?'文档标记':part.special?'文档元数据':/\$/.test(source)?'公式与特殊内容':'保留的 Markdown 内容';
@@ -169,9 +176,16 @@ export function createVisualEditor(element,content,onChange,options={}){
     }
     json.attrs={...json.attrs,sourceKey};nodes.push(json);ledger.set(sourceKey,{...part,json:null});
   }
+  // Serializing a single block for the ledger. An emptied code block must keep
+  // the template's one-line shape (`\`\`\`python\n\`\`\``) instead of gaining a blank
+  // line, so a cleared answer area still looks and round-trips like the original.
+  const serializeBlock=node=>{
+    const text=manager.serialize({type:'doc',content:[node]});
+    return isEmptyCodeBlock(node)?normalizeEmptyFence(text):text;
+  };
   const getSource=()=>{
     const json=visual.getJSON();if(JSON.stringify(json)===initialJSON)return content;
-    return assembleSource(json.content||[],ledger,parts.tail,eol,node=>manager.serialize({type:'doc',content:[node]}));
+    return assembleSource(json.content||[],ledger,parts.tail,eol,serializeBlock);
   };
   visual=new Editor({element,extensions,content:{type:'doc',content:nodes.length?nodes:[{type:'paragraph'}]},editorProps:{attributes:{class:'visual-document markdown-body','aria-label':'学习文档，所见即所得编辑',spellcheck:'false'}},onUpdate:()=>onChange(getSource()),onSelectionUpdate:()=>options.onSelection?.(visual)});
   initialJSON=JSON.stringify(visual.getJSON());
@@ -182,7 +196,7 @@ export function createVisualEditor(element,content,onChange,options={}){
   visual.view.dispatch(visual.state.tr.setMeta(richPluginKey,{rebuild:true}));
   visual.jumpToSource=offset=>{
     let index=0,target=0;
-    assembleSource(visual.getJSON().content||[],ledger,parts.tail,eol,node=>manager.serialize({type:'doc',content:[node]}),range=>{if(range.from<=offset)index=range.index;});
+    assembleSource(visual.getJSON().content||[],ledger,parts.tail,eol,serializeBlock,range=>{if(range.from<=offset)index=range.index;});
     let current=0;visual.state.doc.forEach((node,pos)=>{if(current++===index)target=pos;});
     visual.view.dispatch(visual.state.tr.setSelection(TextSelection.near(visual.state.doc.resolve(Math.min(target+1,visual.state.doc.content.size)))).scrollIntoView());visual.commands.focus();
   };

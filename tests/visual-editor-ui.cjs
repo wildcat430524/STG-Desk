@@ -48,10 +48,11 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     assert.equal(await js("document.querySelector('#save-status').textContent"),'已保存');
     await key('End');await win.webContents.insertText('（编辑验证）');
     await wait("document.querySelector('#save-status').textContent.includes('待保存')");
-    await wait("document.querySelector('#draft-status').textContent==='草稿已自动保存'");
-    assert.equal(await fs.readFile(filename,'utf8'),fixture);
+    // The draft indicator is cleared once a draft is safely persisted, so assert
+    // on the stored draft itself instead of on a transient label.
     const expected=fixture.replace('01 学生回答','01 学生回答（编辑验证）');
-    assert.equal(await js(`window.stg.draftGet(${JSON.stringify(relative)}).then(d=>d.content)`),expected);
+    await wait(`window.stg.draftGet(${JSON.stringify(relative)}).then(d=>d&&d.content===${JSON.stringify(expected)})`);
+    assert.equal(await fs.readFile(filename,'utf8'),fixture);
     assert.equal(await save(),expected);
     evidence.push('Native click keeps the heading rendered; Chinese insertion updates only the title; draft and saved CRLF Markdown preserve all other bytes');
     await js("document.querySelector('#editor .tiptap').focus()");await key('Z',['control']);
@@ -87,11 +88,28 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
     await js("document.querySelector('[data-file=\"我的学习/学科/Python/01-认识变量/01_教学引导.md\"]').click()");await wait("!!document.querySelector('#editor .tiptap')&&document.querySelector('#status-left').textContent.endsWith('01_教学引导.md')");
     assert.equal(await js("document.querySelectorAll('.view-toolbar,.format-toolbar,.reader-tools,[data-mode],[data-format]').length"),0);
     await capture('teaching.png');
-    win.setSize(1050,760);await capture('narrow.png');
+    // Narrow layouts swap the lesson and the answers through the pane switch
+    // (v0.3.17+), so the pane is toggled rather than permanently hidden.
+    win.setMinimumSize(640,600);
+    win.setSize(760,760);
+    await wait("document.querySelector('#document').dataset.paneNarrow==='true'");
+    await capture('narrow.png');
     assert.equal(await js("document.documentElement.scrollWidth>innerWidth"),false);
     assert.equal(await js("document.querySelector('.document-footer').scrollWidth>document.querySelector('.document-footer').clientWidth"),false);
+    assert.equal(await js("getComputedStyle(document.querySelector('.document-pane-switch')).display"),'flex');
     assert.equal(await js("getComputedStyle(document.querySelector('#answers-panel')).display"),'none');
-    win.setSize(1460,960);
+    await js("document.querySelector('.document-pane-switch [data-pane=answer]').click()");
+    await wait("getComputedStyle(document.querySelector('#answers-panel')).display!=='none'");
+    // This fixture's answer document has no numbered questions, so assert on the
+    // pane itself rather than on answer cards.
+    assert.ok(await js("document.querySelector('#answers-panel').getBoundingClientRect().width>200"));
+    assert.equal(await js("document.querySelector('.document-pane-switch [data-pane=answer]').getAttribute('aria-pressed')"),'true');
+    assert.equal(await js("document.documentElement.scrollWidth>innerWidth"),false);
+    await js("document.querySelector('.document-pane-switch [data-pane=reading]').click()");
+    await wait("getComputedStyle(document.querySelector('#answers-panel')).display==='none'");
+    evidence.push('Narrow width swaps the lesson and answers through the pane switch instead of losing the answer pane');
+    win.setMinimumSize(1050,720);
+    win.setSize(1460,960);await wait("document.querySelector('#document').dataset.paneNarrow==='false'");
     const mixed='\uFEFF---\r\ncourse: Java\r\n---\r\n\r\n# 元数据测试\r\n\r\n正文 [资料][ref]。\r\n\r\n[ref]: ./资料.md "标题"\r\n\r\n<!-- s2g:end -->\r\n';
     await openFixture('元数据测试.md',mixed);
     await js("(()=>{const e=document.querySelector('#editor .tiptap').editor;let pos;e.state.doc.descendants((n,p)=>{if(n.type.name==='heading')pos=p+n.nodeSize-1});e.commands.setTextSelection(pos);e.view.focus()})()");await win.webContents.insertText('修改');

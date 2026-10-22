@@ -61,6 +61,13 @@ export function mountAnswerEditor(input, { context = '', language = 'auto', onLa
   const resize = new ResizeObserver(sync); resize.observe(input);
   const preferences = new MutationObserver(sync);
   preferences.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'data-app-theme'] });
+  // Switching questions toggles `.hidden` on the card. A ResizeObserver only
+  // reports after that frame paints, so the mirror would briefly keep the 0px
+  // size it took while hidden and the text under the caret would disappear for
+  // one frame. Re-sync as soon as the card's visibility changes.
+  const card = input.closest('.question-card');
+  const visibility = new MutationObserver(sync);
+  if (card) visibility.observe(card, { attributes: true, attributeFilter: ['class'] });
   paint();
-  return () => { resize.disconnect(); preferences.disconnect(); input.removeEventListener('keydown', indent); input.removeEventListener('input', paint); input.removeEventListener('scroll', sync); };
+  return () => { resize.disconnect(); preferences.disconnect(); visibility.disconnect(); input.removeEventListener('keydown', indent); input.removeEventListener('input', paint); input.removeEventListener('scroll', sync); };
 }

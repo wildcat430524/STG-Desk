@@ -71,3 +71,35 @@ test('a mixed paragraph using $$ inline is never treated as a block formula',asy
   for(const block of parts.blocks)assert.equal(isDisplayMathBlock(block.source),false,`mixed content misread as a block formula: ${JSON.stringify(block.source)}`);
   assert.equal(assembleSource(nodes,ledger,parts.tail,'\n',()=>{throw Error('untouched block serialized');}),source);
 });
+test('an empty answer fence is recognised as an editable placeholder, not as opaque content',async()=>{
+  const {normalizeEmptyFence,isEmptyCodeBlock}=await load();
+  const semanticParser=new MarkdownIt({html:false});
+  const semantic=text=>JSON.stringify(semanticParser.parse(text,{}).map(t=>({type:t.type,content:t.type==='inline'?null:t.content,info:t.info,attrs:t.attrs})));
+  // Tiptap's serializer always writes one line break inside a fence, so the
+  // template's ```python placeholder comes back with a single blank line.
+  assert.equal(normalizeEmptyFence('```python\n\n```'),'```python\n```');
+  assert.equal(normalizeEmptyFence('~~~text\n\n~~~'),'~~~text\n~~~');
+  assert.equal(normalizeEmptyFence('```python\nprint(1)\n```'),'```python\nprint(1)\n```');
+  assert.equal(normalizeEmptyFence('```python\n\nprint(1)\n\n```'),'```python\n\nprint(1)\n\n```');
+  assert.equal(semantic(normalizeEmptyFence('```python\n\n```')),semantic('```python\n```'));
+  assert.equal(isEmptyCodeBlock({type:'codeBlock',content:[]}),true);
+  assert.equal(isEmptyCodeBlock({type:'codeBlock'}),true);
+  assert.equal(isEmptyCodeBlock({type:'codeBlock',content:[{type:'text',text:'print(1)'}]}),false);
+  assert.equal(isEmptyCodeBlock({type:'paragraph',content:[]}),false);
+});
+test('an empty fence keeps the template bytes while neighbouring blocks are edited',async()=>{
+  const {splitSource,assembleSource,withoutOrigins}=await load();
+  const source='### 问题 2：写一段代码\n\n**我的回答**\n\n```python\n```\n\n---\n';
+  const parts=splitSource(source,parser),{ledger,nodes}=model(parts,withoutOrigins);
+  const fenceIndex=parts.blocks.findIndex(b=>b.kind==='fence');
+  assert.ok(fenceIndex>=0,'expected the placeholder fence to split as its own block');
+  // The empty fence is now a real codeBlock node whose serialization differs by
+  // one blank line; the ledger must keep the untouched template bytes.
+  nodes[fenceIndex]={type:'codeBlock',attrs:{sourceKey:String(fenceIndex),language:'python'}};
+  ledger.set(String(fenceIndex),{...parts.blocks[fenceIndex],json:JSON.stringify(withoutOrigins(nodes[fenceIndex]))});
+  nodes[0]={...nodes[0],content:[{type:'text',text:'### 问题 2：写一段代码（已更新）'}]};
+  const serialize=node=>node.type==='codeBlock'?'```python\n\n```':node.content[0].text;
+  const out=assembleSource(nodes,ledger,parts.tail,'\n',serialize);
+  assert.equal(out,source.replace('### 问题 2：写一段代码','### 问题 2：写一段代码（已更新）'));
+  assert.ok(out.includes('```python\n```\n'),'the placeholder fence keeps its original single line break');
+});
