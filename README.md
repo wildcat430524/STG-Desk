@@ -20,7 +20,7 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 阅读、编辑和作答可以独立使用，DSH 对话按需连接。学习资料仍保存在原目录中，便于导师或学习 Agent 接着读取和更新。
 
-> 本文对应 [v0.3.19](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.19)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。当前开发版本新增简体中文（默认）与英文界面切换。
+> 本文对应 [v0.3.20](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.20)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。界面支持简体中文（默认）与英文切换。
 
 v0.3.19 修复学生回答里空代码块占位无法编辑的问题，并校正切换题目时作答框的对齐。此前版本已支持精简对话输入区、模型与服务商搜索、面板宽度调整和窄区域切换教学与作答。
 
@@ -29,6 +29,8 @@ v0.3.19 修复学生回答里空代码块占位无法编辑的问题，并校正
 顶栏提供 **中文 / English** 切换，导入文件夹前后都可以使用。选择会保存在本机，下次打开应用时自动恢复；独立文档窗口与 DSH 小窗使用同一语言。切换语言会立即更新按钮、对话框、提示文字和状态信息，不会刷新页面，也不会改动已输入的草稿答案、当前文档或 DSH 会话。未选择英文时仍保持中文界面。
 
 只有应用界面会被翻译。课程正文、题目、Markdown、文件名与目录名、代码、解析规则和学习记录都保持原文，包括 `01_教学引导.md` 这类中文目录约定。
+
+![英文界面的顶栏语言切换与操作按钮](docs/screenshots/language-switch.png)
 
 ## 界面预览
 
