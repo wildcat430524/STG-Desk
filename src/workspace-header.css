@@ -1,0 +1,102 @@
+/* Keep workspace identity at the left and all actions on a shared baseline.
+   A second row at smaller widths preserves readable controls and full labels. */
+.workspace-header {
+  min-height: 76px;
+  height: auto;
+  padding: 12px 24px;
+  gap: 24px;
+}
+.workspace-header .workspace-card { flex: 1 1 180px; }
+.workspace-header .workspace-card #workspace-name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workspace-header .workspace-actions {
+  order: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+.workspace-header .workspace-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  margin: 0;
+  padding: 0 14px;
+  width: auto;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+.workspace-header .workspace-actions #continue-learning {
+  position: static;
+  order: 0;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+}
+.workspace-header .workspace-actions #continue-learning span { float: none; }
+.workspace-header .workspace-actions #import { padding: 0 14px !important; }
+.workspace-header .workspace-actions #import .import-label {
+  font-size: inherit;
+  font-weight: inherit;
+}
+.workspace-header .workspace-actions #open-dsh { padding: 0 16px; }
+.workspace-header .workspace-actions #open-dsh span { padding: 0; }
+.workspace-actions .language-switch {
+  height: 40px;
+  padding: 3px;
+  gap: 2px;
+  margin-left: 8px;
+  border-radius: 10px;
+  background: var(--ui-hover);
+}
+.workspace-actions .language-switch .language-option {
+  height: 32px;
+  min-width: 48px;
+  padding: 0 11px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 7px;
+}
+.workspace-actions .language-option[aria-pressed="true"] {
+  box-shadow: 0 1px 3px #20263018;
+}
+/* Secondary windows retain the same readable language labels. */
+.language-switch[data-placement="detached"] .language-option,
+.language-switch[data-placement="menu"] .language-option {
+  min-height: 32px;
+  font-size: 13px;
+  padding-inline: 10px;
+}
+@media (max-width: 1180px) {
+  .workspace-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px 24px;
+    padding: 12px 20px;
+  }
+  .workspace-header .workspace-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .workspace-header .workspace-card { text-align: right; }
+  .workspace-header .workspace-card #workspace-meta { display: block; }
+}
+@media (max-width: 760px) {
+  .workspace-header { padding-inline: 16px; }
+  .workspace-header .workspace-actions { gap: 8px; }
+  .workspace-header .workspace-actions > button { padding-inline: 12px; }
+  .workspace-actions .language-switch { margin-left: 0; }
+}

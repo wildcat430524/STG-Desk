@@ -17,6 +17,8 @@ contextBridge.exposeInMainWorld('stg',{
   onDshState:fn=>ipcRenderer.on('dsh-state',(_e,state)=>fn(state)),
   draftGet:call('draft-get'),draftPut:call('draft-put'),draftRemove:call('draft-remove'),draftList:call('draft-list'),
   backups:call('backups'),backupRead:call('backup-read'),backupRestore:call('backup-restore'),preferences:call('preferences'),closeReady:call('close-ready'),
+  uiLanguage:call('ui-language'),
+  onUiLanguage:fn=>ipcRenderer.on('ui-language-changed',(_e,locale)=>fn(locale)),
   droppedPath:file=>webUtils.getPathForFile(file),
   onChange:fn=>ipcRenderer.on('workspace-changed',()=>fn()),
   onWarning:fn=>ipcRenderer.on('workspace-warning',(_e,message)=>fn(message)),

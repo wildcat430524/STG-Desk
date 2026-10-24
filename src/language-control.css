@@ -1,0 +1,61 @@
+/* Language selector: a quiet segmented control in the workspace header and the
+   detached document toolbar, and a full-width row inside the floating DSH menu. */
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px;
+  border: 1px solid var(--ui-border, #e1e5ea);
+  border-radius: 9px;
+  background: var(--ui-secondary, #f6f7f9);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.language-option {
+  border: 0;
+  background: transparent;
+  color: var(--ui-muted, #626c78);
+  font-size: 10px;
+  line-height: 1.6;
+  padding: 3px 8px;
+  border-radius: 6px;
+  min-width: 32px;
+}
+.language-option[aria-pressed="true"] {
+  background: var(--ui-surface, #fff);
+  color: var(--ui-ink, #343a43);
+  box-shadow: 0 1px 3px #20263012;
+}
+.language-option:hover { background: var(--ui-hover, #eceff3); }
+.language-option[aria-pressed="true"]:hover { background: var(--ui-surface, #fff); }
+.language-switch[data-placement="header"] { order: 4; }
+.language-switch[data-placement="menu"] {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 4px;
+  border-color: var(--ui-border, #e1e5ea);
+}
+.language-switch[data-placement="menu"] .language-option { flex: 1; padding: 6px 8px; }
+#document .document-footer .header-actions .language-switch { order: 0; margin-left: 2px; }
+html[data-app-theme="dark"] .language-switch { border-color: #3c4757; background: #29323e; }
+html[data-app-theme="dark"] .language-option { color: #b0bdce; }
+html[data-app-theme="dark"] .language-option[aria-pressed="true"] { background: #354656; color: #eef2f8; }
+html[data-app-theme="dark"] .language-switch[data-placement="menu"] { border-color: #3c4757; }
+@media (max-width: 1250px) {
+  /* English labels are longer; keep the selector from crowding the header row. */
+  .language-option { min-width: 28px; padding: 3px 6px; }
+}
+/* Longer English copy must not wrap the fixed-height workspace header. */
+body:not(.dsh-only) .workspace-header .workspace-card #workspace-meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 1100px) {
+  body:not(.dsh-only) .workspace-header .workspace-card #workspace-meta { display: none; }
+  body:not(.dsh-only) .workspace-header .workspace-card #workspace-name { max-width: 100%; }
+}
+@media (max-width: 900px) {
+  .language-switch[data-placement="header"] .language-option { min-width: 24px; padding: 3px 5px; font-size: 9px; }
+}

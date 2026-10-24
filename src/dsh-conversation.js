@@ -1,4 +1,5 @@
 import {copyText} from './editor-rich';
+import {i18n} from './i18n.js';
 
 // Keep existing text nodes and selections while the current reply changes.
 function patchChildren(target,source){
@@ -33,11 +34,12 @@ function restoreSelection(element,offsets){
 }
 
 export function mountConversation({conversation,messages,renderMD,escape}){
+  const t=(key,params)=>i18n.t(key,params);
   const jumpRow=document.createElement('div');jumpRow.className='dsh-jump-row';
-  const jump=document.createElement('button');jump.id='dsh-jump-latest';jump.type='button';jump.className='hidden';jump.textContent='回到最新 ↓';jump.setAttribute('aria-label','回到最新消息并继续跟随回复');
+  const jump=document.createElement('button');jump.id='dsh-jump-latest';jump.type='button';jump.className='hidden';jump.textContent=t('dsh.jump');jump.setAttribute('aria-label',t('dsh.jumpAria'));
   jumpRow.append(jump);conversation.after(jumpRow);
   conversation.tabIndex=-1;conversation.setAttribute('aria-relevant','additions');
-  let entries=new Map(),scope=null,pinned=true,lastUserInput=-Infinity,lastTop=0,frame=0,intentTimer;
+  let entries=new Map(),scope=null,pinned=true,lastUserInput=-Infinity,lastTop=0,frame=0,intentTimer,lastState=null;
   const distance=()=>conversation.scrollHeight-conversation.clientHeight-conversation.scrollTop;
   const updateJump=()=>jump.classList.toggle('hidden',pinned||distance()<12);
   function scrollBottom(){conversation.scrollTop=conversation.scrollHeight;lastTop=conversation.scrollTop;pinned=true;updateJump();}
@@ -68,8 +70,8 @@ export function mountConversation({conversation,messages,renderMD,escape}){
     const text=button.hasAttribute('data-copy-code')?button.closest('.dsh-code-block').querySelector('pre code')?.textContent:entry?.text;
     const active=document.activeElement,offsets=selectedOffsets(messages),ok=await copyText(text);
     if(active?.isConnected)active.focus({preventScroll:true});restoreSelection(messages,offsets);
-    const label=button.hasAttribute('data-copy-code')?'复制代码':'复制';
-    clearTimeout(button.copyTimer);button.dataset.copyState=ok?'copied':'failed';button.textContent=ok?'已复制 ✓':'复制失败';
+    const label=button.hasAttribute('data-copy-code')?t('dsh.copyCode'):t('dsh.copy');
+    clearTimeout(button.copyTimer);button.dataset.copyState=ok?'copied':'failed';button.textContent=ok?t('dsh.copied'):t('dsh.copyFailed');
     button.copyTimer=setTimeout(()=>{delete button.dataset.copyState;button.textContent=label;},1600);
   });
   function markdown(text,path){
@@ -78,13 +80,15 @@ export function mountConversation({conversation,messages,renderMD,escape}){
       const code=pre.querySelector('code');if(!code)return;
       const wrapper=document.createElement('div');wrapper.className='dsh-code-block';
       const tools=document.createElement('div');tools.className='dsh-code-tools';
-      const language=document.createElement('span');language.textContent=[...code.classList].find(name=>name.startsWith('language-'))?.slice(9)||'代码';
-      const copy=document.createElement('button');copy.type='button';copy.dataset.copyCode='';copy.textContent='复制代码';copy.setAttribute('aria-label','复制这段代码');
+      const language=document.createElement('span');language.textContent=[...code.classList].find(name=>name.startsWith('language-'))?.slice(9)||t('dsh.codeFallback');
+      const copy=document.createElement('button');copy.type='button';copy.dataset.copyCode='';copy.textContent=t('dsh.copyCode');copy.setAttribute('aria-label',t('dsh.copyCodeAria'));
       tools.append(language,copy);pre.replaceWith(wrapper);wrapper.append(tools,pre);
     });
     return template.content;
   }
+  const roleLabel=role=>role==='user'?t('dsh.roleYou'):role==='error'?t('dsh.roleError'):t('dsh.roleAssistant');
   return {show(state){
+    lastState=state;
     const nextScope=JSON.stringify([state.root,state.sessionId]);
     if(scope!==nextScope){scope=nextScope;entries=new Map();messages.replaceChildren();pinned=true;lastUserInput=-Infinity;}
     const list=state.messages||[],alive=new Set();
@@ -96,14 +100,14 @@ export function mountConversation({conversation,messages,renderMD,escape}){
       if(!entry){
         const node=document.createElement('section');node.className='dsh-message';node.dataset.messageKey=key;
         const label=document.createElement('small'),body=document.createElement('div'),actions=document.createElement('div');body.className='dsh-message-text';actions.className='dsh-message-actions';
-        const copy=document.createElement('button');copy.type='button';copy.dataset.copyMessage='';copy.textContent='复制';copy.setAttribute('aria-label','复制消息');actions.append(copy);
+        const copy=document.createElement('button');copy.type='button';copy.dataset.copyMessage='';copy.textContent=t('dsh.copy');copy.setAttribute('aria-label',t('dsh.copyAria'));actions.append(copy);
         node.append(label,body,actions);entry={node,label,body,actions};entries.set(key,entry);
       }
       if(entry.node!==cursor)messages.insertBefore(entry.node,cursor);else cursor=cursor.nextSibling;
       const role=message.role==='user'?'user':message.role==='error'?'error':'assistant';
       if(entry.text!==text||entry.role!==role||entry.path!==state.contextPath){
         const offsets=selectedOffsets(entry.body),scroll=[...entry.body.querySelectorAll('pre')].map(pre=>pre.scrollLeft);
-        entry.node.className=`dsh-message ${role}`;entry.label.textContent=role==='user'?'你':role==='error'?'连接提示':'DSH';entry.body.className=`dsh-message-text ${role==='user'?'':'markdown-body'}`;
+        entry.node.className=`dsh-message ${role}`;entry.label.textContent=roleLabel(role);entry.body.className=`dsh-message-text ${role==='user'?'':'markdown-body'}`;
         if(role==='user'){
           const template=document.createElement('template');template.innerHTML=escape(text).replace(/\n/g,'<br>');patchChildren(entry.body,template.content);
         }else patchChildren(entry.body,markdown(text,state.contextPath||''));
@@ -112,7 +116,24 @@ export function mountConversation({conversation,messages,renderMD,escape}){
       }
     });
     for(const [key,entry] of entries)if(!alive.has(key)){entry.node.remove();entries.delete(key);}
-    if(!list.length&&!messages.querySelector('.dsh-empty'))messages.innerHTML=`<div class="dsh-empty"><span>DSH</span><h3>在这里继续学习</h3><p>${state.root?'可以询问当前课程，或告诉导师你的学习目标。':'先导入学习文件夹，DSH 会关联当前所需文档。'}</p></div>`;
+    if(!list.length&&!messages.querySelector('.dsh-empty'))messages.innerHTML=`<div class="dsh-empty"><span>DSH</span><h3>${t('dsh.emptyTitle')}</h3><p>${state.root?t('dsh.emptyAsk'):t('dsh.emptyImport')}</p></div>`;
     follow();
+  },
+  // Relabel already-rendered chrome without rebuilding message bodies, which
+  // would disturb selection, scroll position and in-flight streaming.
+  refreshLabels(){
+    jump.textContent=t('dsh.jump');jump.setAttribute('aria-label',t('dsh.jumpAria'));
+    for(const entry of entries.values()){
+      const role=entry.role||'assistant';
+      entry.label.textContent=roleLabel(role);
+      const copy=entry.actions?.querySelector('[data-copy-message]');
+      if(copy&&!copy.dataset.copyState){copy.textContent=t('dsh.copy');copy.setAttribute('aria-label',t('dsh.copyAria'));}
+    }
+    for(const button of messages.querySelectorAll('[data-copy-code]')){
+      if(button.dataset.copyState)continue;
+      button.textContent=t('dsh.copyCode');button.setAttribute('aria-label',t('dsh.copyCodeAria'));
+    }
+    const empty=messages.querySelector('.dsh-empty');
+    if(empty){empty.querySelector('h3').textContent=t('dsh.emptyTitle');empty.querySelector('p').textContent=lastState?.root?t('dsh.emptyAsk'):t('dsh.emptyImport');}
   }};
 }

@@ -149,3 +149,15 @@ export function languageLabel(name) {
   const entry = LANGUAGE_CATALOG.find(item => item.id === raw.toLowerCase());
   return entry ? entry.label : raw;
 }
+
+/** All code languages as plain data, so callers can localize display names. */
+export const CODE_LANGUAGES = LANGUAGE_CATALOG;
+
+/** Localized catalog label for a code language UI (not document content). */
+export function localizedLanguageLabel(name, t) {
+  if (!t) return languageLabel(name);
+  const raw = String(name ?? '').trim();
+  if (!raw) return t('editor.plainText');
+  if (raw.toLowerCase() === 'plaintext') return t('editor.plainText');
+  return languageLabel(raw);
+}

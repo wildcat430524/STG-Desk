@@ -6,12 +6,14 @@ const chokidar=require('chokidar');
 const {Workspace}=require('../lib/workspace.cjs');
 const {DraftStore}=require('../lib/drafts.cjs');
 const {appIcon}=require('./app-icon.cjs');
+const localization=require('./localization.cjs');
 const workspace=new Workspace();
 let window,watcher,dirty=false,closing=false;
 let drafts,closeRequested=false;
 let dsh;
 let documentWindows;
 let documentWindowNotifications=Promise.resolve();
+let uiLanguage=localization.normalize(process.env.STG_UI_LANGUAGE);
 const dev=process.env.STG_DEV_URL;
 const smokeTest=process.argv.includes('--smoke-test');
 if(smokeTest) app.setPath('userData',path.join(app.getPath('temp'),'stg-desktop-smoke-profile-'+process.pid));
@@ -20,8 +22,27 @@ if(smokeTest) app.commandLine.appendSwitch('disable-backgrounding-occluded-windo
 protocol.registerSchemesAsPrivileged([{scheme:'stg-asset',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const settingsPath=()=>path.join(app.getPath('userData'),'settings.json');
 async function settings() { try { return JSON.parse(await fs.readFile(settingsPath(),'utf8')); } catch {return {}; } }
+const tr=(key,params)=>localization.translate(uiLanguage,key,params);
+// The renderer persists its choice through the existing settings file so the
+// native dialogs, window titles and every window agree after a restart.
+async function loadUiLanguage(){const current=await settings();uiLanguage=localization.normalize(process.env.STG_UI_LANGUAGE||current.language);return uiLanguage;}
+async function setUiLanguage(locale){
+  uiLanguage=localization.normalize(locale);
+  const current=await settings();
+  await fs.writeFile(settingsPath(),JSON.stringify({...current,language:uiLanguage},null,2));
+  if(window&&!window.isDestroyed())window.setTitle(tr('app.title'));
+  documentWindows?.applyLanguage?.();
+  dsh?.applyLanguage?.();
+  // file:// origins do not reliably deliver cross-window `storage` events, so
+  // the native process fans the choice out to every renderer explicitly.
+  for(const target of [window,documentWindows?.eachWindow?.(),dsh?.floatingWindow].flat().filter(Boolean)){
+    if(target?.isDestroyed?.()||!target.webContents)continue;
+    target.webContents.send('ui-language-changed',uiLanguage);
+  }
+  return uiLanguage;
+}
 async function open(root) {
-  if(dsh?.state.busy)throw new Error('请先停止 DSH 回复，再切换工作区。');
+  if(dsh?.state.busy)throw new Error(tr('error.busyWorkspace'));
   const info=decorateTree(await workspace.open(root));
   if(watcher) await watcher.close();
   watcher=chokidar.watch(root,{ignoreInitial:true,ignored:p=>/(?:^|[\\/])(?:\.[^\\/]+|node_modules|vendor|release)(?:[\\/]|$)/.test(p),depth:24,awaitWriteFinish:{stabilityThreshold:350,pollInterval:100}});
@@ -38,16 +59,25 @@ async function open(root) {
 function decorateTree(info){const {describeFile}=require('../lib/learning.cjs');const walk=nodes=>{for(const n of nodes){if(n.children)walk(n.children);else n.description=describeFile(n.path);}};walk(info.children);return info;}
 function handle(name,fn) {
   ipcMain.handle(name,async(event,...args)=>{
-    if(event.senderFrame!==event.sender.mainFrame)throw new Error('非法请求。');
-    if(documentWindows?.handles(event)){if(name==='answer-records')return fn(...args);return documentWindows.invoke(event,name,args);}
-    if(event.sender!==window?.webContents || event.senderFrame!==window.webContents.mainFrame) throw new Error('非法请求。');
+    if(event.senderFrame!==event.sender.mainFrame)throw new Error(tr('error.illegalRequest'));
+    if(documentWindows?.handles(event)){
+      // These handlers are app-wide rather than document-scoped, so a detached
+      // window may call them directly instead of hitting its restricted bridge.
+      if(name==='answer-records'||name==='ui-language')return fn(...args);
+      return documentWindows.invoke(event,name,args);
+    }
+    // The floating DSH window is its own window with a narrow bridge; the UI
+    // language is app-wide, so it may read and share the same preference.
+    if(name==='ui-language'&&dsh?.ownsWindow?.(event))return fn(...args);
+    if(event.sender!==window?.webContents || event.senderFrame!==window.webContents.mainFrame) throw new Error(tr('error.illegalRequest'));
     return fn(...args);
   });
 }
 app.whenReady().then(async()=>{
+  await loadUiLanguage();
   ipcMain.handle('app-theme',(event,theme)=>{
     const owner=BrowserWindow.fromWebContents(event.sender);
-    if(!owner||owner.isDestroyed()||event.senderFrame!==owner.webContents.mainFrame||!['dark','light'].includes(theme))throw new Error('非法主题请求。');
+    if(!owner||owner.isDestroyed()||event.senderFrame!==owner.webContents.mainFrame||!['dark','light'].includes(theme))throw new Error(tr('error.illegalTheme'));
     const dark=theme==='dark';
     // Keep the floating DSH window's rounded transparent edges intact.
     if(!new URL(event.sender.getURL()).searchParams.has('dsh')){
@@ -56,7 +86,7 @@ app.whenReady().then(async()=>{
     }
   });
   drafts=new DraftStore(path.join(app.getPath('userData'),'drafts'));
-  documentWindows=require('./document-windows.cjs').createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest,onStateChange:state=>{
+  documentWindows=require('./document-windows.cjs').createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest,translate:(key,params)=>tr(key,params),onStateChange:state=>{
     documentWindowNotifications=documentWindowNotifications.catch(()=>{}).then(async()=>{
       try{if(state.type==='closed'){
         const namespace=require('node:crypto').createHash('sha256').update(state.root+'\0'+state.path).digest('hex');
@@ -64,11 +94,11 @@ app.whenReady().then(async()=>{
         const record=await local.get(state.root,state.path);
         if(record)await drafts.put(state.root,state.path,record);else await drafts.remove(state.root,state.path);
         await local.remove(state.root,state.path);
-      }}catch(error){if(window&&!window.isDestroyed())window.webContents.send('workspace-warning','独立窗口的草稿仍保留在本地，交接失败：'+error.message);}
+      }}catch(error){if(window&&!window.isDestroyed())window.webContents.send('workspace-warning',tr('warning.draftHandoff',{error:error.message}));}
       if(window&&!window.isDestroyed())window.webContents.send('document-windows-changed',state);
     });
   }});
-  dsh=require('./dsh-controller.cjs')({app,ipcMain,BrowserWindow,workspace,getWindow:()=>window,dev,smokeTest});
+  dsh=require('./dsh-controller.cjs')({app,ipcMain,BrowserWindow,workspace,getWindow:()=>window,dev,smokeTest,translate:(key,params)=>tr(key,params),getLanguage:()=>uiLanguage});
   workspace.retention=(await settings()).backupRetention||20;
   protocol.handle('stg-asset',async request=>{
     try {
@@ -83,7 +113,7 @@ app.whenReady().then(async()=>{
     } catch {return new Response('Not found',{status:404});}
   });
   handle('open-dialog',async()=>{
-    const result=await dialog.showOpenDialog(window,{title:'导入 StepsToGreat 文件夹',properties:['openDirectory']});
+    const result=await dialog.showOpenDialog(window,{title:tr('dialog.importTitle'),properties:['openDirectory']});
     return result.canceled?null:open(result.filePaths[0]);
   });
   handle('open-root',open);
@@ -124,23 +154,28 @@ app.whenReady().then(async()=>{
   });
   handle('close-ready',async ok=>{
     closeRequested=false;
-    if(!ok){await dialog.showMessageBox(window,{type:'error',message:'未保存内容尚未成功保留，请点击保存后重试。'});return;}
+    if(!ok){await dialog.showMessageBox(window,{type:'error',message:tr('dialog.closeFailed')});return;}
     await dsh.dispose();closing=true;window.close();
   });
   handle('last-root',async()=>(await settings()).lastRoot||null);
   handle('dirty',value=>{dirty=!!value;});
+  handle('ui-language',async value=>{
+    if(value===undefined||value===null)return uiLanguage;
+    if(!['zh-CN','en'].includes(value))throw new Error(tr('error.illegalRequest'));
+    return setUiLanguage(value);
+  });
   handle('confirm-leave',async()=>{
-    const result=await dialog.showMessageBox(window,{type:'question',title:'保留未保存内容',message:'当前文档或答案还有未保存的修改。',buttons:['继续编辑','放弃本次修改'],defaultId:0,cancelId:0});
+    const result=await dialog.showMessageBox(window,{type:'question',title:tr('dialog.keepUnsavedTitle'),message:tr('dialog.keepUnsavedMessage'),buttons:[tr('dialog.keepEditing'),tr('dialog.discard')],defaultId:0,cancelId:0});
     return result.response===1;
   });
   handle('external',async url=>{if(/^https?:\/\//i.test(url)) await shell.openExternal(url);});
   handle('reveal',async p=>shell.showItemInFolder(await workspace.resolve(p)));
   handle('export-draft',async content=>{
-    const result=await dialog.showSaveDialog(window,{title:'另存草稿',defaultPath:'STG-草稿.md',filters:[{name:'Markdown',extensions:['md']}]});
+    const result=await dialog.showSaveDialog(window,{title:tr('dialog.exportDraftTitle'),defaultPath:tr('dialog.draftDefaultName'),filters:[{name:'Markdown',extensions:['md']}]});
     if(!result.canceled) {await fs.writeFile(result.filePath,content,'utf8');return true;} return false;
   });
   const available=screen.getPrimaryDisplay().workAreaSize;
-  window=new BrowserWindow({width:Math.min(1460,available.width),height:Math.min(960,available.height),minWidth:Math.min(1050,available.width),minHeight:Math.min(720,available.height),icon:appIcon(app),title:'STG Desk · 学习工作台',titleBarStyle:'hidden',titleBarOverlay:{color:'#f1f2f4',symbolColor:'#58616e',height:34},autoHideMenuBar:true,backgroundColor:'#f1f2f4',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:!smokeTest}});
+  window=new BrowserWindow({width:Math.min(1460,available.width),height:Math.min(960,available.height),minWidth:Math.min(1050,available.width),minHeight:Math.min(720,available.height),icon:appIcon(app),title:tr('app.title'),titleBarStyle:'hidden',titleBarOverlay:{color:'#f1f2f4',symbolColor:'#58616e',height:34},autoHideMenuBar:true,backgroundColor:'#f1f2f4',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:!smokeTest}});
   Menu.setApplicationMenu(null);
   window.webContents.on('before-input-event',(event,input)=>{
     if(input.type!=='keyDown')return;

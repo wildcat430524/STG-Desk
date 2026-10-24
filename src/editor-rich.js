@@ -85,9 +85,10 @@ export function buildDecorations(doc, rangesFor, config) {
 
     try {
       decorations.push(Decoration.widget(pos, toolsWidget(config), {
-        // The language is part of the key so changing it rebuilds the widget
-        // with the new selected option instead of reusing the old DOM.
-        key: `edh-code-tools:${language ?? ''}`,
+        // The language (and the current UI-language labels) is part of the key so
+        // changing either rebuilds the widget with the new selected option and
+        // text instead of reusing the old DOM.
+        key: `edh-code-tools:${language ?? ''}:${JSON.stringify(config.labels)}`,
         side: -1,
         stopEvent: () => true,
       }));
@@ -239,25 +240,34 @@ export function createRichPlugin(options = {}) {
 
   const config = { labels, registry, onLanguage: options.onLanguage, onCopy: options.onCopy };
   const build = doc => buildDecorations(doc, rangesFor, config);
+  // The widget decoration key participates in DOM reuse, so a UI-language change
+  // must reach it through plugin state rather than a new plugin instance.
+  let labelKey = JSON.stringify(labels);
 
   return new Plugin({
     key: richPluginKey,
     state: {
       init(_config, state) {
-        return { set: build(state.doc), composing: false };
+        return { set: build(state.doc), composing: false, labels: { ...labels }, labelKey };
       },
       apply(tr, value, _oldState, newState) {
         const meta = tr.getMeta(richPluginKey);
         // The composing flag lives in plugin state (not a closure) so it survives
         // the several transactions an IME composition produces.
         const composing = meta?.composing ?? value.composing;
+        let nextLabels = value.labels, nextKey = value.labelKey;
+        if (meta?.labels) {
+          nextLabels = { ...value.labels, ...meta.labels };
+          nextKey = JSON.stringify(nextLabels);
+          config.labels = nextLabels;
+        }
         const mapped = value.set.map(tr.mapping, tr.doc);
         // While an IME composition is active, keep mapping the previous set
         // instead of rebuilding: a rebuild replaces text-wrapping DOM spans and
         // can cancel the composition. compositionend then requests the rebuild.
-        if (composing && !meta?.rebuild) return { set: mapped, composing };
-        if (!tr.docChanged && !meta?.rebuild) return { set: mapped, composing };
-        return { set: build(newState.doc), composing: false };
+        if (composing && !meta?.rebuild) return { set: mapped, composing, labels: nextLabels, labelKey: nextKey };
+        if (!tr.docChanged && !meta?.rebuild) return { set: mapped, composing, labels: nextLabels, labelKey: nextKey };
+        return { set: build(newState.doc), composing: false, labels: nextLabels, labelKey: nextKey };
       },
     },
     props: {

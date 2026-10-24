@@ -8,6 +8,10 @@ import katex from 'katex';
 import texmath from 'markdown-it-texmath';
 import taskLists from 'markdown-it-task-lists';
 import {hljs,highlightCode,languageRegistry} from './editor-highlight.mjs';
+import {i18n} from './i18n.js';
+import {mountLanguageControl} from './language-control.js';
+import {mountNativeLanguageSync} from './language-sync.js';
+import {watchDocumentTitle} from './language-sync.js';
 
 const api=window.stg;
 const state={workspace:null,doc:null,answer:null,mode:'read',dirty:false,answerDirty:false,answers:{},loading:false,filter:'',scope:'all',busy:false};
@@ -25,7 +29,7 @@ const originalImage=renderer.renderer.rules.image;
 renderer.renderer.rules.image=(tokens,idx,options,env,self)=>{
   const t=tokens[idx];const src=t.attrGet('src')||'';
   if(src.startsWith('data:image/')) return originalImage(tokens,idx,options,env,self);
-  if(/^[a-z]+:/i.test(src)||src.startsWith('//')) {t.attrSet('src','');t.attrSet('alt','[远程图片未加载] '+(t.content||''));}
+  if(/^[a-z]+:/i.test(src)||src.startsWith('//')) {t.attrSet('src','');t.attrSet('alt',i18n.t('doc.remoteImageAlt',{alt:t.content||''}));}
   else { const p=resolveLink(env.path||'',src); t.attrSet('src',p?`stg-asset://${new URLSearchParams(location.search).get('asset')||'workspace'}/${p.split('/').map(encodeURIComponent).join('/')}`:''); }
   return originalImage(tokens,idx,options,env,self);
 };
@@ -38,33 +42,36 @@ function resolveLink(from,target){
 }
 function renderMD(text,path='',keepOriginalHighlight=false){return DOMPurify.sanitize(renderer.render(text,{path,keepOriginalHighlight}),{ADD_TAGS:['annotation','semantics'],ADD_ATTR:['encoding'],ALLOW_UNKNOWN_PROTOCOLS:true});}
 document.querySelector('#app').innerHTML=`
-<div class="native-titlebar">STG Desk <span>学习工作台</span></div>
+<div class="native-titlebar">STG Desk <span data-i18n="app.nativeSubtitle">学习工作台</span></div>
 <header class="workspace-header">
-  <div class="brand"><span class="brand-mark">S<span>↗</span></span><div><strong>STG Desk</strong><small>每一步，都更进一步</small></div><span class="version">α</span></div>
-  <button class="import primary" id="import"><span>＋</span> 导入学习文件夹 <kbd>Ctrl O</kbd></button>
-  <div class="workspace-card"><span class="eyebrow">当前工作区</span><strong id="workspace-name">尚未导入文件夹</strong><div id="workspace-meta">支持 StepsToGreat 与普通 Markdown</div></div>
-  <button id="open-dsh" class="dsh-launch" title="打开 DSH 对话">打开 DSH <span>↗</span></button>
+  <div class="brand"><span class="brand-mark">S<span>↗</span></span><div><strong>STG Desk</strong><small data-i18n="brand.tagline">每一步，都更进一步</small></div><span class="version">α</span></div>
+  <div class="workspace-card"><span class="eyebrow" data-i18n="header.workspaceEyebrow">当前工作区</span><strong id="workspace-name">尚未导入文件夹</strong><div id="workspace-meta">支持 StepsToGreat 与普通 Markdown</div></div>
+  <div class="workspace-actions">
+    <button class="import primary" id="import"><span aria-hidden="true">＋</span><span class="import-label" data-i18n="header.import">导入学习文件夹</span><kbd>Ctrl O</kbd></button>
+    <button id="open-dsh" class="dsh-launch" data-i18n-title="header.openDshTitle" title="打开 DSH 对话"><span class="dsh-launch-label">打开 DSH</span><span aria-hidden="true">↗</span></button>
+  </div>
 </header>
-<section class="document-access"><div class="document-access-label">学习页面 <button id="refresh" title="刷新当前文档和学习进度" aria-label="刷新当前文档和学习进度">↻</button></div><nav id="tree" class="document-tabs" aria-label="教学、回答和进度页面"><span class="documents-empty">导入后显示教学、回答和进度</span></nav></section>
+<section class="document-access"><div class="document-access-label"><span data-i18n="header.pages">学习页面</span><button id="refresh" data-i18n-title="header.refreshTitle" data-i18n-aria-label="header.refreshTitle" title="刷新当前文档和学习进度" aria-label="刷新当前文档和学习进度">↻</button></div><nav id="tree" class="document-tabs" data-i18n-aria-label="header.pagesAria" aria-label="教学、回答和进度页面"><span class="documents-empty" data-i18n="header.emptyDocs">导入后显示教学、回答和进度</span></nav></section>
 <div class="application-body">
 <main class="main">
-  <header class="topbar"><div class="breadcrumb" id="breadcrumb">工作台 <span>/</span> 欢迎</div><div class="header-actions"><button id="choose-course" class="header-button">课程与文档</button><div class="local-label"><span class="dot"></span> 本地优先</div></div></header>
+  <header class="topbar"><div class="breadcrumb" id="breadcrumb"><span data-i18n="breadcrumb.workspace">工作台</span> <span>/</span> <span data-i18n="breadcrumb.welcome">欢迎</span></div><div class="header-actions"><button id="choose-course" class="header-button" data-i18n="header.chooseCourse">课程与文档</button><div class="local-label"><span class="dot"></span> <span data-i18n="header.localFirst">本地优先</span></div></div></header>
   <section id="welcome" class="welcome">
-    <span class="welcome-tag">STEPS TO GREAT <i></i> 本地学习工作台</span><h1>一个文件夹，<br><span>一张清晰的学习桌面。</span></h1><p>让文档、练习和你的思考待在一起。<br>打开学习文件夹，从上次停下的地方继续。</p>
-    <div class="drop-card"><div class="folder-illustration">▱<span>md</span></div><h2>拖入你的 StepsToGreat 文件夹</h2><p>或点击下方按钮，从电脑中选择文件夹</p><button id="welcome-import" class="primary">选择学习文件夹 <span>→</span></button><small>原有目录直接读取，无需转换格式</small><button id="welcome-demo" class="text-link demo-link">先试用演示工作区 →</button></div>
-    <div class="feature-grid"><div><span>01</span><strong>阅读与编辑</strong><p>清晰排版、公式、表格，直接在文档中编辑。</p></div><div><span>02</span><strong>专注当前轮</strong><p>关联学生回答，每次只处理当前轮的问题。</p></div><div><span>03</span><strong>留住每次作答</strong><p>答案追加到原文档，保存前自动备份。</p></div></div>
+    <span class="welcome-tag">STEPS TO GREAT <i></i> <span data-i18n="welcome.tag">本地学习工作台</span></span><h1><span data-i18n="welcome.headline">一个文件夹，</span><br><span data-i18n="welcome.headlineAccent">一张清晰的学习桌面。</span></h1><p><span data-i18n="welcome.lead">让文档、练习和你的思考待在一起。</span><br><span data-i18n="welcome.leadSecond">打开学习文件夹，从上次停下的地方继续。</span></p>
+    <div class="drop-card"><div class="folder-illustration">▱<span>md</span></div><h2 data-i18n="welcome.dropTitle">拖入你的 StepsToGreat 文件夹</h2><p data-i18n="welcome.dropHint">或点击下方按钮，从电脑中选择文件夹</p><button id="welcome-import" class="primary"><span data-i18n="welcome.chooseFolder">选择学习文件夹</span> <span aria-hidden="true">→</span></button><small data-i18n="welcome.noConvert">原有目录直接读取，无需转换格式</small><button id="welcome-demo" class="text-link demo-link" data-i18n="welcome.demo">先试用演示工作区 →</button></div>
+    <div class="feature-grid"><div><span>01</span><strong data-i18n="welcome.feature1Title">阅读与编辑</strong><p data-i18n="welcome.feature1Text">清晰排版、公式、表格，直接在文档中编辑。</p></div><div><span>02</span><strong data-i18n="welcome.feature2Title">专注当前轮</strong><p data-i18n="welcome.feature2Text">关联学生回答，每次只处理当前轮的问题。</p></div><div><span>03</span><strong data-i18n="welcome.feature3Title">留住每次作答</strong><p data-i18n="welcome.feature3Text">答案追加到原文档，保存前自动备份。</p></div></div>
     <div class="recent" id="recent"></div>
   </section>
   <section id="document" class="document hidden">
-    <div class="document-toolbar"><div><span class="eyebrow" id="document-kind">MARKDOWN</span><div class="document-title-wrap"><h1 id="document-title"></h1><button id="round-switch" class="round-switch hidden" popovertarget="round-menu" title="切换本章教学轮次" aria-label="切换本章教学轮次" aria-haspopup="menu" aria-expanded="false" aria-controls="round-menu"><span class="round-switch-chevron"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></button><div id="round-menu" class="round-menu" popover="auto" role="menu" aria-label="本章教学轮次"></div></div></div><div class="doc-actions"><button id="document-focus" class="document-focus" aria-pressed="false">专注</button><span id="save-status">已保存</span><button id="save" class="primary">保存 <kbd>Ctrl S</kbd></button></div></div>
-    <div id="change-banner" class="change-banner hidden">文件夹中的文档有更新。<button id="load-changes">重新加载当前文档</button></div>
+    <div class="document-toolbar"><div><span class="eyebrow" id="document-kind">MARKDOWN</span><div class="document-title-wrap"><h1 id="document-title"></h1><button id="round-switch" class="round-switch hidden" popovertarget="round-menu" data-i18n-title="round.switchTitle" data-i18n-aria-label="round.switchTitle" title="切换本章教学轮次" aria-label="切换本章教学轮次" aria-haspopup="menu" aria-expanded="false" aria-controls="round-menu"><span class="round-switch-chevron"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></button><div id="round-menu" class="round-menu" popover="auto" role="menu" data-i18n-aria-label="round.menuAria" aria-label="本章教学轮次"></div></div></div><div class="doc-actions"><button id="document-focus" class="document-focus" aria-pressed="false">专注</button><span id="save-status">已保存</span><button id="save" class="primary"><span data-i18n="doc.save">保存</span> <kbd>Ctrl S</kbd></button></div></div>
+    <div id="change-banner" class="change-banner hidden"><span data-i18n="doc.changeBanner">文件夹中的文档有更新。</span><button id="load-changes" data-i18n="doc.reload">重新加载当前文档</button></div>
     <div class="doc-body"><div id="content-area" class="content-area edit"><div id="editor"></div></div>
-      <aside id="answers-panel" class="answers-panel" aria-label="学生作答工作区"><div class="answer-heading"><h2>作答工作区</h2><button id="answer-focus" aria-pressed="false" aria-controls="answers-panel" title="放大作答区域，按 Esc 返回">专注作答</button><p id="answer-description">选择一份教学引导，开始作答。</p><div id="answer-document-name" class="answer-document-name"></div></div><div class="answer-tabs" role="group" aria-label="作答工作区内容"><button data-answer-tab="current" aria-pressed="true">本轮作答</button><button data-answer-tab="records" aria-pressed="false">作答记录</button><button data-answer-tab="document" aria-pressed="false">完整文档</button></div><div id="answer-question-nav" class="answer-question-nav hidden" role="group" aria-label="切换本轮题目"></div><div id="answer-content"></div><section id="answer-records" class="hidden" aria-label="历史作答与导师反馈"></section><section id="answer-document" class="hidden"><div class="answer-document-tools"><span id="answer-source-status">已保存版本</span><button id="answer-history">历史版本</button><button id="answer-edit-source">编辑</button></div><article id="answer-document-preview" class="markdown-body"></article><textarea id="answer-source" class="hidden" aria-label="完整回答文档 Markdown" spellcheck="false"></textarea></section><div id="answer-footer"></div></aside>
+      <aside id="answers-panel" class="answers-panel" data-i18n-aria-label="doc.answerPanelAria" aria-label="学生作答工作区"><div class="answer-heading"><h2 data-i18n="doc.answerHeading">作答工作区</h2><button id="answer-focus" aria-pressed="false" aria-controls="answers-panel" data-i18n-title="doc.answerFocusTitle" title="放大作答区域，按 Esc 返回">专注作答</button><p id="answer-description">选择一份教学引导，开始作答。</p><div id="answer-document-name" class="answer-document-name"></div></div><div class="answer-tabs" role="group" data-i18n-aria-label="doc.answerTabsAria" aria-label="作答工作区内容"><button data-answer-tab="current" aria-pressed="true" data-i18n="doc.currentRound">本轮作答</button><button data-answer-tab="records" aria-pressed="false" data-i18n="doc.answerRecordsTab">作答记录</button><button data-answer-tab="document" aria-pressed="false" data-i18n="doc.fullDocument">完整文档</button></div><div id="answer-question-nav" class="answer-question-nav hidden" role="group" data-i18n-aria-label="doc.roundQuestions" aria-label="切换本轮题目"></div><div id="answer-content"></div><section id="answer-records" class="hidden" data-i18n-aria-label="doc.answerRecordsAria" aria-label="历史作答与导师反馈"></section><section id="answer-document" class="hidden"><div class="answer-document-tools"><span id="answer-source-status">已保存版本</span><button id="answer-history" data-i18n="answer.history">历史版本</button><button id="answer-edit-source">编辑</button></div><article id="answer-document-preview" class="markdown-body"></article><textarea id="answer-source" class="hidden" data-i18n-aria-label="answer.sourceAria" aria-label="完整回答文档 Markdown" spellcheck="false"></textarea></section><div id="answer-footer"></div></aside>
     </div>
   </section>
   <section id="progress-page" class="progress-page hidden" aria-labelledby="progress-title"><span class="eyebrow">LEARNING PROGRESS</span><h1 id="progress-title"></h1><div id="progress-content"></div></section>
   <footer class="statusbar"><span id="status-left">所有文档保存在你的电脑上</span><span id="status-right">UTF-8 · Markdown</span></footer>
-</main><section id="dsh-host" class="dsh-host hidden"></section></div><div id="toast" class="toast hidden" role="status"></div><div id="drop-overlay" class="drop-overlay hidden"><div>松开以导入文件夹<span>StepsToGreat · Markdown 工作区</span></div></div>`;
+</main><section id="dsh-host" class="dsh-host hidden"></section></div><div id="toast" class="toast hidden" role="status"></div><div id="drop-overlay" class="drop-overlay hidden"><div><span data-i18n="drop.release">松开以导入文件夹</span><span data-i18n="drop.subtitle">StepsToGreat · Markdown 工作区</span></div></div>`;
+i18n.apply();
 
 const icon=(paths,size=20)=>`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 const folderIcon=icon('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M8 13h8m-4-4v8"/>',46);
@@ -94,14 +101,20 @@ import './typography.css';
 import './answer-layout.css';
 import './answer-editor.css';
 import './ui-system.css';
+import './language-control.css';
+import './workspace-header.css';
 import {mountPaneLayout} from './pane-layout';
 import {mountEditorIcons} from './editor-icons';
 const dshOnly=new URLSearchParams(location.search).has('dsh');
 const documentOnly=new URLSearchParams(location.search).has('document');
 if(documentOnly)document.body.classList.add('document-only');
 if(dshOnly){document.body.classList.add('dsh-only');document.documentElement.classList.add('dsh-window');}
-else mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,highlight:highlightCode,registry:languageRegistry,documentOnly});
+if(!dshOnly)mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,highlight:highlightCode,registry:languageRegistry,documentOnly});
 if(!documentOnly)mountDsh({api,renderMD:(text,path)=>renderMD(text,path,true),escape,icon,dshOnly});
+mountLanguageControl({dshOnly,documentOnly});
+mountNativeLanguageSync(api);
+i18n.apply();
+watchDocumentTitle();
 mountApplicationTheme({dshOnly});
 if(!dshOnly)mountDocumentFooter();
 if(!dshOnly)mountEditorIcons();

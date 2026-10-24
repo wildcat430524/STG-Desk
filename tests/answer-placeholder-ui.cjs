@@ -16,9 +16,12 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
   await fs.cp(path.join(__dirname,'../demo/StepsToGreat'),root,{recursive:true});
   const answer='我的学习/学科/Python/01-认识变量/01_学生回答.md';
   const file=path.join(root,answer);
-  const template=await fs.readFile(file,'utf8');
+  // Git may check the demo out with CRLF on Windows; this fixture intentionally
+  // exercises LF fences, with byte preservation asserted against submitted.
+  const template=(await fs.readFile(file,'utf8')).replace(/\r\n/g,'\n');
   // The reported state: question 1 answered, question 2 still the placeholder.
   const submitted=template.replace('**我的回答**\n',`**我的回答**\n\n\n\n**学生作答 · 2026/10/22 09:58:00**\n\n\`\`\`text\nprice 是变量名，25 是变量值。\n\`\`\`\n`);
+  assert.notEqual(submitted,template,'the fixture includes the already-submitted first answer');
   await fs.writeFile(file,submitted,'utf8');
   const errors=[];win.webContents.on('console-message',e=>{if(e.level===3||e.level==='error')errors.push(e.message);});
   const js=s=>win.webContents.executeJavaScript(s,true);

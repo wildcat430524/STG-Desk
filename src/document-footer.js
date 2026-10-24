@@ -1,6 +1,8 @@
 // Keep document actions below the reading surface and its title above it. The global
 // controls remain available on welcome/progress pages; document actions only
 // appear while a document is visible.
+import {i18n} from './i18n.js';
+
 export function mountDocumentFooter(){
   const panel=document.querySelector('#document');
   const toolbar=document.querySelector('.document-toolbar');
@@ -10,7 +12,7 @@ export function mountDocumentFooter(){
   const heading=toolbar.querySelector('div');
   if(heading){heading.className='document-heading';panel.prepend(heading);}
   const footer=document.createElement('footer');
-  footer.className='document-footer';footer.setAttribute('aria-label','文档信息与操作');
+  footer.className='document-footer';footer.setAttribute('aria-label',i18n.t('doc.footerInfoAria'));
   footer.append(toolbar,topbar);status.before(footer);
   const actions=toolbar.querySelector('.doc-actions');
   const focus=actions?.querySelector('#document-focus');
@@ -18,7 +20,7 @@ export function mountDocumentFooter(){
   // Draft feedback belongs with file metadata, leaving room for the title.
   const draft=actions?.querySelector('#draft-status');
   if(draft)status.prepend(draft);
-  status.setAttribute('aria-label','文件信息');
+  status.setAttribute('aria-label',i18n.t('doc.fileInfoAria'));
   const update=()=>{
     const absent=panel.classList.contains('hidden');
     toolbar.classList.toggle('hidden',absent);
@@ -37,4 +39,8 @@ export function mountDocumentFooter(){
   new ResizeObserver(()=>{
     document.documentElement.style.setProperty('--document-footer-height',footer.getBoundingClientRect().height+'px');
   }).observe(footer);
+  i18n.subscribe(()=>{
+    footer.setAttribute('aria-label',i18n.t('doc.footerInfoAria'));
+    status.setAttribute('aria-label',i18n.t('doc.fileInfoAria'));
+  });
 }

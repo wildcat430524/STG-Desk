@@ -20,9 +20,15 @@ STG Desk is a Windows desktop workspace for [StepsToGreat](https://github.com/wi
 
 Reading, editing, and answering work independently; connect DSH when needed. Learning files stay in their original directory so a tutor or learning agent can read and update them.
 
-> This README covers [v0.3.19](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.19). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The app interface is currently in Chinese.
+> This README covers [v0.3.19](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.19). See the [release notes](https://github.com/wildcat430524/STG-Desk/releases) for version changes. The current development version adds Simplified Chinese (default) and English interface options.
 
 v0.3.19 makes the empty code-block placeholder in student answers editable again and fixes answer-box alignment when switching questions. Earlier releases added the simpler composer, model and provider search, resizable panes, and switching between the lesson and answers in narrow layouts.
+
+### Interface language
+
+Use the **中文 / English** switch in the top bar, before or after importing a folder. The choice is saved locally and restored the next time you open the app; detached document windows and the floating DSH window use the same language. Switching languages updates labels, dialogs, tooltips, and status text immediately — without reloading the page, and without changing your draft answers, the open document, or the DSH session. Chinese remains the default until you choose English.
+
+Only the application interface is translated. Lesson content, question text, Markdown, file and folder names, code, parser patterns, and saved learning records stay exactly as written, including Chinese learning-directory conventions such as `01_教学引导.md`.
 
 ## Preview
 
@@ -279,6 +285,7 @@ npm start
 | `npx electron tests/answer-layout-ui.cjs` | After building, verify question switching, draft recovery, focused answering, and round saving |
 | `npx electron tests/model-picker-ui.cjs` | After building, check model search, failed-switch recovery, keyboard controls, and floating-window zoom |
 | `npx electron tests/ui-system-ui.cjs` | After building, check pane resizing, narrow-area switching, conversation reading, and popup focus |
+| `npx electron tests/english-ui.cjs` | After building, check the 中文/English switch, restored preference, detached-window sync, and English labels |
 | `npm run pack` | Create a Windows directory build; keep the entire `release/win-unpacked/` directory when running it |
 | `npm run dist` | Create `release/STG-Desk-<version>-Windows.exe` |
 
