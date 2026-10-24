@@ -22,7 +22,7 @@ STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat)
 
 > 本文对应 [v0.3.20](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.20)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。界面支持简体中文（默认）与英文切换。
 
-v0.3.19 修复学生回答里空代码块占位无法编辑的问题，并校正切换题目时作答框的对齐。此前版本已支持精简对话输入区、模型与服务商搜索、面板宽度调整和窄区域切换教学与作答。
+v0.3.20 新增简体中文与英文界面切换：顶栏可随时切换，选择会保存在本机、重启后恢复，独立文档窗口与 DSH 小窗保持一致。切换不会刷新页面，也不会改动已输入的草稿和当前文档。此前 v0.3.19 修复了学生回答里空代码块占位无法编辑的问题，并校正切换题目时作答框的对齐。
 
 ### 界面语言
 
@@ -142,7 +142,7 @@ C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
 导入方式：
 
 - **从源码运行**：导入 `demo/EditorShowcase` 目录。
-- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.19/STG-Desk-0.3.19-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
+- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.20/STG-Desk-0.3.20-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
 - 导入后「选择课程」会列出这门演示课程（路径为 `我的学习/学科/Markdown/01-复杂内容演示/`），与内置的 [示例课程](demo/StepsToGreat) 相互独立。
 
 > 演示中的 Java 示例按 Java 17+ 语法编写，仅经过审查，未在本机 Java 11 环境编译；Python 示例已实际运行。示例用于展示排版与编辑效果，不代表学习评估。
