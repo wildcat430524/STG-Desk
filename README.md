@@ -1,82 +1,129 @@
 <div align="center">
-  <img src="build/icon.png" alt="STG Desk 图标" width="96" height="96">
-  <h1>STG Desk</h1>
-  <p><strong>读教学、写答案、看进度，在一个工作台里继续学习。</strong></p>
-  <p>Windows 便携应用 · 本地 Markdown · DeepSeek Harness 协作</p>
-  <p>
-    <a href="https://github.com/wildcat430524/STG-Desk/releases/latest"><img src="https://img.shields.io/github/v/release/wildcat430524/STG-Desk?style=flat-square&amp;label=release" alt="最新发布版本"></a>
-    <img src="https://img.shields.io/badge/platform-Windows-0078D4?style=flat-square" alt="平台：Windows">
-    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-4B5563?style=flat-square" alt="许可证：MIT"></a>
-  </p>
-  <p>
-    <strong><a href="https://github.com/wildcat430524/STG-Desk/releases/latest">下载 Windows 便携版</a></strong>
-    · <a href="#快速开始">快速开始</a>
-    · <a href="https://github.com/wildcat430524/STG-Desk/issues">反馈问题</a>
-  </p>
-  <p><strong>简体中文</strong> | <a href="README.en.md">English</a></p>
+
+![STG Desk — 读教学、写答案、看进度，在一个工作台里继续学习](docs/assets/hero-zh.png)
+
+<h1>STG Desk</h1>
+
+<p><strong>每一步，都更进一步。面向 <a href="https://github.com/wildcat430524/StepsToGreat">StepsToGreat</a> 学习目录的 Windows 本地桌面工作台。</strong></p>
+
+<p>
+  <a href="https://github.com/wildcat430524/STG-Desk/releases/latest"><img src="https://img.shields.io/github/v/release/wildcat430524/STG-Desk?style=flat-square&label=release&color=148A80" alt="最新发布版本"></a>
+  <a href="https://github.com/wildcat430524/STG-Desk/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/wildcat430524/STG-Desk/ci.yml?branch=main&style=flat-square&label=CI%20build" alt="构建状态"></a>
+  <a href="https://github.com/wildcat430524/STG-Desk/releases"><img src="https://img.shields.io/github/downloads/wildcat430524/STG-Desk/total?style=flat-square&color=2563EB" alt="累计下载"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-0078D4?style=flat-square" alt="平台：Windows">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-4B5563?style=flat-square" alt="许可证：MIT"></a>
+</p>
+
+<p>
+  <strong><a href="https://github.com/wildcat430524/STG-Desk/releases/latest">下载 Windows 便携版 (v0.3.20)</a></strong> ·
+  <a href="#界面功能全景">界面全景</a> ·
+  <a href="#本地优先架构">架构与安全</a> ·
+  <a href="#30-秒快速上手">快速开始</a> ·
+  <a href="#dsh-原生协作">DSH 协作</a> ·
+  <a href="#stepstogreat-开源生态">生态全家桶</a>
+</p>
+
+<p><strong>简体中文</strong> | <a href="README.en.md">English</a></p>
+
 </div>
 
-STG Desk 是面向 [StepsToGreat](https://github.com/wildcat430524/StepsToGreat) 学习目录的 Windows 桌面工作台。打开本地学习文件夹，就能从档案找到当前课程，在教学旁写答案，查看历轮反馈与学习进度。需要 AI 评估或讨论时，可连接本机 **DeepSeek Harness（DSH）**，继续使用原生学习会话。
+---
 
-阅读、编辑和作答可以独立使用，DSH 对话按需连接。学习资料仍保存在原目录中，便于导师或学习 Agent 接着读取和更新。
+STG Desk 让纯 Markdown 驱动的自学工作流拥有顺手的桌面界面：直接打开本地 **StepsToGreat** 学习文件夹，从档案自动定位当前课程，在教学文档旁逐题作答、查看历轮反馈与总体掌握进度；需要 AI 批改或提问时，按需连接本机 **DeepSeek Harness（DSH）**，继续使用原生学习会话。
 
-> 本文对应 [v0.3.20](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.20)，各版本变化见 [发布说明](https://github.com/wildcat430524/STG-Desk/releases)。界面支持简体中文（默认）与英文切换。
+> **本地优先、零锁定**：阅读、编辑和作答可完全离线独立使用，直接保存回原目录的 Markdown 文件。文档对应 [v0.3.20](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.20)（[查看全部发布说明](https://github.com/wildcat430524/STG-Desk/releases)）。
 
-v0.3.20 新增简体中文与英文界面切换：顶栏可随时切换，选择会保存在本机、重启后恢复，独立文档窗口与 DSH 小窗保持一致。切换不会刷新页面，也不会改动已输入的草稿和当前文档。此前 v0.3.19 修复了学生回答里空代码块占位无法编辑的问题，并校正切换题目时作答框的对齐。
+---
 
-### 界面语言
+## 本地优先架构
 
-顶栏提供 **中文 / English** 切换，导入文件夹前后都可以使用。选择会保存在本机，下次打开应用时自动恢复；独立文档窗口与 DSH 小窗使用同一语言。切换语言会立即更新按钮、对话框、提示文字和状态信息，不会刷新页面，也不会改动已输入的草稿答案、当前文档或 DSH 会话。未选择英文时仍保持中文界面。
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture-zh-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/architecture-zh-light.png">
+    <img src="docs/assets/architecture-zh-light.png" alt="STG Desk 本地优先架构与写入安全">
+  </picture>
+</p>
 
-只有应用界面会被翻译。课程正文、题目、Markdown、文件名与目录名、代码、解析规则和学习记录都保持原文，包括 `01_教学引导.md` 这类中文目录约定。
+- **不复制资料**：导入学习文件夹即直接读写原目录 Markdown，与 Codex / Claude Code / DSH 等任意学习 Agent 互通。
+- **v0.3.20 双语界面切换**：顶栏随时切换 **中文 / English**，状态本机记住、多窗口同步、不刷新页面也不丢草稿；课程正文与目录约定始终保持原文。
 
-![英文界面的顶栏语言切换与操作按钮](docs/screenshots/language-switch.png)
+---
 
-## 界面预览
+## 界面功能全景
 
-教学、学生回答、当前章节进度和总体进度各有入口；教学与回答文档可以移到独立窗口，DSH 支持侧边面板与独立小窗。
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/visual-editor.png" alt="所见即所得编辑器"><br>
+      <sub><strong>所见即所得阅读编辑。</strong>点击标题、列表、表格或行内公式直接编辑，未修改区块严格保留原始 Markdown。支持阅读宽度、字号、夜间主题与 <code>Esc</code> 专注模式。</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/editor-code.png" alt="代码语法高亮与语言选择器"><br>
+      <sub><strong>17 种语法高亮与一键复制。</strong>Java / Python / TS / SQL / Rust 等代码块采用与预览一致的 Atom One Light/Dark 配色，工具条绝不污染 Markdown 原文。</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/editor-math.png" alt="KaTeX 数学公式排版"><br>
+      <sub><strong>KaTeX 数学公式就地校验。</strong>支持 <code>$...$</code> 行内公式与 <code>$$...$$</code> 独立推导块，插入弹窗实时预览并检查语法，双击已有公式修改源式。</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/editor-structure.png" alt="复杂结构、任务清单与数据表格"><br>
+      <sub><strong>复杂内容清晰排版。</strong>左侧留白标注 <code>H1</code>/<code>H2</code>/<code>H3</code> 层级，任务清单、嵌套列表与数据表格保持可编辑（可用仓库内置 <code>demo/EditorShowcase</code> 体验）。</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/answer-workspace.png" alt="按题作答工作区"><br>
+      <sub><strong>教学旁逐题作答。</strong>支持切题保留草稿、折叠/展开长题干、插入代码块以及「专注作答」放大输入，并可随时切到「作答记录」与「完整文档」。</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/answer-saved.png" alt="保存后答案写入学生文档"><br>
+      <sub><strong>一键写入、原答可核对。</strong>点击「保存本轮作答」或 <code>Ctrl+S</code> 将本轮答案与文档编辑一次落盘，绝不自动篡改掌握表或交接状态。</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/teaching-window.png" alt="独立教学窗口"><br>
+      <sub><strong>独立窗口分屏学习。</strong>点击「开窗口 ↗」将教学文档或学生文档移出主窗口，一边对照阅读一边专注作答，多窗口共享保存队列与版本校验。</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/language-switch.png" alt="中文与英文界面实时切换"><br>
+      <sub><strong>v0.3.20 中英界面无缝切换。</strong>顶栏点击即可切换，独立窗口与 DSH 小窗同步生效；不重载页面，也不修改已输入的答案草稿或课程内容。</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/overall-progress.png" alt="总体进度与掌握表"><br>
+      <sub><strong>学习进度有据可查。</strong>直接解析学习档案中的交接状态、课程路线与掌握记录表，导师更新记录后自动刷新展示。</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/history.png" alt="历史版本备份与恢复"><br>
+      <sub><strong>自动备份与历史预览恢复。</strong>每次保存前自动在 <code>.stg-desk/backups/</code> 备份旧版（默认保留 20 个版本，可设 5–100），恢复前先预览原文。</sub>
+    </td>
+  </tr>
+</table>
 
-![学习工作台：教学文档与作答区，DSH 按需展开](docs/screenshots/workspace.png)<br>
-<sub><strong>学习工作台。</strong>左边读教学，右边按题作答；需要评估或讨论时，从右上角展开 DSH 面板。</sub>
+> 以上截图均使用仓库内置演示课程与测试草稿，不包含真实学习记录或模型回复。
 
-截图使用演示课程与测试草稿，不包含真实学习记录或模型回复。
+---
 
-![模型选择：搜索名称或服务商，查看价格与当前模型](docs/screenshots/model-picker.png)
+## 30 秒快速上手
 
-模型选择面板支持服务商分组、搜索和键盘操作；此图使用演示模型列表。
+1. 前往 [最新发布页](https://github.com/wildcat430524/STG-Desk/releases/latest) 下载 `STG-Desk-<版本号>-Windows.exe`，双击即用（便携免安装，无需配置 Node.js 或 Electron）。
+2. 点击 **「导入学习文件夹」** 或直接从资源管理器拖入你的 `StepsToGreat` 根目录。
+3. 点击 **「继续学习」** 进入当前课，或通过 **「选择课程」** 切换章节（含分轮 `第N轮_教学引导.md` 箭头切换）。
+4. 在右侧逐题填写答案，按 `Ctrl+S` 或点 **「保存本轮作答」** 写入 Markdown。
 
-## 功能特性
+<p align="center">
+  <img src="docs/screenshots/welcome.png" alt="欢迎页：导入学习文件夹或体验内置演示课程" width="82%">
+</p>
 
-- **接着上次学**：恢复最近工作区，从学习档案定位当前课，也可选择已有课程。
-- **直接编辑文档**：单栏所见即所得，支持代码、表格、清单、公式和本地图片；未修改区块保留原始 Markdown。
-- **代码与公式就地处理**：代码块带语法高亮、语言选择和复制按钮；行内与独立公式由 KaTeX 排版，可插入、预览并双击修改。
-- **教学旁边作答**：按题编辑当前轮答案、插入代码块并同步保存；历轮原答、评估和复评可以随时核对。
-- **完整文档随时修改**：回答页直接编辑全文，也能在教学旁查看与修改完整学生文档。
-- **进度有据可查**：读取文档中的章节进度、总体进度、交接状态和掌握记录。
-- **按自己的习惯阅读**：独立教学与回答窗口、字号与行距设置、阅读宽度、夜间主题和专注模式。
-- **调整工作台布局**：拖动分隔线分配教学、作答与 DSH 的宽度；按工作区记住布局，区域较窄时切换教学与作答。
-- **沿用 DSH 会话**：按服务商分组搜索模型，查看价格标记和当前选择；面板和小窗共用同一对话与输入草稿。
-- **带着课程资料提问**：发送时自动关联当前课程已保存的相关文档；对话支持复制消息、复制代码和回到最新回复。
-- **保存可以回头核对**：一键保存现有修改、写入前备份、外部修改提醒与历史恢复。
-
-软件展示已有学习记录，掌握判断、导师评估与下一课由导师或学习 Agent 更新。
-
-## 快速开始
-
-1. 从 [最新发布页](https://github.com/wildcat430524/STG-Desk/releases/latest) 下载 `STG-Desk-<版本号>-Windows.exe`，双击运行，无需另装 Node.js 或 Electron。
-2. 点击「导入学习文件夹」，或从资源管理器把文件夹拖入窗口。选择包含学习档案和课程目录的工作区根目录。
-3. 点击「继续学习」进入当前课，或通过「选择课程」打开已有课程。
-4. 阅读教学，在旁边填写答案并「保存本轮作答」；也可打开回答页直接编辑，点击「保存」或按 `Ctrl+S` 写入文档。
-5. 需要 AI 评估时，启动 DSH 桌面端，在 STG Desk 中打开 DSH 面板并连接，再发送评估请求。
-
-暂时没有学习资料，可以从欢迎页体验 [内置演示课程](demo/StepsToGreat)。导入目录会直接读取原文件；保存时写入原学习目录，不复制成另一套资料。
-
-![欢迎页：导入学习文件夹或体验演示课程](docs/screenshots/welcome.png)
+- **没有现成资料？** 欢迎页一键体验内置 [演示课程](demo/StepsToGreat)，或下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.20/STG-Desk-0.3.20-EditorShowcase.zip) 解压导入 `EditorShowcase`（含 Java 17+ / Python / TS / SQL 与 LaTeX 矩阵）。
 
 <details>
-<summary><strong>学习目录与文档配对</strong></summary>
-
-演示目录采用以下结构：
+<summary><strong>查看标准学习目录与文档配对约定</strong></summary>
 
 ```text
 StepsToGreat/
@@ -90,131 +137,35 @@ StepsToGreat/
             └─ 01_学生回答.md
 ```
 
-教学与学生文档放在同一目录并使用相同前缀，便于自动关联。当前课来自学习档案的交接状态；找不到课程时，请检查导入的根目录、档案里的文档路径和文档配对。
+教学引导与学生回答使用相同前缀并放在同一课程目录下即可自动配对；当前课由学习档案的交接状态决定。
 
 </details>
 
-## 使用指南
+---
 
-### 阅读与编辑
+## DSH 原生协作
 
-点击文档的标题、正文、清单或表格直接编辑；行内公式可双击修改。文档信息与操作集中在底部，可调整阅读设置、切换夜间主题或进入「专注」。按 `Esc` 或点击退出入口返回普通布局。
+需要 AI 导师点评本轮答案时，启动本机 **DeepSeek Harness 桌面端**（保持主窗口开启），在 STG Desk 右上角点击「打开 DSH 面板」→「连接」：
 
-![直接编辑标题、清单、表格、公式与代码](docs/screenshots/visual-editor.png)
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/dsh-floating.png" alt="DSH 置顶小窗与模型选择面板"><br>
+      <sub><strong>侧边面板 & 置顶独立小窗。</strong>可随时切出为置顶悬浮窗，面板与小窗共享同一段学习会话、当前模型和输入草稿。</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/model-picker.png" alt="模型选择与服务商搜索"><br>
+      <sub><strong>按服务商搜索模型与自动带课上下文。</strong>支持键盘方向键/搜索过滤、价格标记；每次发送自动关联已保存的教学引导、学生回答、档案与学习规则。</sub>
+    </td>
+  </tr>
+</table>
 
-### 调整面板布局
-
-拖动教学与作答之间、工作台与 DSH 之间的分隔线调整宽度；双击分隔线恢复默认。宽度设置按学习工作区记忆，重新打开同一目录后恢复。
-
-教学与作答所在区域较窄时，标题栏会出现「教学 / 本轮作答」切换入口。切换视图保留已输入的答案。分隔线也可以通过 `Tab` 聚焦，再用左右方向键微调。
-
-### 代码块
-
-代码使用中性浅灰阅读背景与白底细边框卡片，字号、行距和留白为长代码保持稳定；深色主题下整套颜色同步切换。每段代码上方有工具条，可选择语言或一键复制。
-
-![代码块：语法高亮、语言选择与复制按钮](docs/screenshots/editor-code.png)
-
-语法高亮与文档预览共用同一套 highlight.js 实例和样式，因此编辑区与阅读区的配色一致。可选语言共 17 种语法加纯文本：
-
-```text
-Java · Python · JavaScript · TypeScript · JSON · Shell/Bash · SQL · HTML/XML · CSS
-C/C++ · C# · Go · Rust · Kotlin · YAML · Markdown · Diff · 纯文本
-```
-
-未知语言或超过 20000 字符的代码块仍可正常编辑和保存，只是不做着色。工具条不属于文档内容，不会写入 Markdown。
-
-### 数学公式
-
-行内公式写在 `$...$` 中，独立公式块使用 `$$...$$`，两者都由 KaTeX 排版并保留原始 LaTeX。点击底部「公式」可以插入新公式；对话框会实时预览结果并检查语法，双击已有公式即可修改源式。
-
-![行内与独立公式：KaTeX 排版与推导、矩阵](docs/screenshots/editor-math.png)
-
-公式识别复用 Markdown 的代码跨度规则，行内代码中的美元符号不会被当作公式。LaTeX 无法解析时，编辑区保留原式并提示错误，不会丢失内容。
-
-### 复杂内容演示
-
-标题、清单、表格和公式按内容层级组织：标题在左侧留白处以 `H1`/`H2`/`H3` 标注层级，任务清单、嵌套清单和数据表格保持可编辑。
-
-![任务清单、嵌套清单与数据表格](docs/screenshots/editor-structure.png)
-
-仓库内 `demo/EditorShowcase` 是专门的内容演示工作区，涵盖 Java 17+ Stream/CompletableFuture 泛型、Python 梯度下降、TypeScript 异步重试、SQL 窗口函数、4 组独立公式，以及表格、任务与嵌套清单。示例数据均为虚构。
-
-导入方式：
-
-- **从源码运行**：导入 `demo/EditorShowcase` 目录。
-- **使用便携版**：下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.20/STG-Desk-0.3.20-EditorShowcase.zip)，解压后导入 `EditorShowcase` 根目录。也可以直接查看 [演示源码](demo/EditorShowcase) 和 [教学文档](demo/EditorShowcase/我的学习/学科/Markdown/01-复杂内容演示/01_教学引导.md)。
-- 导入后「选择课程」会列出这门演示课程（路径为 `我的学习/学科/Markdown/01-复杂内容演示/`），与内置的 [示例课程](demo/StepsToGreat) 相互独立。
-
-> 演示中的 Java 示例按 Java 17+ 语法编写，仅经过审查，未在本机 Java 11 环境编译；Python 示例已实际运行。示例用于展示排版与编辑效果，不代表学习评估。
-
-### 按题作答
-
-课程采用 `第N轮_教学引导.md` 分轮留档时，点击文档卡片左上角标题旁的箭头即可切换本章教学轮次。打开旧轮会自动展开对应的作答记录；各轮文件不再重复占用顶部标签。
-
-教学旁的作答区提供三个入口：
-
-| 入口 | 用途 |
-| --- | --- |
-| 本轮作答 | 逐题编辑最新已发布轮次的答案，保存后继续显示，并与回答文档同步 |
-| 作答记录 | 查看历轮答案、导师评估与最终复评 |
-| 完整文档 | 阅读和编辑整个学生回答，包括按题界面未覆盖的内容 |
-
-按题输入支持普通轮与费曼轮，适用于当前轮有 1–3 道可识别题目的文档；题目更多或格式无法识别时，可直接编辑回答全文。答题区、回答全文和当前教学文档的修改会在一次保存中一起写入，无需分步保存。
-
-点击题号切换当前题目，已填写的题会显示 `✓`；切题保留输入，保存包含当前未显示的题目。长题干默认收起，点击「题干与示例」展开查看；展开后整列统一滚动。
-
-点击「专注作答」放大答题区，点击「返回对照」或按 `Esc` 返回教学与作答并列布局。「保存本轮作答」、底部「保存」和 `Ctrl+S` 都保存现有修改，普通布局与专注作答中的行为一致。
-
-![作答工作区：逐题切换、展开题干与专注作答](docs/screenshots/answer-workspace.png)
-
-**点击保存即可把现有修改写入文档。** 输入会在后台保留以便意外关闭后恢复，不需要管理草稿或另存。作答保存会保留已有答案与评估，不自动修改掌握表或交接状态。
-
-![保存本轮作答后，答案原文出现在学生文档中](docs/screenshots/answer-saved.png)
-
-### 学习进度
-
-点击「当前章节进度」核对当前交接记录，或打开「总体进度」查看课程路线与学习档案中已有的掌握记录。进度来自原文档，导师更新记录后会刷新。
-
-![总体进度：已记录的掌握数量与掌握表](docs/screenshots/overall-progress.png)
-
-### 独立窗口
-
-在教学或回答页点击「开窗口 ↗」，主应用切到另一份文档，已弹出的入口暂时禁用；进度页仍可进入。关闭独立窗口后，主应用回到对应文档并恢复草稿。
-
-主窗口切换课程、切换学习目录或关闭后，独立窗口继续使用打开时的文档与工作区。各窗口保留独立草稿，写入同一文件时共享保存队列并校验版本。
-
-把教学移到独立窗口，可以一边阅读、一边在主窗口答题。
-
-<img src="docs/screenshots/teaching-window.png" alt="独立教学窗口" width="720">
-
-回答文档也可以独立打开，直接编辑全文，并保留原工作区。
-
-<img src="docs/screenshots/student-window.png" alt="独立回答窗口" width="720">
-
-### DSH 协作
-
-先打开 **DeepSeek Harness 桌面端**并配置可用模型，保持其主窗口打开，再在 STG Desk 中打开 DSH 面板，点击「连接」。仅有后台进程运行时无法连接。首次连接会为当前学习目录创建专用会话，之后恢复该会话；也可选择这个目录的已有会话或新建会话。应用启动时默认不展开 DSH。
-
-模型目录、账号和额度由你本机的 DSH 管理。保存答案后，再发送评估请求，让学习 Agent 读取文档进行评估。
-
-**模型选择。** 点击输入区底部的模型名称，搜索模型名称或服务商。列表按服务商分组，显示 DSH 提供的价格标记，并以勾选标出当前模型。可用方向键选择、`Enter` 确认、`Esc` 关闭；回复生成期间不能切换模型，切换失败会保留原模型。
-
-**自动关联资料。** 每次发送时自动读取当前课程相关的已保存文档，例如教学引导、学生回答、学习档案和学习规则。输入区无需额外点击引用按钮；尚未保存的编辑不会作为文档上下文发送，按题答案请先保存。
-
-<img src="docs/screenshots/composer.png" alt="精简的 DSH 输入区：模型选择与发送按钮，课程资料自动关联" width="420">
-
-**阅读与发送。** `Enter` 发送，`Shift+Enter` 换行；生成时发送按钮变为停止按钮。上翻历史消息时保持当前阅读位置，点击「回到最新 ↓」继续跟随回复。消息下方可复制整条内容，代码块可单独复制，并显示复制结果。
-
-[dsh-stg-learning](https://github.com/wildcat430524/dsh-stg-learning) 是独立的 DSH 学习管理插件，用于在 DSH 内组织工作区与会话；连接 DSH 无需安装该插件。
-
-DSH 面板可切换为置顶小窗，继续使用同一会话、模型和输入草稿。下图使用演示会话与模型列表展示小窗中的模型选择面板。
-
-<img src="docs/screenshots/dsh-floating.png" alt="DSH 独立小窗与模型选择面板，使用演示数据" width="420">
+> 模型目录、账号与额度完全由你本机的 DSH 管理，STG Desk 不复制任何密钥或凭据。连接 DSH 也不要求额外安装 `dsh-stg-learning` 插件。
 
 <details>
-<summary><strong>DSH 版本与连接配置</strong></summary>
+<summary><strong>DSH 端口与环境变量配置（默认 http://127.0.0.1:19387）</strong></summary>
 
-已验证的 DSH 桌面版本为 **0.2.0-rc.2**，默认连接地址为 `http://127.0.0.1:19387`。如本机使用不同端口或配置目录，在启动 STG Desk 前设置实际需要修改的项：
+已验证的 DSH 桌面端版本为 **0.2.0-rc.2**。若本机使用自定义端口或配置目录，启动前设置对应环境变量即可：
 
 ```powershell
 $env:STG_DSH_DESKTOP_URL = 'http://127.0.0.1:19387'
@@ -222,54 +173,70 @@ $env:DSH_HOME = 'C:\你的DSH配置目录'
 & 'C:\你的软件目录\STG-Desk-<版本号>-Windows.exe'
 ```
 
-连接地址仅允许本机 HTTP 地址。桌面连接授权在主进程中读取，应用不复制模型账号或密钥。其他 DSH 版本的兼容性需要实际验证。
+仅允许连接本机 HTTP 地址，连接授权在 Electron 主进程读取。
 
 </details>
 
-## 数据与恢复
+---
 
-| 数据 | 保存位置 |
-| --- | --- |
-| 教学、学生回答与学习档案 | 原学习目录中的 Markdown 文件 |
-| 历史备份 | 学习目录的 `.stg-desk/backups/`，默认每份文档 20 个版本，可设为 5–100 个 |
-| 未保存文档与按题答案草稿 | 系统应用设置目录；独立窗口有各自的草稿目录 |
-| 最近工作区与阅读设置 | 系统应用设置目录 |
-| DSH 会话与模型配置 | 由 DSH 管理 |
+## 数据安全与备份机制
 
-保存前校验文件版本，备份旧内容，再通过临时文件替换。保存时自动保留可合并的外部修改；同一段发生冲突时采用当前编辑内容，磁盘旧版本自动备份，不弹出手动合并窗口。若题目本身已更换，保留输入并提示核对，避免把答案写入另一道题。恢复历史版本前也会备份当前内容。
+| 数据类型 | 保存位置与保护机制 |
+| :--- | :--- |
+| 教学引导、学生回答与档案 | 直接读写原学习目录 Markdown，保存前校验文件版本并经临时文件原子替换 |
+| 历史版本快照 | 学习目录 `.stg-desk/backups/`（默认保留 20 个版本，可设 5–100）；并发外部修改可自动合并或备份冲突旧版 |
+| 未保存输入草稿 | 停顿约 250ms 自动暂存至系统应用设置目录，独立窗口互不干扰，恢复时绝不盲目覆盖原盘文件 |
+| DSH 对话与模型配置 | 由本机 DSH 原生管理 |
 
-输入停顿约 250 毫秒后写入草稿；草稿恢复不会自动覆盖原文件。本地备份不等于云端同步，重要学习资料建议另行备份。
+---
 
-在历史版本中先预览旧内容，再决定是否恢复。
+## StepsToGreat 开源生态
 
-![历史版本：备份列表、原文预览与恢复入口](docs/screenshots/history.png)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/ecosystem-zh-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/ecosystem-zh-light.png">
+    <img src="docs/assets/ecosystem-zh-light.png" alt="StepsToGreat 开源生态全景">
+  </picture>
+</p>
+
+| 项目 | 角色定位 | 适用场景 |
+| :--- | :--- | :--- |
+| [StepsToGreat](https://github.com/wildcat430524/StepsToGreat) | 开放教学协议与文件夹框架 | 用任意 AI 工具（Codex / Claude / Cursor 等）打开目录即学 |
+| [Steps2Great-skill](https://github.com/wildcat430524/Steps2Great-skill) | Agent Skill (`npx skills add`) | 一行命令装入常用 AI 客户端，支持轻量目录或导出独立项目 |
+| **STG Desk**（本仓库） | Windows 独立桌面工作台 | 偏爱所见即所得排版、公式、逐题专注作答与历史版本备份 |
+| [dsh-stg-learning](https://github.com/wildcat430524/dsh-stg-learning) | DeepSeek Harness 原生插件 | 直接在 DSH 内部同屏完成阅读、划词提问、作答与会话管理 |
+
+---
 
 ## 常见问题
 
 <details>
-<summary><strong>没有 DSH 可以使用吗？</strong></summary>
+<summary><strong>没有安装 DSH 可以独立使用 STG Desk 吗？</strong></summary>
 
-可以阅读、编辑和答题。发送 AI 消息需要本机 DSH 桌面端运行并有可用模型配置；关闭 DSH 后，已加载的历史仍可阅读。
+完全可以。阅读、Markdown 所见即所得编辑、公式/代码排版、逐题作答保存和历史备份全部离线可用；仅发送 AI 消息时需要本机运行 DSH 桌面端。
 
 </details>
 
 <details>
 <summary><strong>支持哪些文件格式？</strong></summary>
 
-当前支持 UTF-8 Markdown/TXT，单文件上限 8 MB，支持 UTF-8 BOM 与 CRLF。PDF、DOCX 不在解析范围，Mermaid 保留为代码块。工作区内图片可以加载，远程图片默认不加载。
+支持 UTF-8 Markdown / TXT（单文件上限 8 MB，兼容 BOM 与 CRLF），支持加载工作区内本地图片（远程图片默认禁用，原始 HTML 渲染关闭）。PDF / DOCX 不在解析范围，Mermaid 保留为代码块。
 
 </details>
 
 <details>
-<summary><strong>下载后为什么有 Windows 提示？</strong></summary>
+<summary><strong>Windows 打开便携版时提示未签名怎么办？</strong></summary>
 
-当前便携版尚未代码签名。请从本仓库 Releases 下载，可用发布页的 `SHA256SUMS.txt` 核对文件。
+当前便携版尚未做商业代码签名，请务必从本仓库 [Releases](https://github.com/wildcat430524/STG-Desk/releases) 下载，并使用附件 `SHA256SUMS.txt` 校验文件哈希。
 
 </details>
 
-## 开发与构建
+---
 
-需要 **Node.js 22.12+**；CI 使用 Node.js 24。完整桌面功能需要 Electron 宿主。
+## 开发、构建与贡献
+
+需要 **Node.js 22.12+**（CI 使用 Node.js 24）。
 
 ```powershell
 git clone https://github.com/wildcat430524/STG-Desk.git
@@ -278,54 +245,36 @@ npm ci
 npm start
 ```
 
-| 命令 | 用途 |
-| --- | --- |
-| `npm run dev` | 启动 Vite 界面预览，浏览器中不提供完整桌面文件功能 |
-| `npm run build` | 构建前端到 `dist/` |
-| `npm test` | 运行解析、导航、文件保存、草稿、DSH 协议与编辑器高亮/公式等测试 |
-| `npm run test:desktop` | 构建并运行 Electron 桌面冒烟验收 |
-| `npx electron tests/save-current-ui.cjs` | 构建后验证一键保存、旧内容恢复、全文预览与 Ctrl+S |
-| `npx electron tests/answer-layout-ui.cjs` | 构建后验证切题、草稿恢复、专注作答与整轮保存 |
-| `npx electron tests/answer-placeholder-ui.cjs` | 构建后验证模板空代码围栏（```python）仍可编辑、清空后保持原文且作答框有尺寸 |
-| `npx electron tests/model-picker-ui.cjs` | 构建后验证模型搜索、切换失败恢复、键盘操作及小窗缩放 |
-| `npx electron tests/ui-system-ui.cjs` | 构建后验证面板宽度、窄区域切换、对话阅读与弹层焦点 |
-| `npx electron tests/english-ui.cjs` | 构建后验证中英文切换、偏好恢复、独立窗口同步与英文界面文案 |
-| `npm run pack` | 生成 Windows 目录版，使用时保留整个 `release/win-unpacked/` |
-| `npm run dist` | 生成 `release/STG-Desk-<版本号>-Windows.exe` |
-
-开发桌面界面时，先运行 `npm run dev`，再在另一终端设置 `$env:STG_DEV_URL='http://127.0.0.1:5178'` 并执行 `npx electron .`。
-
-> 桌面冒烟验收需要在未被 `ELECTRON_RUN_AS_NODE=1` 污染的环境中运行；若出现 `app.setPath is not a function`，先清除该变量再重试。验收会在 `tests/artifacts/` 留下界面截图与 `desktop-smoke.json`。
-
 <details>
-<summary><strong>源码结构与技术组成</strong></summary>
+<summary><strong>展开查看测试命令、构建产物与源码目录结构</strong></summary>
+
+| 命令 | 用途 |
+| :--- | :--- |
+| `npm run dev` | 启动 Vite 前端界面预览（浏览器模式不含桌面文件读写） |
+| `npm run build` | 构建前端产物至 `dist/` |
+| `npm test` | 运行解析、导航、保存、草稿、DSH 协议与高亮/公式单元测试 |
+| `npm run test:desktop` | 构建并运行 Electron 桌面冒烟验收（需清除 `ELECTRON_RUN_AS_NODE=1`） |
+| `npx electron tests/english-ui.cjs` | 验证中英文切换、多窗口同步与偏好恢复 |
+| `npx electron tests/answer-layout-ui.cjs` | 验证切题、草稿恢复、专注作答与整轮保存 |
+| `npx electron tests/model-picker-ui.cjs` | 验证模型搜索、切换失败恢复与小窗缩放 |
+| `npm run dist` | 打包生成便携单文件 `release/STG-Desk-<版本号>-Windows.exe` |
 
 ```text
-electron/          桌面窗口、IPC、DSH 控制与独立文档窗口
-src/               学习页面、作答区、编辑器与样式
-lib/               导航、文档解析、文件保存、草稿与 DSH 服务
-tests/             逻辑测试与桌面验收
+electron/          桌面主进程、IPC、DSH 控制与独立文档窗口
+src/               学习界面、作答工作区、Tiptap 编辑器与样式
+lib/               课程导航、文档解析、原子保存、草稿与 DSH 服务
+tests/             单元测试与 Electron UI 验收脚本
 demo/              演示课程（StepsToGreat、EditorShowcase）
-docs/screenshots/  README 界面截图
-.github/workflows/ Windows 验证、构建与发布
+docs/              截图、视觉资产、编辑器调研与发布说明
+.github/workflows/ Windows CI 验证、构建与发布流程
 ```
 
-所见即所得编辑器使用 **Tiptap / ProseMirror**，文档展示使用 markdown-it / KaTeX，输出由 DOMPurify 净化；chokidar 监测文件变化，Vite / electron-builder 负责构建与分发。
-
-编辑器把语法高亮和代码工具条实现为 ProseMirror 装饰，不写入文档内容；highlight.js 直接复用 Atom One Light / Dark 主题（BSD-3-Clause，作者署名与许可保留在 `src/editor-syntax.css` 与 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)），仅调整选择器作用域，使颜色变化限定在 Markdown 文档区。设计参考了若干成熟 Markdown 编辑器的排版取舍，但未引入第二个编辑引擎，也不从这些项目复制代码，详见 [编辑器调研](docs/editor-research.md) 与 [渲染整合说明](docs/editor-rendering-handoff.md)。
-
-文档渲染关闭原始 HTML，渲染进程无 Node 访问权限；文件访问限制在导入目录内，忽略隐藏目录、符号链接和依赖/构建目录。
-
-CI 在 Windows 上执行依赖安装、逻辑测试和便携版构建；桌面冒烟验收可在本地运行。构建状态见 [GitHub Actions](https://github.com/wildcat430524/STG-Desk/actions)。
+编辑器基于 **Tiptap / ProseMirror**、**markdown-it**、**KaTeX**、**DOMPurify** 与 **highlight.js**（Atom One Light/Dark，BSD-3-Clause）。详见 [编辑器调研](docs/editor-research.md) 与 [渲染整合说明](docs/editor-rendering-handoff.md)。
 
 </details>
 
-## 参与贡献
-
-欢迎提交 [Issue](https://github.com/wildcat430524/STG-Desk/issues) 或 Pull Request。反馈时请提供软件版本、DSH 版本（如相关）、复现步骤和预期行为；文档解析问题可附脱敏的最小 Markdown 示例。
-
-涉及保存、备份、解析或窗口行为的修改，请运行相关测试。界面修改请附演示数据截图，并检查窄窗口与系统「减少动态效果」设置。
+欢迎提交 [Issue](https://github.com/wildcat430524/STG-Desk/issues) 或 Pull Request！如果 STG Desk 对你的学习有帮助，请点一颗 ⭐ Star 支持。
 
 ## 许可证
 
-本项目新增代码采用 [MIT](LICENSE)。第三方许可见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) 和依赖各自的 LICENSE。
+本项目新增代码采用 [MIT](LICENSE)。第三方组件许可见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) 及依赖各自的 LICENSE。
