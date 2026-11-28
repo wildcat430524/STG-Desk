@@ -5,6 +5,7 @@ const chokidar=require('chokidar');
 const {dialog,shell,screen}=require('electron');
 const {Workspace}=require('../lib/workspace.cjs');
 const {DraftStore}=require('../lib/drafts.cjs');
+const {readSettings,updateSettings,clampPreferences}=require('../lib/settings-store.cjs');
 const {appIcon}=require('./app-icon.cjs');
 const localization=require('./localization.cjs');
 
@@ -42,7 +43,7 @@ function createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest
     w.webContents.on('before-input-event',(event,input)=>{if(input.type!=='keyDown')return;if(input.key==='F11'){event.preventDefault();w.setFullScreen(!w.isFullScreen());return;}if(!(input.control||input.meta)||input.alt)return;const key=input.key.toLowerCase();if(key==='s'){event.preventDefault();w.webContents.send('shortcut','save');}else if(['+','=','-','0'].includes(key)){event.preventDefault();w.webContents.setZoomFactor(key==='0'?1:Math.max(.5,Math.min(2,w.webContents.getZoomFactor()*(key==='-'?1/1.1:1.1))));}});
     w.webContents.setWindowOpenHandler(()=>({action:'deny'}));w.webContents.on('will-navigate',e=>e.preventDefault());
     w.on('close',event=>{if(c.closing||w.webContents.isCrashed()||w.webContents.isDestroyed())return;event.preventDefault();if(!c.closeRequested){c.closeRequested=true;w.webContents.send('prepare-close');}});
-    w.on('closed',()=>{clearTimeout(c.timer);c.watcher.close();contexts.delete(contentsId);opened.delete(key);if(records.get(key)===c){records.delete(key);if(c.ready&&!c.failed)notify({type:'closed',root:c.root,path:c.path,kind:c.kind,windows:list(own)});}});
+    w.on('closed',()=>{clearTimeout(c.timer);c.watcher.close().catch(()=>{});contexts.delete(contentsId);opened.delete(key);if(records.get(key)===c){records.delete(key);if(c.ready&&!c.failed)notify({type:'closed',root:c.root,path:c.path,kind:c.kind,windows:list(own)});}});
     const query={document:relative,asset:assetHost};
     try{if(dev){const url=new URL(dev);Object.entries(query).forEach(([k,v])=>url.searchParams.set(k,v));await w.loadURL(url.toString());}else await w.loadFile(path.join(__dirname,'../dist/index.html'),{query});}
     catch(e){c.failed=true;w.destroy();throw e;}
@@ -55,9 +56,14 @@ function createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest
   async function invoke(event,name,args){
     const c=context(event),[p,a,v]=args,ws=c.workspace;
     const methods={tree:()=>ws.tree(),read:()=>ws.read(p),save:()=>ws.save(p,a,v),'save-current':()=>ws.saveCurrent(p,a),'compose-answers':()=>require('../lib/save-current.cjs').composeAnswers(p,a),companion:()=>ws.companion(p),submit:()=>ws.submit(p,a,v),search:()=>ws.search(p),learning:()=>require('../lib/learning.cjs').getLearningState(ws),documents:()=>require('../lib/documents.cjs').relevantDocuments(ws,p),describe:()=>require('../lib/learning.cjs').describeFile(p),'document-context':()=>null,'last-root':()=>c.root,'document-window-info':()=>({root:c.root,path:c.path,kind:c.kind,assetHost:c.assetHost}),'document-window-list':()=>list(ws),'document-window-open':()=>open(p,ws),'open-root':async()=>{if(typeof p!=='string'||path.resolve(p)!==path.resolve(c.root))throw Error(tr('error.documentWindowRoot'));return ws.tree();},'draft-get':()=>c.drafts.get(c.root,p),'draft-put':()=>c.drafts.put(c.root,p,a),'draft-remove':()=>c.drafts.remove(c.root,p),'draft-list':()=>c.drafts.list(c.root),backups:()=>ws.backups(p),'backup-read':()=>ws.readBackup(p,a),'backup-restore':()=>ws.restoreBackup(p,a,v),dirty:()=>{c.dirty=!!p;},reveal:async()=>shell.showItemInFolder(await ws.resolve(p)),external:async()=>{if(typeof p==='string'&&/^https?:\/\//i.test(p))await shell.openExternal(p);},'export-draft':async()=>{const r=await dialog.showSaveDialog(c.window,{title:tr('dialog.exportDocumentDraftTitle'),defaultPath:path.basename(c.path),filters:[{name:'Markdown',extensions:['md']}]});if(!r.canceled){await fs.writeFile(r.filePath,p,'utf8');return true;}return false;},'close-ready':async()=>{c.closeRequested=false;if(!p){await dialog.showMessageBox(c.window,{type:'error',message:tr('dialog.closeFailed')});return;}c.closing=true;c.window.close();},'confirm-leave':async()=>false,preferences:async()=>{
-      const settingsFile=path.join(app.getPath('userData'),'settings.json');let settings={};try{settings=JSON.parse(await fs.readFile(settingsFile,'utf8'));}catch{}
-      const current={fontSize:16,lineHeight:1.9,readingWidth:820,backupRetention:20,...settings.preferences};if(!p)return current;
-      const next={fontSize:Math.max(13,Math.min(24,Number(p.fontSize)||16)),lineHeight:Math.max(1.4,Math.min(2.4,Number(p.lineHeight)||1.9)),readingWidth:Math.max(540,Math.min(1200,Number(p.readingWidth)||820)),backupRetention:Math.max(5,Math.min(100,Number(p.backupRetention)||20))};ws.retention=next.backupRetention;await fs.writeFile(settingsFile,JSON.stringify({...settings,backupRetention:next.backupRetention,preferences:next},null,2));return next;
+      const settingsFile=path.join(app.getPath('userData'),'settings.json');
+      if(!p){const settings=await readSettings(settingsFile);return clampPreferences(null,settings.preferences);}
+      let saved;
+      await updateSettings(settingsFile,settings=>{
+        saved=clampPreferences(p,settings.preferences);
+        return {...settings,backupRetention:saved.backupRetention,preferences:saved};
+      });
+      ws.retention=saved.backupRetention;return saved;
     }};
     if(!Object.hasOwn(methods,name))throw Error(tr('error.documentWindowUnsupported'));return methods[name]();
   }
@@ -69,6 +75,6 @@ function createDocumentWindows({app,BrowserWindow,workspace,drafts,dev,smokeTest
       c.window.setTitle(tr('app.documentWindowTitle',{kind:tr(kindKey),name:path.basename(c.path)}));
     }
   }
-  return {open,list,handles,invoke,applyLanguage,eachWindow:()=>[...contexts.values()].map(c=>c.window),assetWorkspace:host=>[...contexts.values()].find(c=>c.assetHost===host)?.workspace||null,dispose:()=>{for(const c of contexts.values()){clearTimeout(c.timer);c.watcher.close();}}};
+  return {open,list,handles,invoke,applyLanguage,eachWindow:()=>[...contexts.values()].map(c=>c.window),assetWorkspace:host=>[...contexts.values()].find(c=>c.assetHost===host)?.workspace||null,dispose:()=>{for(const c of contexts.values()){clearTimeout(c.timer);c.watcher.close().catch(()=>{});}}};
 }
 module.exports={createDocumentWindows};

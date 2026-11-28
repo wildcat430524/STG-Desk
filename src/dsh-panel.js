@@ -38,6 +38,7 @@ export function mountDsh({api,renderMD,escape,icon,dshOnly=false}){
   function controls(){const busy=current.busy||preparing,button=$('dsh-send');button.disabled=!busy&&(!input.value.trim()||!current.root||!current.connected);const key=String(!!busy);if(button.dataset.busy!==key){button.dataset.busy=key;button.innerHTML=busy?icon('<rect x="7" y="7" width="10" height="10" rx="2"/>',18):icon('<path d="M12 19V5m-6 6 6-6 6 6"/>',19);}button.title=busy?t('dsh.stop'):t('dsh.sendTitle');button.setAttribute('aria-label',button.title);host.dataset.busy=key;select.disabled=busy||!current.connected||!(current.models?.length);modelPicker.sync((current.root||'')+'\0'+(current.sessionId||''));input.disabled=preparing;sessionSelect.disabled=busy||!current.connected;connectBar.classList.toggle('hidden',!!current.connected);}
   function show(state){
     current=state;
+    if(state.connected)clearLaunchRetries();
     workspaceLabel.textContent=state.root?t('dsh.workspace',{path:state.root}):t('dsh.noWorkspace');
     workspaceLabel.title=state.root||'';
     host.dataset.connected=String(!!state.connected);
@@ -67,7 +68,21 @@ export function mountDsh({api,renderMD,escape,icon,dshOnly=false}){
   input.addEventListener('input',()=>{controls();api?.dshDraft(input.value).catch(showError);fitInput();});
   $('dsh-send').onclick=()=>send().catch(showError);
   sessionSelect.onchange=()=>api.dshSession(sessionSelect.value).catch(showError);
-  const launchDesktop=()=>api.dshOpenDesktop().then(()=>{setTimeout(()=>api.dshConnect().catch(showError),1800);}).catch(showError);
+  let launchRetryTimers=[];
+  const clearLaunchRetries=()=>{for(const id of launchRetryTimers)clearTimeout(id);launchRetryTimers=[];};
+  const launchDesktop=()=>{
+    clearLaunchRetries();
+    return api.dshOpenDesktop().then(()=>{
+      // Cold-starting DSH Desktop (especially 0.2.1/0.2.2+) can take several seconds before
+      // its loopback host binds a port; retry gently until connected.
+      for(const delay of [1500,3500,6500,10500]){
+        launchRetryTimers.push(setTimeout(()=>{
+          if(current.connected){clearLaunchRetries();return;}
+          api.dshConnect().catch(showError);
+        },delay));
+      }
+    }).catch(showError);
+  };
   openDesktop.onclick=launchDesktop;$('dsh-launch-desktop').onclick=launchDesktop;$('dsh-connect-now').onclick=()=>api.dshConnect().catch(showError);
   $('dsh-detach').onclick=()=>api.dshMode(dshOnly?'docked':'floating').catch(showError);
   $('dsh-close').onclick=()=>api.dshVisible(false).catch(showError);
@@ -114,7 +129,7 @@ export function mountDsh({api,renderMD,escape,icon,dshOnly=false}){
     if(!current.title)$('dsh-title').textContent=t('dsh.title');
     if(current.contextLabel)$('dsh-context').textContent=t('dsh.contextPrefix',{label:localizeRoleLabel(current.contextLabel,t)});
     const sendButton=$('dsh-send');
-    if(sendButton.dataset.busy){sendButton.title=t('dsh.stop');sendButton.setAttribute('aria-label',sendButton.title);}
+    if(sendButton.dataset.busy==='true'){sendButton.title=t('dsh.stop');sendButton.setAttribute('aria-label',sendButton.title);}
     else{sendButton.title=t('dsh.sendTitle');sendButton.setAttribute('aria-label',sendButton.title);}
     feed.refreshLabels();
     controls();

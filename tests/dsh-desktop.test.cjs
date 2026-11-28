@@ -51,3 +51,46 @@ test('Streaming and messages sent in Desktop arrive once without reasoning leaka
   s.accept({type:'event',event:message(3,'assistant/message','同步回复')});s.accept({type:'event',event:message(3,'assistant/message','同步回复')});s.accept({type:'event',event:{seq:4,type:'turn/end'}});
   assert.equal(updates.at(-1).messages.length,2);assert.equal(updates.at(-1).busy,false);assert(!JSON.stringify(updates).includes('隐藏思考'));await s.dispose();
 });
+test('Desktop send deduplicates unchanged documents per session, resends on edit, compaction, or new session',async t=>{
+  const home=await fs.mkdtemp(path.join(os.tmpdir(),'stg-dedup-test-'));t.after(()=>fs.rm(home,{recursive:true,force:true}));
+  const secret=Buffer.alloc(32,9).toString('base64url');await fs.writeFile(path.join(home,'.credentials.yaml'),JSON.stringify({version:1,records:{'client-connection/browser-session':{kind:'grant',payload:{version:1,secret}}}}));
+  const prompts=[];let seq=0;const sessions=['sess-1'];
+  class Socket extends EventEmitter{
+    constructor(){super();queueMicrotask(()=>this.emit('open'));}
+    send(data){const d=JSON.parse(data);queueMicrotask(()=>this.emit('message',Buffer.from(JSON.stringify({type:'item',streamId:d.streamId,value:{type:'snapshot',records:[],projections:{values:{}}}}))));}
+    close(){this.emit('close');}
+  }
+  const catalog={default:{provider:'buddy',model:'glm-5.3'},groups:[{id:'buddy',name:'CodeBuddy',models:[{id:'glm-5.3',name:'GLM 5.3'}]}]};
+  const fetch=async(url,options)=>{
+    const req=JSON.parse(options.body);
+    if(req.method==='session/prompt')prompts.push(req.payload.args.request.content[0].text);
+    const value=req.method==='session/modelCatalog'?catalog
+      :req.method==='workspace/create'?{workspace:{workspaceId:'ws',path:home,sessionIds:sessions}}
+      :req.method==='session/list'?{items:sessions.map(id=>({sessionId:id,cwd:home,projections:{values:{title:id}}}))}
+      :req.method==='session/create'?(()=>{const id=`sess-${++seq+1}`;sessions.push(id);return {sessionId:id};})()
+      :req.method==='session/projections'?{values:{}}:{accepted:true};
+    return {ok:true,json:async()=>({result:{ok:true,value}})};
+  };
+  const s=new DshDesktopService({home,running:async()=>true,fetch,WebSocket:Socket});t.after(()=>s.dispose());
+  const guideBody='教学引导详细内容_'.repeat(300);
+  const answerBody='学生作答v1';
+  const ctx={documents:[{path:'01_教学引导.md',role:'teaching-guide',access:'阅读',content:guideBody},{path:'01_学生回答.md',role:'submitted-answer',access:'读写',content:answerBody}]};
+  await s.send({cwd:home,text:'第一问',context:ctx});
+  await s.send({cwd:home,text:'追问为什么',context:ctx});
+  assert.ok(prompts[0].includes(guideBody),'first turn includes full guide');
+  assert.ok(!prompts[1].includes(guideBody),'second turn omits unchanged guide body');
+  assert.ok(prompts[1].includes('内容与本会话前文一致，未重复附带'));
+  assert.ok(prompts[1].length<prompts[0].length/4,'deduplicated prompt shrinks significantly');
+  const editedCtx={documents:[ctx.documents[0],{...ctx.documents[1],content:'学生作答v2'}]};
+  await s.send({cwd:home,text:'改好了',context:editedCtx});
+  assert.ok(!prompts[2].includes(guideBody),'unchanged guide stays omitted');
+  assert.ok(prompts[2].includes('学生作答v2'),'changed answer is sent in full');
+  // Context compaction clears cached fingerprints for this session.
+  s.accept({type:'event',event:{seq:99,type:'assistant/message',surfaceOp:{kind:'replace',seqs:[1,2]},data:{message:{content:[{type:'text',text:'summary'}]}}}})
+  await s.send({cwd:home,text:'压缩后再问',context:editedCtx});
+  assert.ok(prompts[3].includes(guideBody),'compaction triggers fresh full context');
+  // New session starts with clean cache.
+  await s.newSession({cwd:home});
+  await s.send({cwd:home,text:'新会话首问',context:editedCtx});
+  assert.ok(prompts[4].includes(guideBody),'new session sends full documents');
+});

@@ -48,7 +48,7 @@ export function mountLanguageControl({dshOnly = false, documentOnly = false} = {
       ? doc.querySelector('.header-actions') || doc.querySelector('.topbar')
       : doc.querySelector('.workspace-actions');
   if (host) {
-    if (dshOnly) host.prepend(group); else host.append(group);
+    if (dshOnly || !documentOnly) host.prepend(group); else host.append(group);
   }
   group.dataset.placement = dshOnly ? 'menu' : documentOnly ? 'detached' : 'header';
 

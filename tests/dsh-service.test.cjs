@@ -883,6 +883,31 @@ test('超长文档按预算截断，不会无限膨胀 prompt', async (t) => {
   assert.ok(body.length < 260000, `prompt 应被预算约束，实际长度 ${body.length}`);
 });
 
+test('同一会话内未变更文档不重复附带全文，变更或新建会话后重新附带', async (t) => {
+  const cwd = await tempDir(t, 'dsh-dedup-');
+  const { service, server, events } = await makeService(t);
+  const guide = '详细讲解内容_'.repeat(200);
+  const ctx1 = { documents: [{ path: '01_教学引导.md', content: guide, role: 'guide' }, { path: '01_学生回答.md', content: '答案v1', role: 'submitted-answer' }] };
+  await service.send({ cwd, text: '第一轮', context: ctx1 });
+  await waitFor(() => events.filter((e) => e.type === 'done').length === 1);
+  await service.send({ cwd, text: '追问', context: ctx1 });
+  await waitFor(() => events.filter((e) => e.type === 'done').length === 2);
+  const ctx2 = { documents: [ctx1.documents[0], { path: '01_学生回答.md', content: '答案v2', role: 'submitted-answer' }] };
+  await service.send({ cwd, text: '改好了', context: ctx2 });
+  await waitFor(() => events.filter((e) => e.type === 'done').length === 3);
+  await service.newSession({ cwd });
+  await service.send({ cwd, text: '新会话', context: ctx2 });
+  await waitFor(() => events.filter((e) => e.type === 'done').length === 4);
+
+  const prompts = server.callsOf('session/prompt').map((c) => c.params.prompt[0].text);
+  assert.ok(prompts[0].includes(guide));
+  assert.ok(!prompts[1].includes(guide));
+  assert.match(prompts[1], /未重复附带/);
+  assert.ok(!prompts[2].includes(guide));
+  assert.ok(prompts[2].includes('答案v2'));
+  assert.ok(prompts[3].includes(guide));
+});
+
 // ---------------------------------------------------------------------------
 // dispose
 // ---------------------------------------------------------------------------

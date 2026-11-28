@@ -15,7 +15,7 @@
 </p>
 
 <p>
-  <strong><a href="https://github.com/wildcat430524/STG-Desk/releases/latest">下载 Windows 便携版 (v0.3.20)</a></strong> ·
+  <strong><a href="https://github.com/wildcat430524/STG-Desk/releases/latest">下载 Windows 便携版 (v0.3.21)</a></strong> ·
   <a href="#界面功能全景">界面全景</a> ·
   <a href="#本地优先架构">架构与安全</a> ·
   <a href="#30-秒快速上手">快速开始</a> ·
@@ -31,7 +31,7 @@
 
 STG Desk 让纯 Markdown 驱动的自学工作流拥有顺手的桌面界面：直接打开本地 **StepsToGreat** 学习文件夹，从档案自动定位当前课程，在教学文档旁逐题作答、查看历轮反馈与总体掌握进度；需要 AI 批改或提问时，按需连接本机 **DeepSeek Harness（DSH）**，继续使用原生学习会话。
 
-> **本地优先、零锁定**：阅读、编辑和作答可完全离线独立使用，直接保存回原目录的 Markdown 文件。文档对应 [v0.3.20](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.20)（[查看全部发布说明](https://github.com/wildcat430524/STG-Desk/releases)）。
+> **本地优先、零锁定**：阅读、编辑和作答可完全离线独立使用，直接保存回原目录的 Markdown 文件。文档对应 [v0.3.21](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.21)（[查看全部发布说明](https://github.com/wildcat430524/STG-Desk/releases)）。
 
 ---
 
@@ -46,7 +46,7 @@ STG Desk 让纯 Markdown 驱动的自学工作流拥有顺手的桌面界面：�
 </p>
 
 - **不复制资料**：导入学习文件夹即直接读写原目录 Markdown，与 Codex / Claude Code / DSH 等任意学习 Agent 互通。
-- **v0.3.20 双语界面切换**：顶栏随时切换 **中文 / English**，状态本机记住、多窗口同步、不刷新页面也不丢草稿；课程正文与目录约定始终保持原文。
+- **双语界面与多版本 DSH 适配**：顶栏随时切换 **中文 / English**（状态本机记住、多窗口同步、不刷新页面也不丢草稿）；DSH 协作自动探测 0.1.x / 0.2.0 / 0.2.1 / 0.2.2+ 本地动态端口并保持断线重连与上下文去重。
 
 ---
 
@@ -120,7 +120,7 @@ STG Desk 让纯 Markdown 驱动的自学工作流拥有顺手的桌面界面：�
   <img src="docs/screenshots/welcome.png" alt="欢迎页：导入学习文件夹或体验内置演示课程" width="82%">
 </p>
 
-- **没有现成资料？** 欢迎页一键体验内置 [演示课程](demo/StepsToGreat)，或下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.20/STG-Desk-0.3.20-EditorShowcase.zip) 解压导入 `EditorShowcase`（含 Java 17+ / Python / TS / SQL 与 LaTeX 矩阵）。
+- **没有现成资料？** 欢迎页一键体验内置 [演示课程](demo/StepsToGreat)，或下载 [复杂内容演示 ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.21/STG-Desk-0.3.21-EditorShowcase.zip) 解压导入 `EditorShowcase`（含 Java 17+ / Python / TS / SQL 与 LaTeX 矩阵）。
 
 <details>
 <summary><strong>查看标准学习目录与文档配对约定</strong></summary>
@@ -145,7 +145,7 @@ StepsToGreat/
 
 ## DSH 原生协作
 
-需要 AI 导师点评本轮答案时，启动本机 **DeepSeek Harness 桌面端**（保持主窗口开启），在 STG Desk 右上角点击「打开 DSH 面板」→「连接」：
+需要 AI 导师点评本轮答案时，启动本机 **DeepSeek Harness 桌面端**（保持应用运行或托盘驻留即可），在 STG Desk 右上角点击「打开 DSH 面板」→「连接」：
 
 <table>
   <tr>
@@ -163,9 +163,9 @@ StepsToGreat/
 > 模型目录、账号与额度完全由你本机的 DSH 管理，STG Desk 不复制任何密钥或凭据。连接 DSH 也不要求额外安装 `dsh-stg-learning` 插件。
 
 <details>
-<summary><strong>DSH 端口与环境变量配置（默认 http://127.0.0.1:19387）</strong></summary>
+<summary><strong>DSH 多版本自动发现与环境变量配置（支持 0.1.x / 0.2.0 / 0.2.1 / 0.2.2+）</strong></summary>
 
-已验证的 DSH 桌面端版本为 **0.2.0-rc.2**。若本机使用自定义端口或配置目录，启动前设置对应环境变量即可：
+已适配 **DSH 0.1.x、0.2.0（默认 `19387` 端口）、0.2.1 / 0.2.2+（随机本地端口 `--port 0` 与托盘驻留）** 以及本地 `dsh web` 会话，通常无需手动指定端口。若本机使用自定义端口或配置目录，启动前设置对应环境变量即可：
 
 ```powershell
 $env:STG_DSH_DESKTOP_URL = 'http://127.0.0.1:19387'

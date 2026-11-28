@@ -33,12 +33,14 @@ export function mountModelPicker({select,icon,onChange,onError}){
     const query=search.value.trim().toLocaleLowerCase();
     filtered=models.filter(m=>(m.label+' '+m.provider+' '+m.id).toLocaleLowerCase().includes(query));
     list.replaceChildren();const groups=new Map();
+    const providerCounts=new Map();
+    for(const model of filtered)providerCounts.set(model.provider,(providerCounts.get(model.provider)||0)+1);
     for(const [index,model] of filtered.entries()){
       let group=groups.get(model.provider);
       if(!group){
         group=document.createElement('div');group.className='model-group';group.setAttribute('role','group');group.setAttribute('aria-label',model.provider);
         const heading=document.createElement('div');heading.className='model-group-label';heading.textContent=model.provider;
-        const count=document.createElement('span');count.textContent=String(filtered.filter(m=>m.provider===model.provider).length);heading.append(count);heading.setAttribute('aria-hidden','true');group.append(heading);list.append(group);groups.set(model.provider,group);
+        const count=document.createElement('span');count.textContent=String(providerCounts.get(model.provider)||0);heading.append(count);heading.setAttribute('aria-hidden','true');group.append(heading);list.append(group);groups.set(model.provider,group);
       }
       const row=document.createElement('div');row.className='model-option';row.id='dsh-model-option-'+index;row.dataset.modelId=model.id;row.setAttribute('role','option');row.setAttribute('aria-selected',String(model.id===select.value));
       const text=document.createElement('span');text.className='model-option-name';

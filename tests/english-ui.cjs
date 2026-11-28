@@ -199,8 +199,13 @@ require.cache[smokePath]={id:smokePath,filename:smokePath,loaded:true,exports:as
       win.setSize(width,800);await pause(180);
       assert.equal(await js('document.documentElement.scrollWidth>innerWidth'),false,'English has no page overflow at '+width);
       const controls=await js("[...document.querySelectorAll('.workspace-actions > button:not(.hidden),.workspace-actions .language-option')].map(b=>({id:b.id||b.dataset.locale,height:b.getBoundingClientRect().height,font:parseFloat(getComputedStyle(b).fontSize),left:b.getBoundingClientRect().left,right:b.getBoundingClientRect().right}))");
+      assert.equal(await js("document.querySelector('.workspace-actions').firstElementChild.id"),'app-language','language selector leads the header actions');
+      assert.ok(await js("(()=>{const x=document.querySelector('#app-language').getBoundingClientRect().left;return [...document.querySelectorAll('.workspace-actions > button:not(.hidden)')].every(b=>x<b.getBoundingClientRect().left)})()"),`language selector is left of the actions at ${width}`);
       for(const control of controls){
-        assert.ok(Math.round(control.height)>=32&&control.font>=14,`readable header control at ${width}: ${JSON.stringify(control)}`);
+        if(control.id==='zh-CN'||control.id==='en')
+          assert.ok(Math.round(control.height)>=24&&control.font>=11,`compact language control at ${width}: ${JSON.stringify(control)}`);
+        else
+          assert.ok(Math.round(control.height)>=32&&control.font>=14,`readable header control at ${width}: ${JSON.stringify(control)}`);
         assert.ok(control.left>=0&&control.right<=width,`header control fits at ${width}: ${JSON.stringify(control)}`);
       }
       if(width===960)await shot('workspace-960-en.png');

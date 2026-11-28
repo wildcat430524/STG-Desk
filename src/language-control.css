@@ -28,7 +28,7 @@
 }
 .language-option:hover { background: var(--ui-hover, #eceff3); }
 .language-option[aria-pressed="true"]:hover { background: var(--ui-surface, #fff); }
-.language-switch[data-placement="header"] { order: 4; }
+.language-switch[data-placement="header"] { order: -1; }
 .language-switch[data-placement="menu"] {
   display: flex;
   width: 100%;

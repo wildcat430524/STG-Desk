@@ -17,10 +17,12 @@ module.exports=function attachDsh({app,ipcMain,BrowserWindow,workspace,getWindow
     if(!state.root)return persistence;
     conversations.set(state.root,{draft:state.draft,model:state.model,title:state.title,sessionId:state.sessionId});
     const data=JSON.stringify(Object.fromEntries(conversations));
-    persistence=persistence.catch(()=>{}).then(async()=>{await fs.mkdir(path.dirname(storage),{recursive:true});const tmp=storage+'.tmp';await fs.writeFile(tmp,data);await fs.rename(tmp,storage);});
+    persistence=persistence.catch(()=>{}).then(async()=>{await fs.mkdir(path.dirname(storage),{recursive:true});const tmp=`${storage}.${makeId()}.tmp`;try{await fs.writeFile(tmp,data);await fs.rename(tmp,storage);}finally{await fs.unlink(tmp).catch(()=>{});}});
     return persistence;
   };
   const restore=fs.readFile(storage,'utf8').then(text=>{for(const [root,value]of Object.entries(JSON.parse(text)))conversations.set(root,value);}).catch(()=>{});
+  const statusFromCode=(code,fallback)=>code==='connected'?tr('dsh.status.connected'):code==='closed'?tr('dsh.status.closed'):code==='disconnected'?tr('dsh.status.disconnected'):fallback;
+  const isLocalizedDefault=(value,key)=>value===localization.ZH[key]||value===localization.EN[key];
   const broadcast=()=>{for(const w of [getWindow(),floating])if(w&&!w.isDestroyed())w.webContents.send('dsh-state',{...state});};
   const publish=()=>{broadcast();save().catch(e=>{state.status=tr('dsh.status.notSaved',{error:errorText(e)});broadcast();});};
   const report=e=>{state.status=errorText(e);state.busy=false;state.messages.push({id:makeId(),role:'error',text:state.status});publish();};
@@ -34,7 +36,7 @@ module.exports=function attachDsh({app,ipcMain,BrowserWindow,workspace,getWindow
       if(Array.isArray(event.messages))record.messages=event.messages;
       for(const key of ['sessionId','model','busy','connected'])if(event[key]!==undefined)record[key]=event[key];
       if(event.title)record.title=event.title;
-      if(active){state.status=event.status||(state.connected?(state.busy?tr('dsh.status.replying'):tr('dsh.status.connected')):tr('dsh.status.openDesktop'));broadcast();if(previousModel!==record.model||previousSession!==record.sessionId||event.busy===false)save().catch(()=>{});}
+      if(active){state.status=statusFromCode(event.statusCode,event.status)||(state.connected?(state.busy?tr('dsh.status.replying'):tr('dsh.status.connected')):tr('dsh.status.openDesktop'));broadcast();if(previousModel!==record.model||previousSession!==record.sessionId||event.busy===false)save().catch(()=>{});}
       return;
     }
     if(event.type==='session')record.sessionId=event.sessionId;
@@ -80,7 +82,7 @@ module.exports=function attachDsh({app,ipcMain,BrowserWindow,workspace,getWindow
     if(connecting)return connecting;
     const root=state.root;
     connecting=Promise.resolve().then(async()=>{
-      try{state.status=tr('dsh.status.connecting');broadcast();const backend=getService();const status=await backend.getStatus();if(!status.available)throw new Error(status.message||tr('dsh.status.desktopRequired'));const result=await backend.getModels({cwd:root});if(state.root!==root)return;state.models=result.models||[];state.sessions=result.sessions||[];state.sessionId=result.sessionId;state.model=result.selectedModel||state.models[0]?.id||null;state.connected=true;state.status=result.message||tr('dsh.status.connected');publish();}
+      try{state.status=tr('dsh.status.connecting');broadcast();const backend=getService();const status=await backend.getStatus();if(!status.available)throw new Error(status.message||tr('dsh.status.desktopRequired'));const result=await backend.getModels({cwd:root});if(state.root!==root)return;state.models=result.models||[];state.sessions=result.sessions||[];state.sessionId=result.sessionId;state.model=result.selectedModel||state.models[0]?.id||null;state.connected=true;state.status=statusFromCode(result.statusCode,result.message)||tr('dsh.status.connected');publish();}
       catch(error){if(state.root===root){state.connected=false;state.models=[];state.status=errorText(error);state.busy=false;broadcast();}}
       return {...state};
     }).finally(()=>{connecting=null;if(state.root!==root&&state.visible)connect();});
@@ -105,11 +107,11 @@ module.exports=function attachDsh({app,ipcMain,BrowserWindow,workspace,getWindow
   handle('dsh-review-prompt',()=>{if(!state.draft.trim())state.draft=tr('dsh.reviewPrompt');publish();return {...state};});
   handle('dsh-model',async model=>{if(state.busy)throw new Error(tr('error.modelBusy'));if(!state.models.some(m=>m.id===model))throw new Error(tr('error.modelUnavailable'));await getService().selectModel?.({cwd:state.root,model});state.model=model;publish();});
   handle('dsh-session',async sessionId=>{if(state.busy)throw new Error(tr('error.sessionBusy'));await getService().selectSession({cwd:state.root,sessionId});return {...state};});
-  handle('dsh-open-desktop',async()=>{const runtime=process.env.DSH_DESKTOP_HOME||process.env.STG_DSH_RUNTIME||require('../lib/dsh-discovery.cjs')();if(!runtime)throw new Error(tr('error.dshMissing'));const executable=runtime.toLowerCase().endsWith('.exe')?runtime:path.join(runtime,'DeepSeek Harness.exe');await fs.access(executable);const env={...process.env};delete env.ELECTRON_RUN_AS_NODE;const child=require('node:child_process').spawn(executable,[],{detached:true,stdio:'ignore',windowsHide:true,env});await new Promise((resolve,reject)=>{child.once('spawn',resolve);child.once('error',reject);});child.unref();return {...state};});
+  handle('dsh-open-desktop',async()=>{const discovery=require('../lib/dsh-discovery.cjs');const runtime=process.env.DSH_DESKTOP_HOME||process.env.STG_DSH_RUNTIME||discovery();if(!runtime)throw new Error(tr('error.dshMissing'));const executable=discovery.extractDesktopExecutable(runtime);await fs.access(executable);const env={...process.env};delete env.ELECTRON_RUN_AS_NODE;const child=require('node:child_process').spawn(executable,[],{detached:true,stdio:'ignore',windowsHide:true,env});await new Promise((resolve,reject)=>{child.once('spawn',resolve);child.once('error',reject);});child.unref();return {...state};});
   handle('dsh-connect',connect);
   handle('dsh-quote',async()=>{await updateContext();return {...state};});
   handle('dsh-cancel',async()=>{if(state.busy)await getService().cancel({cwd:state.root});});
-  handle('dsh-new',async()=>{if(state.busy)throw new Error(tr('error.stopFirst'));await getService().newSession({cwd:state.root});state.draft='';publish();await connect();});
+  handle('dsh-new',async()=>{if(state.busy)throw new Error(tr('error.stopFirst'));const created=await getService().newSession({cwd:state.root});state.draft='';if(created?.sessionId)state.sessionId=created.sessionId;if(Array.isArray(created?.sessions)){state.sessions=created.sessions;state.connected=true;state.status=tr('dsh.status.connected');publish();}else{publish();await connect();}});
   handle('dsh-send',async({text,model}={})=>{
     if(!state.root)throw new Error(tr('error.importFirst'));if(state.busy)throw new Error(tr('error.dshBusy'));if(typeof text!=='string'||!text.trim())throw new Error(tr('error.messageEmpty'));
     if(!state.connected&&!smokeTest)throw new Error(tr('error.connectFirst'));
@@ -132,9 +134,17 @@ module.exports=function attachDsh({app,ipcMain,BrowserWindow,workspace,getWindow
     applyLanguage(){
       if(floating&&!floating.isDestroyed())floating.setTitle(tr('app.dshWindowTitle'));
       // Republish so the renderer re-reads the localized fallback status/title.
-      if(!state.title||state.title===localization.translate('zh-CN','dsh.title.default'))state.title=tr('dsh.title.default');
+      if(!state.title||isLocalizedDefault(state.title,'dsh.title.default'))state.title=tr('dsh.title.default');
       if(!state.root)state.status=tr('dsh.status.importFirst');
-      else if(!state.connected)state.status=tr('dsh.status.openDesktop');
+      else if(state.connected){
+        if(state.busy&&isLocalizedDefault(state.status,'dsh.status.replying'))state.status=tr('dsh.status.replying');
+        else if(state.busy&&isLocalizedDefault(state.status,'dsh.status.thinking'))state.status=tr('dsh.status.thinking');
+        else if(isLocalizedDefault(state.status,'dsh.status.connected'))state.status=tr('dsh.status.connected');
+      }else{
+        if(isLocalizedDefault(state.status,'dsh.status.closed'))state.status=tr('dsh.status.closed');
+        else if(isLocalizedDefault(state.status,'dsh.status.disconnected'))state.status=tr('dsh.status.disconnected');
+        else state.status=tr('dsh.status.openDesktop');
+      }
       broadcast();
     },
     state,

@@ -53,21 +53,21 @@
 .workspace-header .workspace-actions #open-dsh { padding: 0 16px; }
 .workspace-header .workspace-actions #open-dsh span { padding: 0; }
 .workspace-actions .language-switch {
-  height: 40px;
-  padding: 3px;
-  gap: 2px;
-  margin-left: 8px;
-  border-radius: 10px;
+  height: 30px;
+  padding: 2px;
+  gap: 1px;
+  margin-right: 4px;
+  border-radius: 8px;
   background: var(--ui-hover);
 }
 .workspace-actions .language-switch .language-option {
-  height: 32px;
-  min-width: 48px;
-  padding: 0 11px;
-  font-size: 14px;
+  height: 24px;
+  min-width: 36px;
+  padding: 0 7px;
+  font-size: 11px;
   font-weight: 500;
   line-height: 1;
-  border-radius: 7px;
+  border-radius: 5px;
 }
 .workspace-actions .language-option[aria-pressed="true"] {
   box-shadow: 0 1px 3px #20263018;
@@ -88,7 +88,7 @@
   }
   .workspace-header .workspace-actions {
     grid-column: 1 / -1;
-    justify-content: flex-end;
+    justify-content: flex-start;
     flex-wrap: wrap;
   }
   .workspace-header .workspace-card { text-align: right; }
@@ -98,5 +98,5 @@
   .workspace-header { padding-inline: 16px; }
   .workspace-header .workspace-actions { gap: 8px; }
   .workspace-header .workspace-actions > button { padding-inline: 12px; }
-  .workspace-actions .language-switch { margin-left: 0; }
+  .workspace-actions .language-switch { margin-right: 0; }
 }

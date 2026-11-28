@@ -15,7 +15,7 @@
 </p>
 
 <p>
-  <strong><a href="https://github.com/wildcat430524/STG-Desk/releases/latest">Download for Windows (v0.3.20)</a></strong> ·
+  <strong><a href="https://github.com/wildcat430524/STG-Desk/releases/latest">Download for Windows (v0.3.21)</a></strong> ·
   <a href="#feature-gallery">Screenshots</a> ·
   <a href="#local-first-architecture">Architecture</a> ·
   <a href="#30-second-quick-start">Quick Start</a> ·
@@ -31,7 +31,7 @@
 
 STG Desk gives your Markdown-driven self-study workflow a dedicated desktop workbench: open any local **StepsToGreat** folder to jump straight to your current lesson, edit teaching guides and answers side-by-side, check past evaluations and overall progress, and connect on-demand to **DeepSeek Harness (DSH)** for native AI tutoring sessions.
 
-> **Local-first, zero lock-in**: reading, editing, and answering work completely offline and write straight back to your original Markdown directory. Covers [v0.3.20](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.20) ([all release notes](https://github.com/wildcat430524/STG-Desk/releases)).
+> **Local-first, zero lock-in**: reading, editing, and answering work completely offline and write straight back to your original Markdown directory. Covers [v0.3.21](https://github.com/wildcat430524/STG-Desk/releases/tag/v0.3.21) ([all release notes](https://github.com/wildcat430524/STG-Desk/releases)).
 
 ---
 
@@ -46,7 +46,7 @@ STG Desk gives your Markdown-driven self-study workflow a dedicated desktop work
 </p>
 
 - **Zero file duplication**: works directly on your existing study directory, keeping everything compatible with Codex, Claude Code, Cursor, or DSH.
-- **v0.3.20 Bilingual UI Switch**: switch **中文 / English** in the top bar anytime—persisted locally, synced across detached/floating windows, without reloading or losing drafts, while keeping course Markdown untouched.
+- **Bilingual UI & Multi-Version DSH**: switch **中文 / English** in the top bar anytime (persisted locally, synced across windows, without reloading or losing drafts), and connect automatically to DSH 0.1.x / 0.2.0 / 0.2.1 / 0.2.2+ with dynamic port discovery and context deduplication.
 
 ---
 
@@ -120,7 +120,7 @@ STG Desk gives your Markdown-driven self-study workflow a dedicated desktop work
   <img src="docs/screenshots/welcome.png" alt="Welcome screen: import a study folder or open demo lessons" width="82%">
 </p>
 
-- **No study folder yet?** Try the [bundled demo lessons](demo/StepsToGreat) right from the welcome screen, or grab the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.20/STG-Desk-0.3.20-EditorShowcase.zip) (`EditorShowcase` featuring Java 17+, Python, TS, SQL, and LaTeX matrices).
+- **No study folder yet?** Try the [bundled demo lessons](demo/StepsToGreat) right from the welcome screen, or grab the [complex-content showcase ZIP](https://github.com/wildcat430524/STG-Desk/releases/download/v0.3.21/STG-Desk-0.3.21-EditorShowcase.zip) (`EditorShowcase` featuring Java 17+, Python, TS, SQL, and LaTeX matrices).
 
 <details>
 <summary><strong>Study directory layout & document pairing</strong></summary>
@@ -145,7 +145,7 @@ Teaching and student documents in the same lesson folder pair by filename prefix
 
 ## DSH Integration
 
-When you want AI evaluation or discussion, start **DeepSeek Harness Desktop** (keep its main window open), open the DSH panel in STG Desk, and click Connect:
+When you want AI evaluation or discussion, start **DeepSeek Harness Desktop** (window open or minimized to tray), open the DSH panel in STG Desk, and click Connect:
 
 <table>
   <tr>
@@ -163,9 +163,9 @@ When you want AI evaluation or discussion, start **DeepSeek Harness Desktop** (k
 > Your local DSH manages all accounts, quotas, and model catalogs—STG Desk never copies keys or credentials. Connecting STG Desk to DSH does not require installing `dsh-stg-learning`.
 
 <details>
-<summary><strong>DSH port and environment configuration (default http://127.0.0.1:19387)</strong></summary>
+<summary><strong>Multi-version DSH auto-discovery & environment overrides (0.1.x / 0.2.0 / 0.2.1 / 0.2.2+)</strong></summary>
 
-Verified against DSH Desktop **0.2.0-rc.2**. To point STG Desk at a custom local port or config directory:
+Supports **DSH 0.1.x, 0.2.0 (default port `19387`), 0.2.1 / 0.2.2+ (ephemeral `--port 0` and tray-minimized hosts)**, as well as local `dsh web` servers automatically. To force a custom local port or config directory:
 
 ```powershell
 $env:STG_DSH_DESKTOP_URL = 'http://127.0.0.1:19387'

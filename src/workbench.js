@@ -116,7 +116,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   }
   function isDetached(path){return !documentOnly&&detachedWindows.some(w=>w.root===state.workspace?.root&&w.path===path);}
   async function updateDocuments(){if(!api||!state.workspace)return;const result=await api.documents({currentPath:state.doc?.path||null});state.documents=result.documents;progress=result.progress||{};drawTree();document.body.classList.toggle('answer-detached',!!state.answer&&isDetached(state.answer.path));if(page!=='document')await renderProgress();}
-  function progressSections(content,pattern){const tokens=renderer.parse(content,{}),headings=tokens.filter(t=>t.type==='heading_open'&&t.level===0);return headings.flatMap((h,i)=>{const title=tokens[tokens.indexOf(h)+1]?.content||'';if(!pattern.test(title))return [];const end=headings.slice(i+1).find(n=>Number(n.tag.slice(1))<=Number(h.tag.slice(1)))?.map[0];return [content.split(/\r?\n/).slice(h.map[0],end).join('\n')];}).join('\n\n');}
+  function progressSections(content,pattern){const lines=content.split(/\r?\n/),tokens=renderer.parse(content,{}),headings=tokens.filter(t=>t.type==='heading_open'&&t.level===0);return headings.flatMap((h,i)=>{const title=tokens[tokens.indexOf(h)+1]?.content||'';if(!pattern.test(title))return [];const end=headings.slice(i+1).find(n=>Number(n.tag.slice(1))<=Number(h.tag.slice(1)))?.map[0];return [lines.slice(h.map[0],end).join('\n')];}).join('\n\n');}
   async function renderProgress(){
     const kind=page,chapter=kind==='chapter';if(kind==='document')return;
     $('#progress-title').textContent=chapter?t('doc.progressChapter'):t('doc.progressOverall');
@@ -485,7 +485,7 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
   $('#answer-content').addEventListener('input',e=>{if(e.target.dataset.answerIndex!==undefined){const q=state.answer.questions.current[Number(e.target.dataset.answerIndex)];state.answers[questionKey(q)]=e.target.value;const count=document.querySelector(`[data-answer-count="${e.target.dataset.answerIndex}"]`);if(count)count.textContent=t('answer.charCount',{n:e.target.value.length});const button=document.querySelector(`[data-answer-question="${e.target.dataset.answerIndex}"]`);if(button){button.querySelector('.answer-question-check').textContent=e.target.value.trim()?'✓':'';button.setAttribute('aria-label',t('answer.navLabel',{n:q.number,state:e.target.value.trim()?t('answer.filled'):t('answer.notFilled')}));}dirtyState();scheduleDraft();updateAnswerStatus();}});
   $('#answer-source').addEventListener('input',e=>{state.answerSource=e.target.value;state.answerCache={...(state.answerCache||{}),content:state.answerSource,baseContent:state.answerBaseContent,baseVersion:state.answerBaseVersion};if(state.doc.path===state.answer.path)replaceSource(state.answerSource);dirtyState();scheduleDraft();$('#answer-source-status').textContent=t('answer.dirtyShort');updateAnswerStatus();});
   for(const selector of ['#answer-records','#answer-document-preview','#answer-content'])$(selector).addEventListener('click',e=>{const link=e.target.closest('a');if(!link)return;const href=link.getAttribute('href');e.preventDefault();if(/^https?:\/\//i.test(href)){api.external(href);return;}if(href&&!href.startsWith('#')){const path=resolveLink(state.answer.path,href);if(path)guarded(()=>selectFile(path));}});
-  $('#editor').addEventListener('click',e=>{const link=e.target.closest('a');if(!link)return;e.preventDefault();if(!e.ctrlKey&&!e.metaKey)return;const href=link.getAttribute('href');if(!href)return;if(/^https?:\/\//i.test(href)){api?.external(href);return;}if(href.startsWith('#')){const title=decodeURIComponent(href.slice(1));const target=[...$('#editor').querySelectorAll('h1,h2,h3,h4,h5,h6')].find(h=>h.id===title||h.textContent.toLowerCase().replace(/\s+/g,'-')===title);target?.scrollIntoView();return;}const p=resolveLink(state.doc.path,href);if(p)guarded(()=>selectFile(p));});
+  $('#editor').addEventListener('click',e=>{const link=e.target.closest('a');if(!link)return;e.preventDefault();if(!e.ctrlKey&&!e.metaKey)return;const href=link.getAttribute('href');if(!href)return;if(/^https?:\/\//i.test(href)){api?.external(href);return;}if(href.startsWith('#')){let title=href.slice(1);try{title=decodeURIComponent(title);}catch{}const target=[...$('#editor').querySelectorAll('h1,h2,h3,h4,h5,h6')].find(h=>h.id===title||h.textContent.toLowerCase().replace(/\s+/g,'-')===title);target?.scrollIntoView();return;}const p=resolveLink(state.doc.path,href);if(p)guarded(()=>selectFile(p));});
   let dragCounter=0;document.addEventListener('dragenter',e=>{e.preventDefault();if(e.dataTransfer?.types.includes('Files')){dragCounter++;$('#drop-overlay').classList.remove('hidden');}});document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('dragleave',e=>{e.preventDefault();if(--dragCounter<=0){dragCounter=0;$('#drop-overlay').classList.add('hidden');}});document.addEventListener('drop',e=>{e.preventDefault();dragCounter=0;$('#drop-overlay').classList.add('hidden');const file=e.dataTransfer.files[0];if(file&&api)guarded(()=>importFolder(api.droppedPath(file)));});
   api?.onShortcut(name=>guarded(()=>{
     if(name==='import')return state.documentWindow?Promise.resolve():importFolder();
@@ -493,7 +493,32 @@ export function mountWorkbench({api,renderer,renderMD,resolveLink,escape,icon,hi
     return saveAll();
   }));
   api?.onPrepareClose(async()=>{try{await flushDraft();await api.closeReady(true);}catch(e){await api.closeReady(false);message(cleanError(e),true);}});
-  api?.onChange(async()=>{try{if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}if(state.doc){const disk=await api.read(state.doc.path);const answer=state.answer&&state.answer.path!==state.doc.path?await api.read(state.answer.path):null;if(disk.version!==state.doc.version)$('#change-banner').classList.remove('hidden');const updated=answer||(state.answer?.path===disk.path?disk:null);if(updated&&updated.version!==state.answer.version){if(!hasAnswers()&&!answerSourceDirty()&&!(state.doc.path===updated.path&&state.dirty))await acceptAnswer(updated);else $('#change-banner').classList.remove('hidden');}}}catch{message(t('toast.documentGone'),true);}});
+  let changeRunning=false,changePending=false;
+  const handleExternalChange=async()=>{
+    if(changeRunning){changePending=true;return;}
+    changeRunning=true;
+    try{
+      do{
+        changePending=false;
+        const activeEpoch=loadEpoch;
+        if(state.workspace){state.workspace=await api.tree();await updateLearning();await updateDocuments();}
+        if(state.doc&&activeEpoch===loadEpoch){
+          const docPath=state.doc.path,answerPath=state.answer?.path;
+          const disk=await api.read(docPath);
+          const answer=answerPath&&answerPath!==docPath?await api.read(answerPath):null;
+          if(activeEpoch!==loadEpoch)continue;
+          if(disk.version!==state.doc.version)$('#change-banner').classList.remove('hidden');
+          const updated=answer||(answerPath===disk.path?disk:null);
+          if(updated&&state.answer&&updated.version!==state.answer.version){
+            if(!hasAnswers()&&!answerSourceDirty()&&!(state.doc.path===updated.path&&state.dirty))await acceptAnswer(updated);
+            else $('#change-banner').classList.remove('hidden');
+          }
+        }
+      }while(changePending);
+    }catch{message(t('toast.documentGone'),true);}
+    finally{changeRunning=false;}
+  };
+  api?.onChange(handleExternalChange);
   api?.onWarning(text=>message(t('toast.warningPrefix',{message:text}),true));
   if(!documentOnly)api?.onDocumentWindowsChange(event=>{if(event.root!==state.workspace?.root)return;if(event.type==='closed')returningPaths.add(event.path);detachedWindows=event.windows||[];drawTree();document.body.classList.toggle('answer-detached',!!state.answer&&isDetached(state.answer.path));windowEvents.push(event);drainWindowEvents();});
   if(api){api.preferences().then(p=>{state.preferences=p;applyPreferences();});if(documentOnly){api.documentWindowInfo().then(async info=>{state.documentWindow=info;document.body.classList.add(info.kind==='answer'?'answer-document-window':'guide-document-window');await guarded(()=>importFolder(info.root,info.path));});}else api.lastRoot().then(async root=>{if(root){$('#recent').innerHTML=`<button id="recent-open" data-root="${escape(root)}">${t('header.recent',{path:escape(root)})} <span aria-hidden="true">→</span></button>`;await guarded(()=>importFolder(root));}});}else $('#recent').textContent=t('welcome.webPreview');

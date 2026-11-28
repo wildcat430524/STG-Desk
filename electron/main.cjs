@@ -5,6 +5,7 @@ const fs=require('node:fs/promises');
 const chokidar=require('chokidar');
 const {Workspace}=require('../lib/workspace.cjs');
 const {DraftStore}=require('../lib/drafts.cjs');
+const {readSettings,updateSettings,clampPreferences}=require('../lib/settings-store.cjs');
 const {appIcon}=require('./app-icon.cjs');
 const localization=require('./localization.cjs');
 const workspace=new Workspace();
@@ -21,15 +22,14 @@ if(smokeTest) app.disableHardwareAcceleration();
 if(smokeTest) app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 protocol.registerSchemesAsPrivileged([{scheme:'stg-asset',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const settingsPath=()=>path.join(app.getPath('userData'),'settings.json');
-async function settings() { try { return JSON.parse(await fs.readFile(settingsPath(),'utf8')); } catch {return {}; } }
+async function settings() { return readSettings(settingsPath()); }
 const tr=(key,params)=>localization.translate(uiLanguage,key,params);
 // The renderer persists its choice through the existing settings file so the
 // native dialogs, window titles and every window agree after a restart.
 async function loadUiLanguage(){const current=await settings();uiLanguage=localization.normalize(process.env.STG_UI_LANGUAGE||current.language);return uiLanguage;}
 async function setUiLanguage(locale){
   uiLanguage=localization.normalize(locale);
-  const current=await settings();
-  await fs.writeFile(settingsPath(),JSON.stringify({...current,language:uiLanguage},null,2));
+  await updateSettings(settingsPath(),current=>({...current,language:uiLanguage}));
   if(window&&!window.isDestroyed())window.setTitle(tr('app.title'));
   documentWindows?.applyLanguage?.();
   dsh?.applyLanguage?.();
@@ -52,7 +52,7 @@ async function open(root) {
     clearTimeout(timer); timer=setTimeout(()=>{if(window&&!window.isDestroyed())window.webContents.send('workspace-changed');},300);
   });
   watcher.on('error',error=>{if(window&&!window.isDestroyed())window.webContents.send('workspace-warning',error.message);});
-  await fs.writeFile(settingsPath(),JSON.stringify({...await settings(),lastRoot:info.root},null,2));
+  await updateSettings(settingsPath(),current=>({...current,lastRoot:info.root}));
   await dsh?.onWorkspaceOpened(info.root);
   return info;
 }
@@ -146,11 +146,14 @@ app.whenReady().then(async()=>{
   handle('backup-read',(p,id)=>workspace.readBackup(p,id));
   handle('backup-restore',(p,id,version)=>workspace.restoreBackup(p,id,version));
   handle('preferences',async value=>{
-    const current=await settings();
-    if(!value)return {fontSize:16,lineHeight:1.9,readingWidth:820,backupRetention:20,...current.preferences};
-    const next={fontSize:Math.max(13,Math.min(24,Number(value.fontSize)||16)),lineHeight:Math.max(1.4,Math.min(2.4,Number(value.lineHeight)||1.9)),readingWidth:Math.max(540,Math.min(1200,Number(value.readingWidth)||820)),backupRetention:Math.max(5,Math.min(100,Number(value.backupRetention)||20))};
-    workspace.retention=next.backupRetention;
-    await fs.writeFile(settingsPath(),JSON.stringify({...current,backupRetention:next.backupRetention,preferences:next},null,2));return next;
+    if(!value){const current=await settings();return clampPreferences(null,current.preferences);}
+    let saved;
+    await updateSettings(settingsPath(),current=>{
+      saved=clampPreferences(value,current.preferences);
+      return {...current,backupRetention:saved.backupRetention,preferences:saved};
+    });
+    workspace.retention=saved.backupRetention;
+    return saved;
   });
   handle('close-ready',async ok=>{
     closeRequested=false;
@@ -195,4 +198,4 @@ app.whenReady().then(async()=>{
   if(smokeTest) await require('./smoke.cjs')(window,app);
 });
 app.on('window-all-closed',()=>app.quit());
-app.on('before-quit',()=>{watcher?.close();documentWindows?.dispose();});
+app.on('before-quit',()=>{watcher?.close()?.catch?.(()=>{});documentWindows?.dispose();});
